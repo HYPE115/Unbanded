@@ -4,12 +4,16 @@ const path = require('path');
 const root = 'c:\\Users\\imperiex\\AppData\\Roaming\\spicetify\\band client tamper';
 
 const order = [
+  'src/core/storage.js',
   'src/core/adapter.js',
   'src/core/plugin-manager.js',
   'src/core/plugin-manager-builtin.js',
+  'src/core/themes.js',
+  'src/core/styles.js',
   'src/core/commands.js',
   'src/core/ui.js',
   'src/core/ui-panel.js',
+  'src/core/ui-settings.js',
   'src/core/ui-hooks.js',
   'src/petpet-hand.js',
   'src/vendor/gifenc.js',
@@ -21,8 +25,8 @@ const order = [
 const header = `// ==UserScript==
 // @name         Band Tamper
 // @namespace    http://tampermonkey.net/
-// @version      1.4.0
-// @description  Chargeur de plugins type Vencord pour BAND (band.us) + plugin par défaut pet-pet (/pat).
+// @version      1.5.0
+// @description  Chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @match        *://band.us/*
 // @match        *://*.band.us/*

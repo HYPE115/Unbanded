@@ -1,4 +1,5 @@
 BandUI.prototype._injectPanel = function () {
+  const self = this;
   this.panel = document.createElement('div');
   this.panel.id = 'bt-band-panel';
   this.panel.setAttribute('data-bt-root', '1');
@@ -6,7 +7,10 @@ BandUI.prototype._injectPanel = function () {
   this.panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div style="font-weight:bold;font-size:15px">Tamper · Plugins</div>
-      <button id="bt-close-panel" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>
+      <div style="display:flex;gap:6px;">
+        <button id="bt-open-settings" title="Paramètres (thèmes, CSS, plugins)" style="background:transparent;border:none;color:#fff;cursor:pointer">⚙</button>
+        <button id="bt-close-panel" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>
+      </div>
     </div>
     <div id="bt-plugin-list" style="gap:6px;max-height:300px;overflow-y:auto;"></div>
     <hr style="border:none;border-top:1px solid #3d4f60;margin:8px 0;">
@@ -15,18 +19,20 @@ BandUI.prototype._injectPanel = function () {
       <input id="bt-plugin-url" type="text" placeholder="https://exemple.com/plugin.js" style="padding:6px;border-radius:4px;border:none;width:100%;box-sizing:border-box;">
       <button id="bt-add-plugin" style="background:#6c5ce7;border:none;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer">Ajouter</button>
     </div>
-    <div style="font-size:11px;color:#aab7c4">Commandes : /pat [user] · /help · /plugins · /btdbg</div>
+    <div style="font-size:11px;color:#aab7c4">Commandes : /pat [user] · /help · /plugins · /settings · /btdbg</div>
   `;
   document.body.appendChild(this.panel);
   const closeBtn = document.getElementById('bt-close-panel');
   if (closeBtn) closeBtn.onclick = () => this.hide();
+  const settingsBtn = document.getElementById('bt-open-settings');
+  if (settingsBtn) settingsBtn.onclick = () => self.openSettings();
   const addBtn = document.getElementById('bt-add-plugin');
   if (addBtn) addBtn.onclick = async () => {
     const urlInput = document.getElementById('bt-plugin-url');
     const url = (urlInput && urlInput.value ? urlInput.value : '').trim();
     if (!url) return;
     try {
-      await this.pm.loadPlugin(url, { enabled: true });
+      await this.pm.loadPlugin(url, { enabled: true, source: 'url' });
       if (urlInput) urlInput.value = '';
       this.renderPluginList();
     } catch (e) { alert('Échec : ' + e.message); }

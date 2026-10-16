@@ -25,6 +25,14 @@ function registerBuiltInCommands(pm) {
     }
   });
 
+  pm.registerCommand('settings', 'Ouvre la page Paramètres (thèmes, CSS personnalisé, plugins)', async (args, info) => {
+    if (window.BandTamperUI && window.BandTamperUI.openSettings) {
+      window.BandTamperUI.openSettings();
+    } else if (window.__BTT_toast) {
+      window.__BTT_toast('Page Paramètres indisponible', 'error');
+    }
+  });
+
   pm.registerCommand('btdbg', "Diagnostics Band Tamper (sélecteurs, hook, etc.)", async (args, info) => {
     const a = (info && info.api) || pm.adapter;
     const input = a.getChatInput ? a.getChatInput() : null;

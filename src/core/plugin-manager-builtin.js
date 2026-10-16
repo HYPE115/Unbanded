@@ -20,6 +20,6 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
       this.adapter.log('Commande enregistrée : /' + cmd.name + ' (builtin ' + spec.name + ')');
     }
   }
-  this.plugins.set(url, { spec: spec, url: url, enabled: true, unload: unload });
-  if (this.ui) this.ui.renderPluginList();
+  this.plugins.set(url, { spec: spec, url: url, source: 'builtin', builtin: true, code: null, enabled: true, unload: unload });
+  this._refreshLists();
 };

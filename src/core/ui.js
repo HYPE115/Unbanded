@@ -13,11 +13,12 @@ class BandUI {
   inject() {
     window.BandTamperUI = this;
     this._hookCommandInput();
+    if (!document.body) return;
+    this._injectSettings();
     if (this.adapter.isDemo()) {
       this._injectDemoBanner();
       return;
     }
-    if (!document.body) return;
     this._injectButton();
     this._injectPanel();
   }
@@ -25,6 +26,7 @@ class BandUI {
   ensureInjected() {
     try {
       if (!document.body) return;
+      if (!this.settingsEl || !document.body.contains(this.settingsEl)) this._injectSettings();
       if (this.adapter.isDemo()) {
         if (!this.banner || !document.body.contains(this.banner)) this._injectDemoBanner();
         return;

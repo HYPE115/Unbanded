@@ -27,11 +27,19 @@ const makeEl = (tag, id) => {
   el.width = 0; el.height = 0;
   el.getContext = () => ({ fillStyle: '', fillRect() {}, beginPath() {}, ellipse() {}, arc() {}, drawImage() {}, translate() {}, rotate() {}, save() {}, restore() {}, setTransform() {}, createRadialGradient() {}, addColorStop() {}, measureText() { return { width: 0 }; }, fillText() {}, stroke() {}, fill() {}, clearRect() {}, putImageData() {}, getImageData() { return { data: new Uint8ClampedArray(0) }; } });
   el.toBlob = (cb) => setTimeout(() => cb({ size: 42, type: 'image/png' }), 0);
+  el.style.setProperty = (k, v) => { el.style[k] = v; };
   return el;
 };
 const docListeners = {};
+const headChildren = [];
 globalThis.document = {
-  head: { appendChild: (s) => { setTimeout(() => { if (s.onload) s.onload(); }, 0); } },
+  head: {
+    appendChild: (s) => {
+      headChildren.push(s);
+      if (s && s.id) byId[s.id] = s;
+      setTimeout(() => { if (s.onload) s.onload(); }, 0);
+    }
+  },
   body: {
     appendChild: (el) => {
       events.push('body.append ' + (el.id || el.tagName || 'el'));
@@ -48,6 +56,7 @@ globalThis.document = {
   activeElement: null,
   addEventListener: (type, cb) => { (docListeners[type] = docListeners[type] || []).push(cb); }
 };
+globalThis.document.documentElement = makeEl('html');
 globalThis.location = { hostname: 'example.com', pathname: '/', search: '' };
 globalThis.Image = class {
   constructor() { this.crossOrigin = 'anonymous'; this.onload = null; this.onerror = null; this.src = ''; setTimeout(() => { if (this.onload) this.onload(); }, 0); }
@@ -134,6 +143,37 @@ const TINY_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAf
     typeof window.__BTT_GIFENC.quantize === 'function' && typeof window.__BTT_GIFENC.applyPalette === 'function');
   check('aucune dépendance CDN gif.js (compatible CSP band.us)',
     code.indexOf('unpkg.com/gif.js') === -1 && code.indexOf('cdn.jsdelivr.net/npm/gif.js') === -1);
+
+  console.log('— Page Paramètres —');
+  const uiS = window.BandTamperUI;
+  const pmS = uiS.pm;
+  check('BTTStore exposé (get/set)', window.BTTStore && typeof window.BTTStore.get === 'function' && typeof window.BTTStore.set === 'function');
+  check('BTTThemes exposé (>= 10 thèmes builtins)', window.BTTThemes && window.BTTThemes.list().length >= 10);
+  check('BTTStyles exposé (apply/get/clear)', window.BTTStyles && typeof window.BTTStyles.apply === 'function' && typeof window.BTTStyles.get === 'function');
+  check('page Settings injectée dans body (bt-settings)', events.indexOf('body.append bt-settings') !== -1);
+  check('commande /settings enregistrée', pmS.commands.has('settings'));
+  await pressEnter('/settings');
+  await wait(30);
+  check('/settings ouvre la page Paramètres', uiS.settingsVisible === true);
+  window.BTTThemes.apply('dracula');
+  check('thème appliqué : variable CSS --btt-accent', document.documentElement.style['--btt-accent'] === '#bd93f9');
+  check('thème actif persisté (btt:activeTheme)', window.BTTStore.get('activeTheme') === 'dracula');
+  window.BTTStyles.apply('body{opacity:.99}');
+  check('CSS perso injecté + persisté',
+    !!byId['bt-custom-css'] && byId['bt-custom-css'].textContent === 'body{opacity:.99}' &&
+    window.BTTStore.get('customCss') === 'body{opacity:.99}');
+  check('style core du thème injecté (bt-core-css)', !!byId['bt-core-css']);
+  await pmS.loadPlugin('file:demo-plugin.js', { code: 'module.exports={name:"demo-plugin",version:"0.1.0"}', source: 'file' });
+  check('plugin importé par code (fichier)', pmS.plugins.has('file:demo-plugin.js'));
+  const persistedPlugins = window.BTTStore.get('plugins');
+  check('persistance des plugins (btt:plugins)',
+    Array.isArray(persistedPlugins) && persistedPlugins.some(p => p.id === 'file:demo-plugin.js'));
+  check('thème importé par JSON (validation)', (() => {
+    try {
+      const t = window.BTTThemes.importJson({ name: 'Test', colors: { accent: '#123456' } });
+      return t && t.name === 'Test' && t.colors.accent === '#123456' && window.BTTThemes.get(t.id) !== null;
+    } catch (e) { return false; }
+  })());
 
   console.log('— Bouton "Tamper" dans le header BAND —');
   const feedLi = makeEl('li');

@@ -8,10 +8,14 @@ Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interfac
 |---------|------|
 | `band-tamper.user.js` | Userscript final à installer (généré par `build.js`) |
 | `src/core/adapter.js` | Pont avec le client BAND (sélecteurs DOM, envoi de message/fichier) |
-| `src/core/plugin-manager.js` | Chargeur de plugins (fetch + éval, activer/désactiver) |
+| `src/core/storage.js` | `BTTStore` : persistance locale (localStorage, repli mémoire) — plugins, thèmes, CSS, options |
+| `src/core/plugin-manager.js` | Chargeur de plugins (fetch + éval, code brut pour import fichier, activer/désactiver, persistance) |
 | `src/core/plugin-manager-builtin.js` | Enregistrement des plugins/commandes intégrés |
-| `src/core/commands.js` | Commandes slash intégrées (`/help`, `/plugins`, `/btdbg`) |
-| `src/core/ui.js` + `ui-panel.js` + `ui-hooks.js` | Bouton "Plugins" + panneau de gestion injecté dans BAND |
+| `src/core/themes.js` | `BTTThemes` : 10 thèmes d'app intégrés (variables CSS), import/export de thèmes JSON |
+| `src/core/styles.js` | `BTTStyles` : CSS personnalisé appliqué à band.us et persisté |
+| `src/core/commands.js` | Commandes slash intégrées (`/help`, `/plugins`, `/settings`, `/btdbg`) |
+| `src/core/ui.js` + `ui-panel.js` + `ui-hooks.js` | Bouton "Tamper" + panneau de gestion injecté dans BAND |
+| `src/core/ui-settings.js` | Page Paramètres complète (Général, Plugins, Thèmes, CSS, À propos) |
 | `src/petpet-hand.js` | 10 frames de main d'origine (aDu/pet-pet-gif) en base64 (généré) |
 | `src/vendor/gifenc.js` | Encodeur GIF **embarqué** (gifenc 1.0.3, MIT) — aucun CDN ni worker, compatible CSP de band.us |
 | `src/petpet-gif.js` | Générateur GIF : algorithme **exact** d'aDu/pet-pet-gif (canvas + gifenc) |
@@ -41,7 +45,8 @@ Une fois sur band.us, un bouton **Tamper** (« Tamper ⬤ » avec un point viole
 
 Cliquez dessus pour ouvrir le panneau qui affiche :
 - les plugins chargés avec Activer / Désactiver / Supprimer,
-- un champ pour ajouter un plugin par **URL JS** (vous pouvez donc ajouter vos propres plugins sans recompiler).
+- un champ pour ajouter un plugin par **URL JS** (vous pouvez donc ajouter vos propres plugins sans recompiler),
+- un bouton **⚙** qui ouvre la **page Paramètres** (voir ci-dessous).
 
 ### Commande par défaut : `/pat`
 
@@ -72,16 +77,45 @@ Si l'avatar est injoignable (CORS, réseau…), le plugin renvoie une **image st
 |----------|-------|
 | `/help` | Affiche la liste des commandes (toast local, rien n'est envoyé au chat) |
 | `/plugins` | Ouvre/ferme le panneau Plugins |
+| `/settings` | Ouvre la **page Paramètres** (thèmes, CSS personnalisé, plugins) |
 | `/btdbg` | Diagnostics : champ de saisie, bouton d'envoi, type de conversation, commandes chargées |
 
 Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic pour fermer). Au chargement, un toast « ✓ Band Tamper chargé » confirme que le script tourne. L'interception se fait au niveau global (`document`, phase de capture) : elle survit aux changements de DOM du SPA et fonctionne avec les champs `contenteditable` de BAND.
 
 ## 🛠 Dépannage (si ça ne répond pas)
 
-1. **Le script tourne ?** Au chargement de band.us, vous devez voir le toast « ✓ Band Tamper v1.1.0 chargé ». Sans toast → réinstallez `band-tamper.user.js` (v1.1.0+) dans Tampermonkey (Vérifier les mises à jour) puis rechargez la page en dur (Ctrl+Shift+R).
+1. **Le script tourne ?** Au chargement de band.us, vous devez voir le toast « ✓ Band Tamper v1.5.0 chargé ». Sans toast → réinstallez `band-tamper.user.js` (v1.5.0+) dans Tampermonkey (Vérifier les mises à jour) puis rechargez la page en dur (Ctrl+Shift+R).
 2. **Testez `/help` puis Entrée** : un toast « … exécution de /help » puis la liste des commandes doit apparaître. Sans rien → F12 → onglet Console : cherchez une erreur et le préfixe `[BandTamper]`.
 3. **`/btdbg`** affiche ce que voit l'adaptateur (champ de saisie trouvé ? bouton d'envoi ? type de conversation ?). Si « Champ de saisie : INTROUVABLE » ou « Bouton envoyer : introuvable », le DOM a changé → adaptez `SELECTORS` / `getChatInput()` dans `src/core/adapter.js`, puis `node build.js` et réinstallez le script.
 4. Seul un texte commençant par `/` suivi d'**Entrée** est intercepté ; les champs de recherche et ceux du panneau Plugins sont ignorés.
+
+## ⚙ Page Paramètres (v1.5.0)
+
+Ouvrez-la avec **`/settings`** ou le bouton **⚙** du panneau Tamper. Elle contient 5 onglets :
+
+- **Général** — toast de démarrage (on/off), durée des toasts (3/5/8/12 s), **export/import de la configuration complète en JSON** (plugins + thèmes + CSS + options, idéal pour changer de navigateur) et bouton « Tout réinitialiser ».
+- **Plugins** — la liste des plugins avec badges *actif/inactif* et *source* (Intégré / URL / Fichier), plus l'ajout de plugins **par URL** ou **par fichier `.js` importé** (le code est mémorisé dans `BTTStore` et **rechargé automatiquement au démarrage** suivant).
+- **Thèmes** — galerie de **10 thèmes intégrés** (Violet par défaut, Minuit, Dracula, Nord, Catppuccin Mocha, Monokai, Coucher de soleil, Océan, Forêt, Clair) avec aperçu de couleurs, application en un clic (variables CSS `--btt-*` sur la page + restyle du panneau), et **import de thèmes par URL ou fichier `.json`** + export JSON de n'importe quel thème.
+- **CSS personnalisé** — éditeur de CSS appliqué **en direct** à band.us (élément `<style id="bt-custom-css">`), avec aperçu non persistant, enregistrement et réinitialisation. Le CSS survit aux rechargements.
+- **À propos** — version, statistiques (plugins/commandes/thèmes), crédits et licence.
+
+### Format des thèmes (import JSON)
+
+```json
+{
+  "name": "Mon thème",
+  "author": "moi",
+  "version": "1.0.0",
+  "colors": {
+    "accent": "#ff7ac6", "accentHover": "#f45fb2",
+    "bg": "#2b1d33", "surface": "#241729", "surface2": "#3a2744",
+    "text": "#ffe9f6", "muted": "#c7a3bd", "border": "#4a3357"
+  },
+  "css": "/* optionnel : CSS appliqué à band.us avec ce thème */"
+}
+```
+
+Toutes les couleurs sont **optionnelles** (les manquantes prennent le défaut violet) ; format `#rgb` ou `#rrggbb`. Le champ `css` permet de pousser le thème plus loin (overlays band.us). Note : l'import par URL dépend de la CSP de band.us (`connect-src`) — si le domaine distant est bloqué, utilisez l'import par fichier.
 
 ## Ajouter ses propres plugins
 
@@ -100,7 +134,7 @@ window.PluginMonPlugin = {
 };
 ```
 
-Puis dans le panneau Plugins de BAND, collez l'URL de ce fichier et cliquez sur **Ajouter**.
+Puis, dans la page **Paramètres → Plugins** (ou le panneau rapide), collez l'URL de ce fichier et cliquez sur **Ajouter** — ou cliquez sur **Importer un fichier .js** pour charger un plugin depuis un fichier local (le code est mémorisé et rechargé au prochain démarrage).
 
 Le contexte `ctx` donne accès à :
 - `ctx.api` → BandAdapter (sendText, sendFile, getCurrentUser, getConversationType, getCurrentChannelId, getUserAvatar, getUserByMention, onNewMessage)
@@ -137,7 +171,7 @@ node build.js   # régénère band-tamper.user.js
 node test.js    # exécute le userscript comme dans un navigateur et simule /help, /xyz, /pat
 ```
 
-Le test exécute le userscript **en contexte navigateur** (scope local, sans module CommonJS — c'est ce qui a fait échouer la v1.0.0) puis simule des frappes Entrée sur le hook clavier global. Il vérifie 26 contrôles : exposition des classes/helpers (`BandAdapter`, `PluginManager`, `BandUI`, `registerBuiltInCommands`, `PluginPetPet`, `__BTT_PetGif`, `__BTT_toast`), enregistrement du hook `keydown` global, injection de la UI, exécution réelle de `/help` (toast avec la liste), détection d'une commande inconnue, succès de `/pat` (toast « GIF pet-pet envoyé » ou fallback statique annoncé), génération de l'image par le blob pet-pet, embarquement des 10 frames de main aDu (base64), de l'algorithme 10 frames / 10 mains, de l'encodeur gifenc vendorisé et de l'absence de dépendance CDN gif.js, et insertion du bouton **Tamper** juste après le lien Feed du header BAND simulé.
+Le test exécute le userscript **en contexte navigateur** (scope local, sans module CommonJS — c'est ce qui a fait échouer la v1.0.0) puis simule des frappes Entrée sur le hook clavier global. Il vérifie 39 contrôles : exposition des classes/helpers (`BandAdapter`, `PluginManager`, `BandUI`, `registerBuiltInCommands`, `PluginPetPet`, `__BTT_PetGif`, `__BTT_toast`, `BTTStore`, `BTTThemes`, `BTTStyles`), enregistrement du hook `keydown` global, injection de la UI, exécution réelle de `/help` (toast avec la liste), détection d'une commande inconnue, succès de `/pat` (toast « GIF pet-pet envoyé » ou fallback statique annoncé), génération de l'image par le blob pet-pet, embarquement des 10 frames de main aDu (base64), de l'algorithme 10 frames / 10 mains, de l'encodeur gifenc vendorisé et de l'absence de dépendance CDN gif.js, puis la **page Paramètres** : injection de `bt-settings`, commande `/settings`, application d'un thème (variables CSS `--btt-*` + persistance), injection/persistance du CSS personnalisé, import d'un plugin par code fichier + persistance `btt:plugins`, validation d'import de thème JSON, et enfin l'insertion du bouton **Tamper** juste après le lien Feed du header BAND simulé.
 
 ## Licence
 

@@ -29,15 +29,31 @@ class PluginManager {
     this.defaultPlugins.push(url);
   }
 
-  async loadPlugin(url, { enabled = true } = {}) {
+  /**
+   * Charge un plugin.
+   * @param {string} url  URL http(s) OU identifiant fichier (ex: "file:mon-plugin.js")
+   * @param {object} opts { enabled, code, source } - code: JS brut (import fichier), source: 'url'|'file'
+   */
+  async loadPlugin(url, { enabled = true, code = null, source = null } = {}) {
     if (this.plugins.has(url)) {
       this.adapter.log('Plugin déjà chargé :', url);
       return this.plugins.get(url);
     }
     this.adapter.log('Chargement du plugin :', url);
+    if (!code) {
+      if (!/^https?:\/\//.test(url)) throw new Error('URL invalide : ' + url);
+      try {
+        const resp = await fetch(url, { cache: 'no-cache' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        code = await resp.text();
+      } catch (e) {
+        this.adapter.log('Échec chargement plugin', url, e);
+        throw e;
+      }
+    }
     let spec;
     try {
-      spec = await this._fetchModule(url);
+      spec = this._evalModule(code);
     } catch (e) {
       this.adapter.log('Échec chargement plugin', url, e);
       throw e;
@@ -64,8 +80,14 @@ class PluginManager {
       }
     }
 
-    this.plugins.set(url, { spec, url, enabled, unload });
-    if (this.ui) this.ui.renderPluginList();
+    this.plugins.set(url, {
+      spec, url,
+      source: source || 'url',
+      code: source === 'file' ? code : null, // mémorise le code pour la persistance des imports fichier
+      enabled, unload
+    });
+    this._persist();
+    this._refreshLists();
     return spec;
   }
 
@@ -80,13 +102,15 @@ class PluginManager {
       if (cmd.pluginId === url) this.commands.delete(name);
     }
     this.plugins.delete(url);
-    if (this.ui) this.ui.renderPluginList();
+    this._persist();
+    this._refreshLists();
   }
 
   setEnabled(url, enabled) {
     const entry = this.plugins.get(url);
     if (entry) entry.enabled = enabled;
-    if (this.ui) this.ui.renderPluginList();
+    this._persist();
+    this._refreshLists();
   }
 
   isEnabled(url) {
@@ -141,12 +165,55 @@ class PluginManager {
     return this.commands.has(name.toLowerCase());
   }
 
-  /* ---------- Chargement d'un module JS distant (userscript-safe) ---------- */
-  async _fetchModule(url) {
-    const resp = await fetch(url, { cache: 'no-cache' });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const code = await resp.text();
-    // On évalue dans le contexte global de la page (userscript)
+  /* ---------- Persistance des plugins (BTTStore) ---------- */
+  _refreshLists() {
+    if (!this.ui) return;
+    try { this.ui.renderPluginList(); } catch (e) {}
+    if (this.ui.renderSettingsPlugins) {
+      try { this.ui.renderSettingsPlugins(); } catch (e) {}
+    }
+  }
+
+  _persist() {
+    if (!window.BTTStore) return;
+    try {
+      const list = [];
+      for (const entry of this.plugins.values()) {
+        if (entry.builtin) continue; // les plugins intégrés ne sont pas persistés
+        list.push({
+          id: entry.url,
+          source: entry.source || 'url',
+          code: entry.code || null,
+          enabled: entry.enabled !== false
+        });
+      }
+      window.BTTStore.set('plugins', list);
+    } catch (e) { this.adapter.log('Persistance plugins KO :', e); }
+  }
+
+  async loadPersisted() {
+    if (!window.BTTStore) return;
+    let list = [];
+    try { list = window.BTTStore.get('plugins', []); } catch (e) { return; }
+    if (!Array.isArray(list)) return;
+    for (const item of list) {
+      if (!item || !item.id) continue;
+      try {
+        if (item.source === 'file') {
+          if (!item.code) continue;
+          await this.loadPlugin(item.id, { code: item.code, source: 'file', enabled: item.enabled !== false });
+        } else {
+          await this.loadPlugin(item.id, { enabled: item.enabled !== false });
+        }
+        this.adapter.log('Plugin persisté chargé :', item.id);
+      } catch (e) {
+        this.adapter.log('Plugin persisté en échec :', item.id, e);
+      }
+    }
+  }
+
+  /* ---------- Évaluation d'un module JS (userscript-safe) ---------- */
+  _evalModule(code) {
     const fn = new Function('exports', 'module', 'require', 'console', code);
     const exports = {};
     const module = { exports };

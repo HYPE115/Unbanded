@@ -105,7 +105,14 @@ window.__BTT_toast = function (text, type) {
     t.textContent = String(text == null ? '' : text);
     t.onclick = function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); };
     wrap.appendChild(t);
-    setTimeout(function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); }, 5000);
+    var duration = 5000;
+    try {
+      if (window.BTTStore) {
+        var secs = Number(window.BTTStore.get('toastDuration', 5));
+        if (secs > 0) duration = secs * 1000;
+      }
+    } catch (eStore) {}
+    setTimeout(function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); }, duration);
   } catch (e) {
     try { console.log('[BandTamper]', text); } catch (e2) {}
   }
