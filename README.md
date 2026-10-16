@@ -23,7 +23,6 @@ Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interfac
 | `build.js` | Concatène les sources en `band-tamper.user.js` |
 | `tools/embed-hand.js` | Régénère `src/petpet-hand.js` (télécharge img/pet0..pet9.gif du dépôt aDu) |
 | `tools/vendor-gifenc.js` | Régénère `src/vendor/gifenc.js` (vendorise gifenc depuis jsdelivr) |
-| `test.js` | Test de non-régression (DOM mocké, `node test.js`) |
 | `manifest.json` | Méta-du projet |
 
 ## Installation
@@ -163,15 +162,6 @@ node build.js
 ```
 
 Nécessite Node.js. Le résultat est `band-tamper.user.js`.
-
-## Test (non-régression)
-
-```bash
-node build.js   # régénère band-tamper.user.js
-node test.js    # exécute le userscript comme dans un navigateur et simule /help, /xyz, /pat
-```
-
-Le test exécute le userscript **en contexte navigateur** (scope local, sans module CommonJS — c'est ce qui a fait échouer la v1.0.0) puis simule des frappes Entrée sur le hook clavier global. Il vérifie 39 contrôles : exposition des classes/helpers (`BandAdapter`, `PluginManager`, `BandUI`, `registerBuiltInCommands`, `PluginPetPet`, `__BTT_PetGif`, `__BTT_toast`, `BTTStore`, `BTTThemes`, `BTTStyles`), enregistrement du hook `keydown` global, injection de la UI, exécution réelle de `/help` (toast avec la liste), détection d'une commande inconnue, succès de `/pat` (toast « GIF pet-pet envoyé » ou fallback statique annoncé), génération de l'image par le blob pet-pet, embarquement des 10 frames de main aDu (base64), de l'algorithme 10 frames / 10 mains, de l'encodeur gifenc vendorisé et de l'absence de dépendance CDN gif.js, puis la **page Paramètres** : injection de `bt-settings`, commande `/settings`, application d'un thème (variables CSS `--btt-*` + persistance), injection/persistance du CSS personnalisé, import d'un plugin par code fichier + persistance `btt:plugins`, validation d'import de thème JSON, et enfin l'insertion du bouton **Tamper** juste après le lien Feed du header BAND simulé.
 
 ## Licence
 

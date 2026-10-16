@@ -1,5 +1,7 @@
 node_modules/
 *.log
+*.tmp
+.tmp/
 Thumbs.db
 desktop.ini
 .DS_Store
