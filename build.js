@@ -23,10 +23,10 @@ const order = [
 ];
 
 const header = `// ==UserScript==
-// @name         Band Tamper
+// @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.5.1
-// @description  Chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
+// @version      1.6.0
+// @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton flottant ⚙, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @match        *://band.us/*
 // @match        *://*.band.us/*
@@ -47,5 +47,5 @@ for (var i = 0; i < order.length; i++) {
 }
 out += `})();\n`;
 
-fs.writeFileSync(path.join(root, 'band-tamper.user.js'), out);
-console.log('Écrit : band-tamper.user.js (' + order.length + ' fichiers concaténés)');
+fs.writeFileSync(path.join(root, 'unbanded.user.js'), out);
+console.log('Écrit : unbanded.user.js (' + order.length + ' fichiers concaténés)');

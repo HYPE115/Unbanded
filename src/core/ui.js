@@ -1,5 +1,5 @@
 /**
- * BandUI - Bouton "Tamper" + panneau de gestion injectés dans BAND.
+ * BandUI - Bouton "Unbanded" + panneau de gestion injectés dans BAND.
  */
 class BandUI {
   constructor(pm, adapter) {
@@ -11,7 +11,8 @@ class BandUI {
   }
 
   inject() {
-    window.BandTamperUI = this;
+    window.UnbandedUI = this;
+    window.BandTamperUI = this; // alias rétro-compat
     this._hookCommandInput();
     if (!document.body) return;
     this._injectSettings();
@@ -43,7 +44,7 @@ class BandUI {
     const b = document.createElement('div');
     this.banner = b;
     b.style.cssText = 'position:fixed;top:10px;left:10px;z-index:99999;background:#2f3e4e;color:#fff;padding:10px 14px;border-radius:8px;font-family:sans-serif;font-size:13px;max-width:360px;box-shadow:0 4px 12px rgba(0,0,0,.4);';
-    b.innerHTML = '<b>Band Tamper (mode démo)</b><br>Tu n\'es pas sur band.us. Les actions réelles ne fonctionnent pas hors de BAND.<br><button id="bt-open-plugins" style="margin-top:8px;padding:6px 10px;cursor:pointer">⚙ Ouvrir Tamper</button>';
+    b.innerHTML = '<b>Unbanded (mode démo)</b><br>Tu n\'es pas sur band.us. Les actions réelles ne fonctionnent pas hors de BAND.<br><button id="bt-open-plugins" style="margin-top:8px;padding:6px 10px;cursor:pointer">⚙ Ouvrir Unbanded</button>';
     document.body.appendChild(b);
     const openBtn = document.getElementById('bt-open-plugins');
     if (openBtn) openBtn.onclick = () => this.toggle();
@@ -57,13 +58,13 @@ class BandUI {
   }
 
   _injectButton() {
-    // Bouton "Tamper" : sur le vrai BAND (#header .headerWidgetArea ul.widgetList),
+    // Bouton "Unbanded" : sur le vrai BAND (#header .headerWidgetArea ul.widgetList),
     // il est inséré juste APRÈS le lien "Feed" de la barre du haut.
     this.btn = document.createElement('button');
     this.btn.id = 'bt-band-plugins';
     this.btn.type = 'button';
-    this.btn.textContent = 'Tamper';
-    this.btn.title = 'Band Tamper — paramètres des plugins (/help, /plugins)';
+    this.btn.textContent = 'Unbanded';
+    this.btn.title = 'Unbanded — paramètres des plugins (/help, /plugins, /settings)';
     this.btn.setAttribute('data-bt-root', '1');
     this.btn.style.cssText = 'background:none;border:none;padding:0 4px;cursor:pointer;font:inherit;font-weight:bold;color:inherit;display:inline-flex;align-items:center;gap:4px;';
     const dot = document.createElement('span');
@@ -123,7 +124,7 @@ class BandUI {
     fab.id = 'bt-fab';
     fab.type = 'button';
     fab.textContent = '⚙';
-    fab.title = 'Band Tamper — afficher/masquer le panneau';
+    fab.title = 'Unbanded — afficher/masquer le panneau';
     fab.setAttribute('data-bt-root', '1');
     fab.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:10001;width:46px;height:46px;' +
       'border:none;border-radius:50%;cursor:pointer;font-size:21px;line-height:1;color:#fff;' +
@@ -155,7 +156,7 @@ class BandUI {
     try {
       this.fab.textContent = open ? '✕' : '⚙';
       this.fab.style.opacity = open ? '1' : '0.8';
-      this.fab.title = open ? 'Band Tamper — masquer le panneau' : 'Band Tamper — afficher le panneau';
+      this.fab.title = open ? 'Unbanded — masquer le panneau' : 'Unbanded — afficher le panneau';
     } catch (e) {}
   }
 }

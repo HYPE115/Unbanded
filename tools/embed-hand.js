@@ -15,7 +15,7 @@ function fetchBuffer(url, redirects) {
   redirects = redirects || 0;
   return new Promise(function (resolve, reject) {
     if (redirects > 5) return reject(new Error('trop de redirections'));
-    https.get(url, { headers: { 'User-Agent': 'band-tamper-embed' } }, function (res) {
+    https.get(url, { headers: { 'User-Agent': 'unbanded-embed' } }, function (res) {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         res.resume();
         return resolve(fetchBuffer(res.headers.location, redirects + 1));

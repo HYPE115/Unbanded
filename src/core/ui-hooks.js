@@ -72,7 +72,7 @@ BandUI.prototype._hookCommandInput = function () {
       const handled = await self.pm.runCommand(text, info);
       if (!handled) window.__BTT_toast('Commande inconnue : ' + name + ' (tape /help)', 'error');
     } catch (err) {
-      console.error('[BandTamper] Erreur commande :', err);
+      console.error('[Unbanded] Erreur commande :', err);
       window.__BTT_toast('Erreur : ' + ((err && err.message) ? err.message : String(err)), 'error');
     }
   }, true);
@@ -86,7 +86,7 @@ function escapeHtml(s) {
 window.__BTT_toast = function (text, type) {
   try {
     if (typeof document === 'undefined' || !document.body) {
-      console.log('[BandTamper]', text);
+      console.log('[Unbanded]', text);
       return;
     }
     let wrap = document.getElementById('bt-toasts');
@@ -114,7 +114,7 @@ window.__BTT_toast = function (text, type) {
     } catch (eStore) {}
     setTimeout(function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); }, duration);
   } catch (e) {
-    try { console.log('[BandTamper]', text); } catch (e2) {}
+    try { console.log('[Unbanded]', text); } catch (e2) {}
   }
 };
 

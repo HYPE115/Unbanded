@@ -1,6 +1,6 @@
 /**
  * ui-settings.js - Page Paramètres complète (Général, Plugins, Thèmes, CSS, À propos).
- * Modale plein écran, ouvrable via /settings, le bouton ⚙ du panneau, ou BandTamperUI.openSettings().
+ * Modale plein écran, ouvrable via /settings, le bouton ⚙ du panneau, ou UnbandedUI.openSettings().
  */
 BandUI.prototype._injectSettings = function () {
   if (!document.body) return;
@@ -21,11 +21,11 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.5.1';
+  var v = '1.6.0';
   return '' +
-  '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Band Tamper">' +
+  '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
-      '<div class="bt-set-brand"><span class="bt-set-dot"></span> Band Tamper <small>v' + v + '</small></div>' +
+      '<div class="bt-set-brand"><span class="bt-set-dot"></span> Unbanded <small>v' + v + '</small></div>' +
       '<nav>' +
         '<button type="button" class="bt-set-tab" data-tab="general">⚙ Général</button>' +
         '<button type="button" class="bt-set-tab" data-tab="plugins">🧩 Plugins</button>' +
@@ -101,7 +101,7 @@ BandUI.prototype._settingsMarkup = function () {
 
         '<section class="bt-page" data-page="about" hidden>' +
           '<div class="bt-set-card">' +
-            '<h3>Band Tamper v' + v + '</h3>' +
+            '<h3>Unbanded v' + v + '</h3>' +
             '<div class="bt-set-hint">Chargeur de plugins type Vencord pour BAND (band.us). Commandes : /pat · /help · /plugins · /settings · /btdbg.<br>' +
             'GIF pet-pet : algorithme <a href="https://github.com/aDu/pet-pet-gif" target="_blank" rel="noopener" style="color:var(--btt-accent)">aDu/pet-pet-gif</a> + encodeur <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener" style="color:var(--btt-accent)">gifenc</a> embarqué (aucun CDN, compatible CSP band.us).<br>' +
             'Licence MIT · <a href="https://github.com/HYPE115/band_tamper" target="_blank" rel="noopener" style="color:var(--btt-accent)">github.com/HYPE115/band_tamper</a></div>' +
@@ -540,8 +540,8 @@ BandUI.prototype._downloadText = function (text, filename, mime) {
 BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
-      app: 'band-tamper',
-      version: '1.5.1',
+      app: 'unbanded',
+      version: '1.6.0',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -552,7 +552,7 @@ BandUI.prototype._exportConfig = function () {
       themes: window.BTTThemes.imported(),
       plugins: window.BTTStore.get('plugins', [])
     };
-    this._downloadText(JSON.stringify(cfg, null, 2), 'band-tamper-config.json', 'application/json');
+    this._downloadText(JSON.stringify(cfg, null, 2), 'unbanded-config.json', 'application/json');
     (window.__BTT_toast || function () {})('Configuration exportée', 'ok');
   } catch (e) {
     (window.__BTT_toast || function () {})('Export impossible : ' + e.message, 'error');
@@ -565,7 +565,7 @@ BandUI.prototype._importConfig = function () {
   this._pickFile('application/json,.json', function (raw) {
     try {
       var cfg = JSON.parse(raw);
-      if (!cfg || cfg.app !== 'band-tamper') throw new Error('ce n\'est pas une config Band Tamper');
+      if (!cfg || (cfg.app !== 'unbanded' && cfg.app !== 'band-tamper')) throw new Error('ce n\'est pas une config Unbanded');
       if (cfg.options) {
         window.BTTStore.set('startupToast', cfg.options.startupToast !== false);
         window.BTTStore.set('toastDuration', Math.max(1, parseInt(cfg.options.toastDuration, 10) || 5));

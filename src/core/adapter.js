@@ -11,7 +11,7 @@ class BandAdapter {
   }
 
   isDemo() { return this.demo; }
-  log(...args) { try { console.log('[BandTamper]', ...args); } catch (e) {} }
+  log(...args) { try { console.log('[Unbanded]', ...args); } catch (e) {} }
 
   get SELECTORS() {
     return {

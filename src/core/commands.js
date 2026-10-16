@@ -7,7 +7,7 @@ function registerBuiltInCommands(pm) {
   });
 
   pm.registerCommand('help', "Affiche la liste des commandes", async (args, info) => {
-    const lines = ['=== Commandes Band Tamper ==='];
+    const lines = ['=== Commandes Unbanded ==='];
     for (const [name, cmd] of pm.commands) {
       lines.push('/' + name + ' — ' + (cmd.desc || ''));
     }
@@ -17,28 +17,30 @@ function registerBuiltInCommands(pm) {
   });
 
   pm.registerCommand('plugins', "Ouvre/ferme le gestionnaire de plugins", async (args, info) => {
-    if (window.BandTamperUI) {
-      window.BandTamperUI.toggle();
-      if (window.__BTT_toast) window.__BTT_toast('Panneau Plugins ' + (window.BandTamperUI.visible ? 'ouvert' : 'fermé'));
+    const ui = window.UnbandedUI || window.BandTamperUI;
+    if (ui) {
+      ui.toggle();
+      if (window.__BTT_toast) window.__BTT_toast('Panneau Plugins ' + (ui.visible ? 'ouvert' : 'fermé'));
     } else if (window.__BTT_toast) {
       window.__BTT_toast('Panneau indisponible', 'error');
     }
   });
 
   pm.registerCommand('settings', 'Ouvre la page Paramètres (thèmes, CSS personnalisé, plugins)', async (args, info) => {
-    if (window.BandTamperUI && window.BandTamperUI.openSettings) {
-      window.BandTamperUI.openSettings();
+    const ui = window.UnbandedUI || window.BandTamperUI;
+    if (ui && ui.openSettings) {
+      ui.openSettings();
     } else if (window.__BTT_toast) {
       window.__BTT_toast('Page Paramètres indisponible', 'error');
     }
   });
 
-  pm.registerCommand('btdbg', "Diagnostics Band Tamper (sélecteurs, hook, etc.)", async (args, info) => {
+  pm.registerCommand('btdbg', "Diagnostics Unbanded (sélecteurs, hook, etc.)", async (args, info) => {
     const a = (info && info.api) || pm.adapter;
     const input = a.getChatInput ? a.getChatInput() : null;
     const fileInputs = a.$$('input[type="file"]').length;
     const lines = [
-      '=== btdbg Band Tamper ===',
+      '=== btdbg Unbanded ===',
       'Host : ' + a.host + ' | démo : ' + a.isDemo(),
       'Type conversation : ' + a.getConversationType(),
       'Canal : ' + a.getCurrentChannelId(),
@@ -47,7 +49,7 @@ function registerBuiltInCommands(pm) {
       'input[type=file] : ' + fileInputs,
       'Commandes : ' + Array.from(pm.commands.keys()).join(', ')
     ];
-    console.log('[BandTamper][btdbg]\n' + lines.join('\n'));
+    console.log('[Unbanded][btdbg]\n' + lines.join('\n'));
     if (window.__BTT_toast) window.__BTT_toast(lines.join('\n'));
   });
 }

@@ -6,7 +6,7 @@ BandUI.prototype._injectPanel = function () {
   this.panel.style.cssText = 'position:fixed;top:60px;right:20px;width:340px;background:#232f3e;color:#fff;border-radius:10px;padding:14px;font-family:sans-serif;font-size:13px;z-index:99999;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5);flex-direction:column;gap:10px;';
   this.panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-weight:bold;font-size:15px">Tamper · Plugins</div>
+      <div style="font-weight:bold;font-size:15px">Unbanded · Plugins</div>
       <div style="display:flex;gap:6px;">
         <button id="bt-open-settings" title="Paramètres (thèmes, CSS, plugins)" style="background:transparent;border:none;color:#fff;cursor:pointer">⚙</button>
         <button id="bt-close-panel" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>

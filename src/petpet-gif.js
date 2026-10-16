@@ -136,7 +136,7 @@
       return new Blob([gif.bytes()], { type: 'image/gif' });
     } catch (e) {
       if (window.__BTT_LOG) {
-        console.warn('[BandTamper] Encodage GIF impossible, PNG statique :', e && e.message);
+        console.warn('[Unbanded] Encodage GIF impossible, PNG statique :', e && e.message);
       }
       return staticFallback(img, resolution, backgroundColor);
     }

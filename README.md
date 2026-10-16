@@ -1,12 +1,14 @@
-# Band Tamper — "Vencord-like" pour BAND (band.us)
+# Unbanded — "Vencord-like" pour BAND (band.us)
 
-Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interface pour ajouter/activer/désactiver des plugins, et un **plugin par défaut "pet-pet"** (inspiré de [aDu/pet-pet-gif](https://github.com/aDu/pet-pet-gif)) qui génère un GIF et l'envoie avec la commande `/pat`.
+> Anciennement **Band Tamper** — renommé **Unbanded** en v1.6.0 (les données et plugins persistés restent compatibles).
+
+Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interface pour ajouter/activer/désactiver des plugins, une **page Paramètres** (thèmes, CSS personnalisé, import par fichier/URL), un **bouton flottant ⚙** pour basculer la GUI, et un **plugin par défaut "pet-pet"** (inspiré de [aDu/pet-pet-gif](https://github.com/aDu/pet-pet-gif)) qui génère un GIF et l'envoie avec la commande `/pat`.
 
 ## Fichiers du projet
 
 | Fichier | Rôle |
 |---------|------|
-| `band-tamper.user.js` | Userscript final à installer (généré par `build.js`) |
+| `unbanded.user.js` | Userscript final à installer (généré par `build.js`) |
 | `src/core/adapter.js` | Pont avec le client BAND (sélecteurs DOM, envoi de message/fichier) |
 | `src/core/storage.js` | `BTTStore` : persistance locale (localStorage, repli mémoire) — plugins, thèmes, CSS, options |
 | `src/core/plugin-manager.js` | Chargeur de plugins (fetch + éval, code brut pour import fichier, activer/désactiver, persistance) |
@@ -14,13 +16,13 @@ Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interfac
 | `src/core/themes.js` | `BTTThemes` : 10 thèmes d'app intégrés (variables CSS), import/export de thèmes JSON |
 | `src/core/styles.js` | `BTTStyles` : CSS personnalisé appliqué à band.us et persisté |
 | `src/core/commands.js` | Commandes slash intégrées (`/help`, `/plugins`, `/settings`, `/btdbg`) |
-| `src/core/ui.js` + `ui-panel.js` + `ui-hooks.js` | Bouton "Tamper" + panneau de gestion injecté dans BAND |
+| `src/core/ui.js` + `ui-panel.js` + `ui-hooks.js` | Bouton "Unbanded" + panneau de gestion injecté dans BAND |
 | `src/core/ui-settings.js` | Page Paramètres complète (Général, Plugins, Thèmes, CSS, À propos) |
 | `src/petpet-hand.js` | 10 frames de main d'origine (aDu/pet-pet-gif) en base64 (généré) |
 | `src/vendor/gifenc.js` | Encodeur GIF **embarqué** (gifenc 1.0.3, MIT) — aucun CDN ni worker, compatible CSP de band.us |
 | `src/petpet-gif.js` | Générateur GIF : algorithme **exact** d'aDu/pet-pet-gif (canvas + gifenc) |
 | `src/plugins/pet-pet.js` | Plugin par défaut : commande `/pat` |
-| `build.js` | Concatène les sources en `band-tamper.user.js` |
+| `build.js` | Concatène les sources en `unbanded.user.js` |
 | `tools/embed-hand.js` | Régénère `src/petpet-hand.js` (télécharge img/pet0..pet9.gif du dépôt aDu) |
 | `tools/vendor-gifenc.js` | Régénère `src/vendor/gifenc.js` (vendorise gifenc depuis jsdelivr) |
 | `manifest.json` | Méta-du projet |
@@ -32,7 +34,7 @@ Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interfac
 - **Violentmonkey** ou **Greasemonkey**.
 
 ### 2. Installer le script
-Ouvrez `band-tamper.user.js` (à la racine) et installez-le :
+Ouvrez `unbanded.user.js` (à la racine) et installez-le :
 - soit en glissant le fichier dans l'extension Tampermonkey,
 - soit en copiant tout le contenu dans un nouveau script Tampermonkey.
 
@@ -40,9 +42,9 @@ Le script s'active sur `*://band.us/*` et `*://*.band.us/*`.
 
 ## Utilisation
 
-Une fois sur band.us, un bouton **Tamper** (« Tamper ⬤ » avec un point violet) apparaît dans la **barre du haut**, juste à droite du lien **Feed** (`#header .headerWidgetArea ul.widgetList`). Si le header n'est pas encore monté ou que le DOM change, il bascule en bouton flottant en bas à droite (au-dessus du ⚙), et il est ré-injecté automatiquement toutes les 2,5 s (navigation SPA).
+Une fois sur band.us, un bouton **Unbanded** (« Unbanded ⬤ » avec un point violet) apparaît dans la **barre du haut**, juste à droite du lien **Feed** (`#header .headerWidgetArea ul.widgetList`). Si le header n'est pas encore monté ou que le DOM change, il bascule en bouton flottant en bas à droite (au-dessus du ⚙), et il est ré-injecté automatiquement toutes les 2,5 s (navigation SPA).
 
-Un **bouton flottant ⚙** (cercle violet, toujours visible en **bas à droite** de la page) permet de **basculer la GUI** à tout moment : un clic ouvre/ferme le panneau Tamper, et il ferme la page Paramètres si elle est ouverte. L'icône passe de ⚙ à ✕ quand le panneau est affiché, et sa couleur suit le **thème actif** (variable CSS `--btt-accent`).
+Un **bouton flottant ⚙** (cercle violet, toujours visible en **bas à droite** de la page) permet de **basculer la GUI** à tout moment : un clic ouvre/ferme le panneau Unbanded, et il ferme la page Paramètres si elle est ouverte. L'icône passe de ⚙ à ✕ quand le panneau est affiché, et sa couleur suit le **thème actif** (variable CSS `--btt-accent`).
 
 Cliquez dessus pour ouvrir le panneau qui affiche :
 - les plugins chargés avec Activer / Désactiver / Supprimer,
@@ -85,8 +87,8 @@ Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic
 
 ## 🛠 Dépannage (si ça ne répond pas)
 
-1. **Le script tourne ?** Au chargement de band.us, vous devez voir le toast « ✓ Band Tamper v1.5.1 chargé ». Sans toast → réinstallez `band-tamper.user.js` (v1.5.1+) dans Tampermonkey (Vérifier les mises à jour) puis rechargez la page en dur (Ctrl+Shift+R). Un cercle **⚙ violet en bas à droite** confirme aussi que le script tourne.
-2. **Testez `/help` puis Entrée** : un toast « … exécution de /help » puis la liste des commandes doit apparaître. Sans rien → F12 → onglet Console : cherchez une erreur et le préfixe `[BandTamper]`.
+1. **Le script tourne ?** Au chargement de band.us, vous devez voir le toast « ✓ Unbanded v1.6.0 chargé ». Sans toast → réinstallez `unbanded.user.js` (v1.6.0+) dans Tampermonkey (Vérifier les mises à jour) puis rechargez la page en dur (Ctrl+Shift+R). Un cercle **⚙ violet en bas à droite** confirme aussi que le script tourne.
+2. **Testez `/help` puis Entrée** : un toast « … exécution de /help » puis la liste des commandes doit apparaître. Sans rien → F12 → onglet Console : cherchez une erreur et le préfixe `[Unbanded]`.
 3. **`/btdbg`** affiche ce que voit l'adaptateur (champ de saisie trouvé ? bouton d'envoi ? type de conversation ?). Si « Champ de saisie : INTROUVABLE » ou « Bouton envoyer : introuvable », le DOM a changé → adaptez `SELECTORS` / `getChatInput()` dans `src/core/adapter.js`, puis `node build.js` et réinstallez le script.
 4. Seul un texte commençant par `/` suivi d'**Entrée** est intercepté ; les champs de recherche et ceux du panneau Plugins sont ignorés.
 
@@ -163,7 +165,7 @@ Si vous ouvrez le script hors de band.us, un bandeau "mode démo" s'affiche et v
 node build.js
 ```
 
-Nécessite Node.js. Le résultat est `band-tamper.user.js`.
+Nécessite Node.js. Le résultat est `unbanded.user.js`.
 
 ## Licence
 

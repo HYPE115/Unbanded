@@ -21,16 +21,16 @@
   var HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
   var BUILTIN = [
-    { id: 'default', name: 'Violet (par défaut)', author: 'Band Tamper', builtin: true, colors: {} },
-    { id: 'midnight', name: 'Minuit', author: 'Band Tamper', builtin: true, colors: { accent: '#3b82f6', accentHover: '#2563eb', bg: '#0b1220', surface: '#111a2e', surface2: '#16233c', text: '#e8eef7', muted: '#8ea3bf', border: '#1f2f4a' } },
-    { id: 'dracula', name: 'Dracula', author: 'Band Tamper', builtin: true, colors: { accent: '#bd93f9', accentHover: '#a77bf3', bg: '#282a36', surface: '#21222c', surface2: '#343746', text: '#f8f8f2', muted: '#9aa4c0', border: '#44475a' } },
-    { id: 'nord', name: 'Nord', author: 'Band Tamper', builtin: true, colors: { accent: '#88c0d0', accentHover: '#81a1c1', bg: '#2e3440', surface: '#3b4252', surface2: '#434c5e', text: '#eceff4', muted: '#9aa5b8', border: '#4c566a' } },
-    { id: 'catppuccin', name: 'Catppuccin Mocha', author: 'Band Tamper', builtin: true, colors: { accent: '#cba6f7', accentHover: '#b48ef9', bg: '#1e1e2e', surface: '#181825', surface2: '#313244', text: '#cdd6f4', muted: '#9399b2', border: '#45475a' } },
-    { id: 'monokai', name: 'Monokai', author: 'Band Tamper', builtin: true, colors: { accent: '#a6e22e', accentHover: '#8ec711', bg: '#272822', surface: '#1f201a', surface2: '#3e3d32', text: '#f8f8f2', muted: '#a6a28c', border: '#49483e' } },
-    { id: 'sunset', name: 'Coucher de soleil', author: 'Band Tamper', builtin: true, colors: { accent: '#ff7ac6', accentHover: '#f45fb2', bg: '#2b1d33', surface: '#241729', surface2: '#3a2744', text: '#ffe9f6', muted: '#c7a3bd', border: '#4a3357' } },
-    { id: 'ocean', name: 'Océan', author: 'Band Tamper', builtin: true, colors: { accent: '#22d3ee', accentHover: '#0fb5d4', bg: '#0f2027', surface: '#132833', surface2: '#1c3644', text: '#e6f6fa', muted: '#8fb3c0', border: '#254554' } },
-    { id: 'forest', name: 'Forêt', author: 'Band Tamper', builtin: true, colors: { accent: '#34d399', accentHover: '#10b981', bg: '#10231a', surface: '#0d1c15', surface2: '#173125', text: '#e9f7ef', muted: '#93b8a5', border: '#1f4030' } },
-    { id: 'light', name: 'Clair', author: 'Band Tamper', builtin: true, colors: { accent: '#5b5bd6', accentHover: '#4a4ac2', bg: '#f2f4f7', surface: '#ffffff', surface2: '#e8ebf0', text: '#1c2430', muted: '#5d6b7e', border: '#d4dae2' } }
+    { id: 'default', name: 'Violet (par défaut)', author: 'Unbanded', builtin: true, colors: {} },
+    { id: 'midnight', name: 'Minuit', author: 'Unbanded', builtin: true, colors: { accent: '#3b82f6', accentHover: '#2563eb', bg: '#0b1220', surface: '#111a2e', surface2: '#16233c', text: '#e8eef7', muted: '#8ea3bf', border: '#1f2f4a' } },
+    { id: 'dracula', name: 'Dracula', author: 'Unbanded', builtin: true, colors: { accent: '#bd93f9', accentHover: '#a77bf3', bg: '#282a36', surface: '#21222c', surface2: '#343746', text: '#f8f8f2', muted: '#9aa4c0', border: '#44475a' } },
+    { id: 'nord', name: 'Nord', author: 'Unbanded', builtin: true, colors: { accent: '#88c0d0', accentHover: '#81a1c1', bg: '#2e3440', surface: '#3b4252', surface2: '#434c5e', text: '#eceff4', muted: '#9aa5b8', border: '#4c566a' } },
+    { id: 'catppuccin', name: 'Catppuccin Mocha', author: 'Unbanded', builtin: true, colors: { accent: '#cba6f7', accentHover: '#b48ef9', bg: '#1e1e2e', surface: '#181825', surface2: '#313244', text: '#cdd6f4', muted: '#9399b2', border: '#45475a' } },
+    { id: 'monokai', name: 'Monokai', author: 'Unbanded', builtin: true, colors: { accent: '#a6e22e', accentHover: '#8ec711', bg: '#272822', surface: '#1f201a', surface2: '#3e3d32', text: '#f8f8f2', muted: '#a6a28c', border: '#49483e' } },
+    { id: 'sunset', name: 'Coucher de soleil', author: 'Unbanded', builtin: true, colors: { accent: '#ff7ac6', accentHover: '#f45fb2', bg: '#2b1d33', surface: '#241729', surface2: '#3a2744', text: '#ffe9f6', muted: '#c7a3bd', border: '#4a3357' } },
+    { id: 'ocean', name: 'Océan', author: 'Unbanded', builtin: true, colors: { accent: '#22d3ee', accentHover: '#0fb5d4', bg: '#0f2027', surface: '#132833', surface2: '#1c3644', text: '#e6f6fa', muted: '#8fb3c0', border: '#254554' } },
+    { id: 'forest', name: 'Forêt', author: 'Unbanded', builtin: true, colors: { accent: '#34d399', accentHover: '#10b981', bg: '#10231a', surface: '#0d1c15', surface2: '#173125', text: '#e9f7ef', muted: '#93b8a5', border: '#1f4030' } },
+    { id: 'light', name: 'Clair', author: 'Unbanded', builtin: true, colors: { accent: '#5b5bd6', accentHover: '#4a4ac2', bg: '#f2f4f7', surface: '#ffffff', surface2: '#e8ebf0', text: '#1c2430', muted: '#5d6b7e', border: '#d4dae2' } }
   ];
 
   function merge(colors) {
@@ -179,7 +179,7 @@
       a.remove();
       setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 1000);
     } catch (e) {
-      console.log('[BandTamper] Export thème :', text);
+      console.log('[Unbanded] Export thème :', text);
       throw new Error('Export impossible dans ce contexte (contenu dans la console)');
     }
     return data;
