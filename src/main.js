@@ -20,7 +20,7 @@
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Band Tamper v1.5.0 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Band Tamper v1.5.1 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[BandTamper] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {

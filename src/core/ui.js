@@ -15,6 +15,7 @@ class BandUI {
     this._hookCommandInput();
     if (!document.body) return;
     this._injectSettings();
+    this._injectFab();
     if (this.adapter.isDemo()) {
       this._injectDemoBanner();
       return;
@@ -27,6 +28,7 @@ class BandUI {
     try {
       if (!document.body) return;
       if (!this.settingsEl || !document.body.contains(this.settingsEl)) this._injectSettings();
+      if (!this.fab || !document.body.contains(this.fab)) this._injectFab();
       if (this.adapter.isDemo()) {
         if (!this.banner || !document.body.contains(this.banner)) this._injectDemoBanner();
         return;
@@ -104,13 +106,57 @@ class BandUI {
       target.appendChild(this.btn);
       return;
     }
-    // 5) dernier recours : bouton flottant en bas à droite
+    // 5) dernier recours : bouton flottant en bas à droite (au-dessus du FAB ⚙)
     Object.assign(this.btn.style, {
-      position: 'fixed', bottom: '20px', right: '20px', padding: '8px 12px',
+      position: 'fixed', bottom: '76px', right: '18px', padding: '8px 12px',
       background: '#6c5ce7', color: '#fff', borderRadius: '6px',
       zIndex: '10000', boxShadow: '0 2px 6px rgba(0,0,0,.3)'
     });
     document.body.appendChild(this.btn);
+  }
+
+  /* ---------- Bouton flottant ⚙ : toggle la GUI depuis la page principale ---------- */
+  _injectFab() {
+    if (!document.body) return;
+    if (this.fab && document.body.contains(this.fab)) return;
+    const fab = document.createElement('button');
+    fab.id = 'bt-fab';
+    fab.type = 'button';
+    fab.textContent = '⚙';
+    fab.title = 'Band Tamper — afficher/masquer le panneau';
+    fab.setAttribute('data-bt-root', '1');
+    fab.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:10001;width:46px;height:46px;' +
+      'border:none;border-radius:50%;cursor:pointer;font-size:21px;line-height:1;color:#fff;' +
+      'background:var(--btt-accent,#6c5ce7);box-shadow:0 4px 14px rgba(0,0,0,.4);' +
+      'display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
+      'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+    fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
+    fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; };
+    fab.onclick = () => this.toggleGui();
+    document.body.appendChild(fab);
+    this.fab = fab;
+    this._syncFabState();
+    this.adapter.log('Bouton flottant ⚙ injecté (bas droite).');
+  }
+
+  toggleGui() {
+    // Si la page Paramètres est ouverte : ferme tout. Sinon bascule le panneau.
+    if (this.settingsVisible) {
+      this.closeSettings();
+      this._syncFabState();
+      return;
+    }
+    this.toggle();
+  }
+
+  _syncFabState() {
+    if (!this.fab) return;
+    const open = !!this.visible && !this.settingsVisible;
+    try {
+      this.fab.textContent = open ? '✕' : '⚙';
+      this.fab.style.opacity = open ? '1' : '0.8';
+      this.fab.title = open ? 'Band Tamper — masquer le panneau' : 'Band Tamper — afficher le panneau';
+    } catch (e) {}
   }
 }
 

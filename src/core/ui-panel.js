@@ -40,8 +40,8 @@ BandUI.prototype._injectPanel = function () {
 };
 
 BandUI.prototype.toggle = function () { this.visible ? this.hide() : this.show(); };
-BandUI.prototype.show = function () { if (this.panel) this.panel.style.display = 'flex'; this.visible = true; };
-BandUI.prototype.hide = function () { if (this.panel) this.panel.style.display = 'none'; this.visible = false; };
+BandUI.prototype.show = function () { if (this.panel) this.panel.style.display = 'flex'; this.visible = true; if (this._syncFabState) this._syncFabState(); };
+BandUI.prototype.hide = function () { if (this.panel) this.panel.style.display = 'none'; this.visible = false; if (this._syncFabState) this._syncFabState(); };
 
 BandUI.prototype.renderPluginList = function () {
   const container = document.getElementById('bt-plugin-list');

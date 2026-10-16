@@ -40,7 +40,9 @@ Le script s'active sur `*://band.us/*` et `*://*.band.us/*`.
 
 ## Utilisation
 
-Une fois sur band.us, un bouton **Tamper** (« Tamper ⬤ » avec un point violet) apparaît dans la **barre du haut**, juste à droite du lien **Feed** (`#header .headerWidgetArea ul.widgetList`). Si le header n'est pas encore monté ou que le DOM change, il bascule en bouton flottant en bas à droite, et il est ré-injecté automatiquement toutes les 2,5 s (navigation SPA).
+Une fois sur band.us, un bouton **Tamper** (« Tamper ⬤ » avec un point violet) apparaît dans la **barre du haut**, juste à droite du lien **Feed** (`#header .headerWidgetArea ul.widgetList`). Si le header n'est pas encore monté ou que le DOM change, il bascule en bouton flottant en bas à droite (au-dessus du ⚙), et il est ré-injecté automatiquement toutes les 2,5 s (navigation SPA).
+
+Un **bouton flottant ⚙** (cercle violet, toujours visible en **bas à droite** de la page) permet de **basculer la GUI** à tout moment : un clic ouvre/ferme le panneau Tamper, et il ferme la page Paramètres si elle est ouverte. L'icône passe de ⚙ à ✕ quand le panneau est affiché, et sa couleur suit le **thème actif** (variable CSS `--btt-accent`).
 
 Cliquez dessus pour ouvrir le panneau qui affiche :
 - les plugins chargés avec Activer / Désactiver / Supprimer,
@@ -83,7 +85,7 @@ Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic
 
 ## 🛠 Dépannage (si ça ne répond pas)
 
-1. **Le script tourne ?** Au chargement de band.us, vous devez voir le toast « ✓ Band Tamper v1.5.0 chargé ». Sans toast → réinstallez `band-tamper.user.js` (v1.5.0+) dans Tampermonkey (Vérifier les mises à jour) puis rechargez la page en dur (Ctrl+Shift+R).
+1. **Le script tourne ?** Au chargement de band.us, vous devez voir le toast « ✓ Band Tamper v1.5.1 chargé ». Sans toast → réinstallez `band-tamper.user.js` (v1.5.1+) dans Tampermonkey (Vérifier les mises à jour) puis rechargez la page en dur (Ctrl+Shift+R). Un cercle **⚙ violet en bas à droite** confirme aussi que le script tourne.
 2. **Testez `/help` puis Entrée** : un toast « … exécution de /help » puis la liste des commandes doit apparaître. Sans rien → F12 → onglet Console : cherchez une erreur et le préfixe `[BandTamper]`.
 3. **`/btdbg`** affiche ce que voit l'adaptateur (champ de saisie trouvé ? bouton d'envoi ? type de conversation ?). Si « Champ de saisie : INTROUVABLE » ou « Bouton envoyer : introuvable », le DOM a changé → adaptez `SELECTORS` / `getChatInput()` dans `src/core/adapter.js`, puis `node build.js` et réinstallez le script.
 4. Seul un texte commençant par `/` suivi d'**Entrée** est intercepté ; les champs de recherche et ceux du panneau Plugins sont ignorés.

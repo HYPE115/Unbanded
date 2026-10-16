@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.5.0';
+  var v = '1.5.1';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Band Tamper">' +
     '<aside class="bt-set-side">' +
@@ -197,12 +197,14 @@ BandUI.prototype.openSettings = function (tab) {
   this.settingsEl.style.display = 'block';
   this.settingsVisible = true;
   this.hide(); // referme le panneau Plugins si ouvert
+  if (this._syncFabState) this._syncFabState();
   this._switchSettingsTab(tab || this._settingsTab || 'general');
 };
 
 BandUI.prototype.closeSettings = function () {
   if (this.settingsEl) this.settingsEl.style.display = 'none';
   this.settingsVisible = false;
+  if (this._syncFabState) this._syncFabState();
 };
 
 BandUI.prototype._switchSettingsTab = function (tab) {
@@ -539,7 +541,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'band-tamper',
-      version: '1.5.0',
+      version: '1.5.1',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
