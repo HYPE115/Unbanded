@@ -134,7 +134,7 @@ class BandAdapter {
   async sendText(text) {
     if (this.demo) { this.log('[DEMO] Texte :', text); return { ok: true, demo: true }; }
     const input = this.getChatInput();
-    if (!input) throw new Error('Champ de saisie introuvable (tape /btdbg pour diagnostiquer)');
+    if (!input) throw new Error('Champ de saisie introuvable (tape /debug pour diagnostiquer)');
     input.focus();
     this._setNativeValue(input, text);
     const btn = this.getSendButton();
@@ -153,7 +153,7 @@ class BandAdapter {
       const all = this.$$('input[type="file"]');
       input = all.length ? all[all.length - 1] : null;
     }
-    if (!input) throw new Error('input[type=file] introuvable (tape /btdbg pour diagnostiquer)');
+    if (!input) throw new Error('input[type=file] introuvable (tape /debug pour diagnostiquer)');
     const file = new File([blob], filename, { type: (blob && blob.type) || 'image/gif' });
     const dt = new DataTransfer();
     dt.items.add(file);

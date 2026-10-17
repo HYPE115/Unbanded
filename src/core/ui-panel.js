@@ -19,7 +19,7 @@ BandUI.prototype._injectPanel = function () {
       <input id="bt-plugin-url" type="text" placeholder="https://exemple.com/plugin.js" style="padding:6px;border-radius:4px;border:none;width:100%;box-sizing:border-box;">
       <button id="bt-add-plugin" style="background:#6c5ce7;border:none;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer">Ajouter</button>
     </div>
-    <div style="font-size:11px;color:#aab7c4">Commandes : /pat [user] · /help · /plugins · /settings · /btdbg</div>
+    <div style="font-size:11px;color:#aab7c4">Commandes : /pat [user] · /help · /plugins · /settings · /debug</div>
   `;
   document.body.appendChild(this.panel);
   const closeBtn = document.getElementById('bt-close-panel');

@@ -3,7 +3,7 @@ const path = require('path');
 
 const root = __dirname;
 
-const VERSION = '1.6.7';
+const VERSION = '1.6.8';
 const REPO = 'HYPE115/band_tamper';
 const BRANCH = 'main';
 const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/unbanded.user.js`;
@@ -20,6 +20,7 @@ const order = [
   'src/core/ui-panel.js',
   'src/core/ui-settings.js',
   'src/core/ui-hooks.js',
+  'src/core/ui-autocomplete.js',
   'src/petpet-hand.js',
   'src/vendor/gifenc.js',
   'src/petpet-gif.js',

@@ -15,7 +15,7 @@ Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interfac
 | `src/core/plugin-manager-builtin.js` | Enregistrement des plugins/commandes intégrés |
 | `src/core/themes.js` | `BTTThemes` : 10 thèmes d'app intégrés (variables CSS), import/export de thèmes JSON |
 | `src/core/styles.js` | `BTTStyles` : CSS personnalisé appliqué à band.us et persisté |
-| `src/core/commands.js` | Commandes slash intégrées (`/help`, `/plugins`, `/settings`, `/btdbg`) |
+| `src/core/commands.js` | Commandes slash intégrées (`/help`, `/plugins`, `/settings`, `/debug`) |
 | `src/core/ui.js` + `ui-panel.js` + `ui-hooks.js` | Bouton "Unbanded" + panneau de gestion injecté dans BAND |
 | `src/core/ui-settings.js` | Page Paramètres complète (Général, Plugins, Thèmes, CSS, À propos) |
 | `src/petpet-hand.js` | 10 frames de main d'origine (aDu/pet-pet-gif) en base64 (généré) |
@@ -87,7 +87,7 @@ Si l'avatar est injoignable (CORS, réseau…), le plugin renvoie une **image st
 | `/help` | Affiche la liste des commandes (toast local, rien n'est envoyé au chat) |
 | `/plugins` | Ouvre/ferme le panneau Plugins |
 | `/settings` | Ouvre la **page Paramètres** (thèmes, CSS personnalisé, plugins) |
-| `/btdbg` | Diagnostics : champ de saisie, bouton d'envoi, type de conversation, commandes chargées |
+| `/debug` | Diagnostics : champ de saisie, bouton d'envoi, type de conversation, commandes chargées |
 
 Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic pour fermer). Au chargement, un toast « ✓ Unbanded v1.6.0 chargé » confirme que le script tourne. L'interception se fait au niveau global (`document`, phase de capture) : elle survit aux changements de DOM du SPA et fonctionne avec les champs `contenteditable` de BAND.
 
@@ -95,7 +95,7 @@ Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic
 
 1. **Le script tourne ?** Au chargement de band.us, vous devez voir le toast « ✓ Unbanded v1.6.0 chargé ». Sans toast → réinstallez `unbanded.user.js` (v1.6.0+) dans Tampermonkey (Vérifier les mises à jour) puis rechargez la page en dur (Ctrl+Shift+R). Un cercle **⚙ violet en bas à droite** confirme aussi que le script tourne.
 2. **Testez `/help` puis Entrée** : un toast « … exécution de /help » puis la liste des commandes doit apparaître. Sans rien → F12 → onglet Console : cherchez une erreur et le préfixe `[Unbanded]`.
-3. **`/btdbg`** affiche ce que voit l'adaptateur (champ de saisie trouvé ? bouton d'envoi ? type de conversation ?). Si « Champ de saisie : INTROUVABLE » ou « Bouton envoyer : introuvable », le DOM a changé → adaptez `SELECTORS` / `getChatInput()` dans `src/core/adapter.js`, puis `node build.js` et réinstallez le script.
+3. **`/debug`** affiche ce que voit l'adaptateur (champ de saisie trouvé ? bouton d'envoi ? type de conversation ?). Si « Champ de saisie : INTROUVABLE » ou « Bouton envoyer : introuvable », le DOM a changé → adaptez `SELECTORS` / `getChatInput()` dans `src/core/adapter.js`, puis `node build.js` et réinstallez le script.
 4. Seul un texte commençant par `/` suivi d'**Entrée** est intercepté ; les champs de recherche et ceux du panneau Plugins sont ignorés.
 
 ## ⚙ Page Paramètres (v1.5.0)

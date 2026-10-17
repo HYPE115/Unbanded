@@ -35,12 +35,12 @@ function registerBuiltInCommands(pm) {
     }
   });
 
-  pm.registerCommand('btdbg', "Diagnostics Unbanded (sélecteurs, hook, etc.)", async (args, info) => {
+  pm.registerCommand('debug', "Diagnostics Unbanded (sélecteurs, hook, etc.)", async (args, info) => {
     const a = (info && info.api) || pm.adapter;
     const input = a.getChatInput ? a.getChatInput() : null;
     const fileInputs = a.$$('input[type="file"]').length;
     const lines = [
-      '=== btdbg Unbanded ===',
+      '=== debug Unbanded ===',
       'Host : ' + a.host + ' | démo : ' + a.isDemo(),
       'Type conversation : ' + a.getConversationType(),
       'Canal : ' + a.getCurrentChannelId(),
@@ -49,7 +49,7 @@ function registerBuiltInCommands(pm) {
       'input[type=file] : ' + fileInputs,
       'Commandes : ' + Array.from(pm.commands.keys()).join(', ')
     ];
-    console.log('[Unbanded][btdbg]\n' + lines.join('\n'));
+    console.log('[Unbanded][debug]\n' + lines.join('\n'));
     if (window.__BTT_toast) window.__BTT_toast(lines.join('\n'));
   });
 }

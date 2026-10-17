@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.7';
+  var v = '1.6.8';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -104,7 +104,7 @@ BandUI.prototype._settingsMarkup = function () {
         '<section class="bt-page" data-page="about" hidden>' +
           '<div class="bt-set-card">' +
             '<h3>Unbanded v' + v + '</h3>' +
-            '<div class="bt-set-hint">Chargeur de plugins type Vencord pour BAND (band.us). Commandes : /pat · /help · /plugins · /settings · /btdbg.<br>' +
+            '<div class="bt-set-hint">Chargeur de plugins type Vencord pour BAND (band.us). Commandes : /pat · /help · /plugins · /settings · /debug.<br>' +
             'GIF pet-pet : algorithme <a href="https://github.com/aDu/pet-pet-gif" target="_blank" rel="noopener" style="color:var(--btt-accent)">aDu/pet-pet-gif</a> + encodeur <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener" style="color:var(--btt-accent)">gifenc</a> embarqué (aucun CDN, compatible CSP band.us).<br>' +
             'Licence MIT · <a href="https://github.com/HYPE115/band_tamper" target="_blank" rel="noopener" style="color:var(--btt-accent)">github.com/HYPE115/band_tamper</a></div>' +
             '<div class="bt-set-row"><span class="bt-badge" id="bt-set-stat-plugins">? plugins</span><span class="bt-badge" id="bt-set-stat-commands">? commandes</span><span class="bt-badge" id="bt-set-stat-themes">? thèmes</span></div>' +
@@ -548,7 +548,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.7',
+      version: '1.6.8',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,

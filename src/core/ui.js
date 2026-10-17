@@ -13,6 +13,11 @@ class BandUI {
   inject() {
     window.UnbandedUI = this;
     window.BandTamperUI = this; // alias rétro-compat
+    // Autocomplétion AVANT l'exécution : en phase de capture sur document,
+    // les listeners s'exécutent dans l'ordre d'enregistrement. L'autocomplete
+    // doit voir Entrée en premier pour compléter "/he" → "/help" au lieu
+    // de laisser l'exécuteur répondre "Commande inconnue".
+    try { this._hookCommandAutocomplete(); } catch (e) { this.adapter.log('autocomplete KO :', e); }
     this._hookCommandInput();
     if (!document.body) return;
     this._injectSettings();
