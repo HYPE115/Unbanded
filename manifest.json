@@ -1,6 +1,6 @@
 {
   "name": "Unbanded",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "Unbanded — chargeur de plugins type Vencord pour BAND (band.us). Bouton Unbanded dans l'en-tête (à côté de Feed), bouton flottant ⚙ pour basculer la GUI, page Paramètres complète (onglets Général, Plugins, Thèmes, CSS, À propos) avec import de plugins et de thèmes par fichier ou URL, 10 thèmes d'app intégrés, CSS personnalisé persistant, commandes slash, et plugin par défaut 'pet-pet' (/pat) — GIF pet-pet authentique (algorithme aDu/pet-pet-gif, encodeur gifenc embarqué, sans CDN ni worker).",
   "author": "Cline",
   "main": "unbanded.user.js",

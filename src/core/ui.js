@@ -51,10 +51,22 @@ class BandUI {
     try {
       const href = (location.href || '') + '';
       if (/\/chat|\/talk|\/message|\/dm|\/conversation/i.test(href)) return true;
+      // Page principale BAND (https://www.band.us/ ou /feed) : jamais un chat,
+      // même si elle contient un composer ou un bouton submit (recherche).
+      const path = (location.pathname || '') + '';
+      if (path === '/' || path === '' || /^\/feed\/?$/i.test(path)) return false;
     } catch (e) {}
     try {
-      if (this.adapter.getChatInput && this.adapter.getChatInput()) return true;
-      if (this.adapter.getSendButton && this.adapter.getSendButton()) return true;
+      // Détection stricte : champ de saisie DANS un conteneur chat uniquement.
+      // (L'ancien test utilisait getChatInput()/getSendButton génériques qui
+      // matchent le composer de la page principale et le bouton de recherche.)
+      const chatInput = document.querySelector(
+        '[class*="chat" i] textarea, [class*="chat" i] [contenteditable="true"],' +
+        ' [class*="Chat"] textarea, [class*="Chat"] [contenteditable="true"],' +
+        ' [class*="talk" i] textarea, [class*="talk" i] [contenteditable="true"],' +
+        ' [class*="message" i] textarea, [class*="message" i] [contenteditable="true"]'
+      );
+      if (chatInput && chatInput.getClientRects && chatInput.getClientRects().length > 0) return true;
     } catch (e) {}
     return false;
   }
@@ -85,6 +97,20 @@ class BandUI {
     this._navWatched = true;
     try { this._lastHref = location.href; } catch (e) { this._lastHref = ''; }
     const self = this;
+    // Si le SPA remplace le header (== notre ⚙ docké disparaît du DOM),
+    // le réinjecter immédiatement au lieu d'attendre le tick ensureInjected.
+    const reattach = function () {
+      try {
+        if (self.fab && !document.body.contains(self.fab)) self._injectFab();
+        else if (self.fab && !self.fab.closest('#header') && self.fab.parentElement === document.body) self._redockFabIfNeeded();
+        else self._applyPageVisibility();
+      } catch (e) {}
+    };
+    try {
+      const mo = new MutationObserver(function () { reattach(); });
+      mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      this._navObserver = mo;
+    } catch (e) {}
     const check = function () {
       try {
         const h = location.href;
@@ -208,7 +234,8 @@ class BandUI {
   /* ---------- Bouton ⚙ : docké dans le header BAND, jamais en flottant ---------- */
   _injectFab() {
     if (!document.body) return;
-    if (this.fab && document.body.contains(this.fab)) return;
+    try { const ex = document.getElementById('bt-fab'); if (ex) { this.fab = ex; this._applyPageVisibility(); return; } } catch (e) {}
+    if (this.fab && this.fab.parentElement) { try { this.fab.parentElement.removeChild(this.fab); } catch (e) {} }
     const fab = document.createElement('button');
     fab.id = 'bt-fab';
     fab.type = 'button';

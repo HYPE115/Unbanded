@@ -3,7 +3,7 @@ const path = require('path');
 
 const root = __dirname;
 
-const VERSION = '1.6.4';
+const VERSION = '1.6.5';
 const REPO = 'HYPE115/band_tamper';
 const BRANCH = 'main';
 const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/unbanded.user.js`;
