@@ -19,10 +19,15 @@ class BandUI {
     this._injectFab();
     if (this.adapter.isDemo()) {
       this._injectDemoBanner();
+      this._watchNavigation();
       return;
     }
     this._injectButton();
     this._injectPanel();
+    // Inversion accueil/messages : applique + surveille la navigation SPA.
+    // (Les commandes slash restent actives partout via le hook clavier global.)
+    this._applyPageVisibility();
+    this._watchNavigation();
   }
 
   ensureInjected() {
@@ -30,13 +35,97 @@ class BandUI {
       if (!document.body) return;
       if (!this.settingsEl || !document.body.contains(this.settingsEl)) this._injectSettings();
       if (!this.fab || !document.body.contains(this.fab)) this._injectFab();
+      else this._redockFabIfNeeded();
       if (this.adapter.isDemo()) {
         if (!this.banner || !document.body.contains(this.banner)) this._injectDemoBanner();
         return;
       }
       if (!this.btn || !document.body.contains(this.btn)) this._injectButton();
       if (!this.panel || !document.body.contains(this.panel)) this._injectPanel();
+      this._applyPageVisibility();
     } catch (e) { this.adapter.log('ensureInjected :', e); }
+  }
+
+  /** Vrai si on est sur une page de conversation/chat (messages). */
+  _isChatPage() {
+    try {
+      const href = (location.href || '') + '';
+      if (/\/chat|\/talk|\/message|\/dm|\/conversation/i.test(href)) return true;
+    } catch (e) {}
+    try {
+      if (this.adapter.getChatInput && this.adapter.getChatInput()) return true;
+      if (this.adapter.getSendButton && this.adapter.getSendButton()) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  /**
+   * Inverse l'affichage : boutons (⚙ + "Unbanded") visibles sur la page
+   * principale uniquement, masqués dans les conversations.
+   * Les commandes slash restent actives partout (hook clavier global).
+   */
+  _applyPageVisibility() {
+    let chat = false;
+    try { chat = this._isChatPage(); } catch (e) {}
+    try {
+      if (this.fab) this.fab.style.display = chat ? 'none' : '';
+    } catch (e) {}
+    try {
+      if (this.btn) {
+        this.btn.style.display = chat ? 'none' : '';
+        const li = document.getElementById('bt-header-item');
+        if (li) li.style.display = chat ? 'none' : '';
+      }
+    } catch (e) {}
+  }
+
+  /** Surveille la navigation SPA : ré-applique la visibilité à chaque changement d'URL. */
+  _watchNavigation() {
+    if (this._navWatched) return;
+    this._navWatched = true;
+    try { this._lastHref = location.href; } catch (e) { this._lastHref = ''; }
+    const self = this;
+    const check = function () {
+      try {
+        const h = location.href;
+        if (h !== self._lastHref) {
+          self._lastHref = h;
+          self.ensureInjected();
+        } else {
+          self._applyPageVisibility();
+        }
+      } catch (e) {}
+    };
+    try { setInterval(check, 1000); } catch (e) {}
+    try {
+      window.addEventListener('popstate', check);
+      window.addEventListener('hashchange', check);
+    } catch (e) {}
+  }
+
+  /**
+   * Si le ⚙ est en repli flottant alors que le header BAND est désormais
+   * disponible (cas page principale chargée en retard par le SPA),
+   * le re-docke dans le header.
+   */
+  _redockFabIfNeeded() {
+    try {
+      if (!this.fab || !document.body.contains(this.fab)) return;
+      const floating = this.fab.parentElement === document.body &&
+        (this.fab.style.position === 'fixed' || this.fab.id === 'bt-fab' && !this.fab.closest('#header'));
+      if (!floating) return;
+      const target = document.querySelector('#header .headerInner .gnbLogoSearchArea') ||
+        document.querySelector('#header .headerInner, #header');
+      if (!target) return;
+      this.fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
+        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
+        'line-height:1;color:inherit;background:transparent;' +
+        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
+        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+      target.appendChild(this.fab);
+      this.adapter.log('Bouton ⚙ re-docké dans le header BAND.');
+      this._applyPageVisibility();
+    } catch (e) {}
   }
 
   _injectDemoBanner() {
