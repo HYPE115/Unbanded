@@ -1,5 +1,7 @@
 /**
- * BandUI - Bouton "Unbanded" + panneau de gestion injectés dans BAND.
+ * BandUI - Bouton "Unbanded" + page Paramètres injectés dans BAND.
+ * (L'ancien panneau flottant "Unbanded · Plugins" a été supprimé :
+ *  tout est dans la page Paramètres, onglet Plugins.)
  */
 class BandUI {
   constructor(pm, adapter) {
@@ -27,8 +29,12 @@ class BandUI {
       this._watchNavigation();
       return;
     }
+    // L'ancien panneau flottant est supprimé : la gestion des plugins
+    // se fait dans la page Paramètres (onglet Plugins, via /plugins ou ⚙).
+    var stale = document.getElementById('bt-band-panel');
+    if (stale && stale.remove) { try { stale.remove(); } catch (e) {} }
+    this.panel = null; this.visible = false;
     this._injectButton();
-    this._injectPanel();
     // Inversion accueil/messages : applique + surveille la navigation SPA.
     // (Les commandes slash restent actives partout via le hook clavier global.)
     this._applyPageVisibility();
@@ -46,7 +52,9 @@ class BandUI {
         return;
       }
       if (!this.btn || !document.body.contains(this.btn)) this._injectButton();
-      if (!this.panel || !document.body.contains(this.panel)) this._injectPanel();
+      var stalePanel = document.getElementById('bt-band-panel');
+      if (stalePanel && stalePanel.remove) { try { stalePanel.remove(); } catch (e) {} }
+      this.panel = null; this.visible = false;
       this._applyPageVisibility();
     } catch (e) { this.adapter.log('ensureInjected :', e); }
   }
@@ -295,13 +303,13 @@ class BandUI {
   }
 
   toggleGui() {
-    // Le FAB ⚙ ouvre les Paramètres (À propos). Le panneau Plugins se bascule
-    // via le bouton "Unbanded" du header.
+    // Compat : le FAB ⚙ ouvre les Paramètres (À propos).
+    // L'ancien panneau flottant n'existe plus (voir onglet Plugins).
     if (this.settingsVisible) {
       this.closeSettings();
       return;
     }
-    this.toggle();
+    this.openSettings('plugins');
   }
 
   _syncFabState() {

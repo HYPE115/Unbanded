@@ -75,12 +75,10 @@
     el.textContent = css || '';
   }
 
-  // Restyle des éléments Unbanded existants (panneau, bouton) via variables CSS.
+  // L'ancien panneau flottant (#bt-band-panel) a été supprimé :
+  // plus aucun restyle nécessaire ici (la page Paramètres a son propre CSS).
   function coreCss() {
-    return '#bt-band-panel{background:var(--btt-surface,#232f3e)!important;color:var(--btt-text,#fff)!important}' +
-      '#bt-band-panel hr{border-top-color:var(--btt-border,#3d4f60)!important}' +
-      '#bt-band-panel input[type=text]{background:var(--btt-bg,#232f3e)!important;color:var(--btt-text,#fff)!important}' +
-      '#bt-band-plugins{color:var(--btt-text,inherit)!important}';
+    return '';
   }
 
   function imported() {

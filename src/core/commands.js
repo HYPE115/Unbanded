@@ -16,13 +16,13 @@ function registerBuiltInCommands(pm) {
     else info.api.log(lines.join('\n'));
   });
 
-  pm.registerCommand('plugins', "Ouvre/ferme le gestionnaire de plugins", async (args, info) => {
+  pm.registerCommand('plugins', "Ouvre la page Paramètres sur l'onglet Plugins", async (args, info) => {
     const ui = window.UnbandedUI || window.BandTamperUI;
-    if (ui) {
-      ui.toggle();
-      if (window.__BTT_toast) window.__BTT_toast('Panneau Plugins ' + (ui.visible ? 'ouvert' : 'fermé'));
+    if (ui && ui.openSettings) {
+      ui.openSettings('plugins');
+      if (window.__BTT_toast) window.__BTT_toast('Page Paramètres → Plugins');
     } else if (window.__BTT_toast) {
-      window.__BTT_toast('Panneau indisponible', 'error');
+      window.__BTT_toast('Page Paramètres indisponible', 'error');
     }
   });
 

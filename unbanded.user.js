@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.8
+// @version      1.6.9
 // @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @homepageURL  https://github.com/HYPE115/band_tamper
@@ -587,12 +587,10 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     el.textContent = css || '';
   }
 
-  // Restyle des éléments Unbanded existants (panneau, bouton) via variables CSS.
+  // L'ancien panneau flottant (#bt-band-panel) a été supprimé :
+  // plus aucun restyle nécessaire ici (la page Paramètres a son propre CSS).
   function coreCss() {
-    return '#bt-band-panel{background:var(--btt-surface,#232f3e)!important;color:var(--btt-text,#fff)!important}' +
-      '#bt-band-panel hr{border-top-color:var(--btt-border,#3d4f60)!important}' +
-      '#bt-band-panel input[type=text]{background:var(--btt-bg,#232f3e)!important;color:var(--btt-text,#fff)!important}' +
-      '#bt-band-plugins{color:var(--btt-text,inherit)!important}';
+    return '';
   }
 
   function imported() {
@@ -844,13 +842,13 @@ function registerBuiltInCommands(pm) {
     else info.api.log(lines.join('\n'));
   });
 
-  pm.registerCommand('plugins', "Ouvre/ferme le gestionnaire de plugins", async (args, info) => {
+  pm.registerCommand('plugins', "Ouvre la page Paramètres sur l'onglet Plugins", async (args, info) => {
     const ui = window.UnbandedUI || window.BandTamperUI;
-    if (ui) {
-      ui.toggle();
-      if (window.__BTT_toast) window.__BTT_toast('Panneau Plugins ' + (ui.visible ? 'ouvert' : 'fermé'));
+    if (ui && ui.openSettings) {
+      ui.openSettings('plugins');
+      if (window.__BTT_toast) window.__BTT_toast('Page Paramètres → Plugins');
     } else if (window.__BTT_toast) {
-      window.__BTT_toast('Panneau indisponible', 'error');
+      window.__BTT_toast('Page Paramètres indisponible', 'error');
     }
   });
 
@@ -886,7 +884,9 @@ window.registerBuiltInCommands = registerBuiltInCommands;
 if (typeof module !== 'undefined' && module.exports) module.exports = { registerBuiltInCommands };
 
 /**
- * BandUI - Bouton "Unbanded" + panneau de gestion injectés dans BAND.
+ * BandUI - Bouton "Unbanded" + page Paramètres injectés dans BAND.
+ * (L'ancien panneau flottant "Unbanded · Plugins" a été supprimé :
+ *  tout est dans la page Paramètres, onglet Plugins.)
  */
 class BandUI {
   constructor(pm, adapter) {
@@ -914,8 +914,12 @@ class BandUI {
       this._watchNavigation();
       return;
     }
+    // L'ancien panneau flottant est supprimé : la gestion des plugins
+    // se fait dans la page Paramètres (onglet Plugins, via /plugins ou ⚙).
+    var stale = document.getElementById('bt-band-panel');
+    if (stale && stale.remove) { try { stale.remove(); } catch (e) {} }
+    this.panel = null; this.visible = false;
     this._injectButton();
-    this._injectPanel();
     // Inversion accueil/messages : applique + surveille la navigation SPA.
     // (Les commandes slash restent actives partout via le hook clavier global.)
     this._applyPageVisibility();
@@ -933,7 +937,9 @@ class BandUI {
         return;
       }
       if (!this.btn || !document.body.contains(this.btn)) this._injectButton();
-      if (!this.panel || !document.body.contains(this.panel)) this._injectPanel();
+      var stalePanel = document.getElementById('bt-band-panel');
+      if (stalePanel && stalePanel.remove) { try { stalePanel.remove(); } catch (e) {} }
+      this.panel = null; this.visible = false;
       this._applyPageVisibility();
     } catch (e) { this.adapter.log('ensureInjected :', e); }
   }
@@ -1182,13 +1188,13 @@ class BandUI {
   }
 
   toggleGui() {
-    // Le FAB ⚙ ouvre les Paramètres (À propos). Le panneau Plugins se bascule
-    // via le bouton "Unbanded" du header.
+    // Compat : le FAB ⚙ ouvre les Paramètres (À propos).
+    // L'ancien panneau flottant n'existe plus (voir onglet Plugins).
     if (this.settingsVisible) {
       this.closeSettings();
       return;
     }
-    this.toggle();
+    this.openSettings('plugins');
   }
 
   _syncFabState() {
@@ -1205,77 +1211,27 @@ window.BandUI = BandUI;
 if (typeof module !== 'undefined' && module.exports) module.exports = BandUI;
 
 
+/**
+ * ui-panel.js — SUPPRIMÉ (ancien panneau flottant "Unbanded · Plugins").
+ * Conservé comme shims de compatibilité : la gestion des plugins se fait
+ * désormais dans la page Paramètres (onglet Plugins, via /plugins ou ⚙).
+ */
 BandUI.prototype._injectPanel = function () {
-  const self = this;
-  this.panel = document.createElement('div');
-  this.panel.id = 'bt-band-panel';
-  this.panel.setAttribute('data-bt-root', '1');
-  this.panel.style.cssText = 'position:fixed;top:60px;right:20px;width:340px;background:#232f3e;color:#fff;border-radius:10px;padding:14px;font-family:sans-serif;font-size:13px;z-index:99999;display:none;box-shadow:0 6px 20px rgba(0,0,0,.5);flex-direction:column;gap:10px;';
-  this.panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-weight:bold;font-size:15px">Unbanded · Plugins</div>
-      <div style="display:flex;gap:6px;">
-        <button id="bt-open-settings" title="Paramètres (thèmes, CSS, plugins)" style="background:transparent;border:none;color:#fff;cursor:pointer">⚙</button>
-        <button id="bt-close-panel" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>
-      </div>
-    </div>
-    <div id="bt-plugin-list" style="gap:6px;max-height:300px;overflow-y:auto;"></div>
-    <hr style="border:none;border-top:1px solid #3d4f60;margin:8px 0;">
-    <div style="gap:6px;display:flex;flex-direction:column;">
-      <label>Ajouter un plugin (URL JS) :</label>
-      <input id="bt-plugin-url" type="text" placeholder="https://exemple.com/plugin.js" style="padding:6px;border-radius:4px;border:none;width:100%;box-sizing:border-box;">
-      <button id="bt-add-plugin" style="background:#6c5ce7;border:none;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer">Ajouter</button>
-    </div>
-    <div style="font-size:11px;color:#aab7c4">Commandes : /pat [user] · /help · /plugins · /settings · /debug</div>
-  `;
-  document.body.appendChild(this.panel);
-  const closeBtn = document.getElementById('bt-close-panel');
-  if (closeBtn) closeBtn.onclick = () => this.hide();
-  const settingsBtn = document.getElementById('bt-open-settings');
-  if (settingsBtn) settingsBtn.onclick = () => self.openSettings();
-  const addBtn = document.getElementById('bt-add-plugin');
-  if (addBtn) addBtn.onclick = async () => {
-    const urlInput = document.getElementById('bt-plugin-url');
-    const url = (urlInput && urlInput.value ? urlInput.value : '').trim();
-    if (!url) return;
-    try {
-      await this.pm.loadPlugin(url, { enabled: true, source: 'url' });
-      if (urlInput) urlInput.value = '';
-      this.renderPluginList();
-    } catch (e) { alert('Échec : ' + e.message); }
-  };
+  // Supprime tout résidu d'une ancienne version.
+  try {
+    var stale = document.getElementById('bt-band-panel');
+    if (stale && stale.remove) stale.remove();
+  } catch (e) {}
+  this.panel = null; this.visible = false;
 };
 
-BandUI.prototype.toggle = function () { this.visible ? this.hide() : this.show(); };
-BandUI.prototype.show = function () { if (this.panel) this.panel.style.display = 'flex'; this.visible = true; if (this._syncFabState) this._syncFabState(); };
-BandUI.prototype.hide = function () { if (this.panel) this.panel.style.display = 'none'; this.visible = false; if (this._syncFabState) this._syncFabState(); };
+BandUI.prototype.toggle = function () { this.openSettings('plugins'); };
+BandUI.prototype.show = function () { this.openSettings('plugins'); };
+BandUI.prototype.hide = function () { if (this.closeSettings) this.closeSettings(); };
 
 BandUI.prototype.renderPluginList = function () {
-  const container = document.getElementById('bt-plugin-list');
-  if (!container) return;
-  container.innerHTML = '';
-  for (const [url, entry] of this.pm.plugins) {
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px;border:1px solid #3d4f60;border-radius:6px;background:#1c2630;';
-    const info = document.createElement('div');
-    info.style.cssText = 'flex:1;min-width:0;';
-    info.innerHTML = `<div style="font-weight:600">${escapeHtml(entry.spec.name)}</div><div style="font-size:11px;color:#aab7c4">${escapeHtml(entry.spec.description || '')} v${entry.spec.version || '?'}</div>`;
-    const toggle = document.createElement('button');
-    toggle.textContent = entry.enabled ? 'Désactiver' : 'Activer';
-    toggle.style.cssText = 'padding:4px 8px;border-radius:4px;border:none;cursor:pointer;font-size:11px;background:' + (entry.enabled ? '#d63031' : '#00b894') + ';color:#fff;';
-    toggle.onclick = () => { this.pm.setEnabled(url, !entry.enabled); this.renderPluginList(); };
-    const del = document.createElement('button');
-    del.textContent = 'Suppr';
-    del.style.cssText = 'padding:4px 8px;border-radius:4px;border:none;cursor:pointer;font-size:11px;background:#636e72;color:#fff;margin-left:6px;';
-    del.onclick = () => { this.pm.unloadPlugin(url); this.renderPluginList(); };
-    row.appendChild(info);
-    row.appendChild(toggle);
-    row.appendChild(del);
-    container.appendChild(row);
-  }
-  if (this.pm.plugins.size === 0) {
-    container.innerHTML = '<div style="font-size:11px;color:#aab7c4">Aucun plugin chargé.</div>';
-  }
+  // No-op : l'ancien conteneur #bt-plugin-list n'existe plus.
+  // Le PluginManager rafraîchit déjà l'onglet via renderSettingsPlugins().
 };
 
 
@@ -1302,7 +1258,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.8';
+  var v = '1.6.9';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -1829,7 +1785,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.8',
+      version: '1.6.9',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -1959,7 +1915,7 @@ BandUI.prototype._hookCommandInput = function () {
       const el = e.target;
       if (!self._isEditable(el)) return;
       if (self._isSearchField(el)) return;
-      if (el.closest && el.closest('#bt-band-panel')) return;
+      if (el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]'))) return;
       const text = self._readValue(el).trim();
       if (!text || text.charAt(0) !== '/') return;
       e.preventDefault();
@@ -3311,7 +3267,7 @@ var src_default = GIFEncoder;
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.8 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v1.6.9 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {

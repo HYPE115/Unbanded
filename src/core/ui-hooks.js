@@ -56,7 +56,7 @@ BandUI.prototype._hookCommandInput = function () {
       const el = e.target;
       if (!self._isEditable(el)) return;
       if (self._isSearchField(el)) return;
-      if (el.closest && el.closest('#bt-band-panel')) return;
+      if (el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]'))) return;
       const text = self._readValue(el).trim();
       if (!text || text.charAt(0) !== '/') return;
       e.preventDefault();
