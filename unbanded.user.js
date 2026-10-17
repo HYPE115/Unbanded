@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.5
+// @version      1.6.6
 // @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @homepageURL  https://github.com/HYPE115/band_tamper
@@ -574,7 +574,15 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
       el = document.createElement('style');
       el.id = id;
       el.setAttribute('data-bt-root', '1');
-      head.appendChild(el);
+    }
+    // Toujours en fin de <head> (prioritaire sur le CSS de band.us à
+    // spécificité égale) ; le SPA peut déplacer les noeuds, on ré-ancre.
+    try {
+      if (!el.parentNode || el.parentNode !== head || head.lastChild !== el) {
+        head.appendChild(el);
+      }
+    } catch (e) {
+      try { head.appendChild(el); } catch (e2) {}
     }
     el.textContent = css || '';
   }
@@ -724,8 +732,7 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     catch (e) { return ''; }
   }
 
-  function apply(css) {
-    css = String(css == null ? '' : css);
+  function ensureEl() {
     var head = document.head || (document.getElementsByTagName && document.getElementsByTagName('head')[0]) || document.documentElement;
     var el = document.getElementById(STYLE_ID);
     if (!el) {
@@ -733,16 +740,25 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
       el.id = STYLE_ID;
       el.setAttribute('data-bt-root', '1');
       el.setAttribute('data-bt-prio', '1');
-      // Insertion au DÉBUT de <head> : avant tout le CSS de band.us
-      if (head.firstChild) {
-        head.insertBefore(el, head.firstChild);
-      } else {
-        head.appendChild(el);
-      }
-      if (!document.contains(el)) {
-        head.appendChild(el);
-      }
     }
+    // Le CSS perso doit GAGNER contre celui de band.us : toujours en FIN de
+    // <head> (dernière feuille = prioritaire à spécificité égale), et jamais
+    // ailleurs (le SPA déplace parfois les noeuds).
+    try {
+      var parent = el.parentNode;
+      var shouldBeLast = head.lastChild !== el;
+      if (!parent || parent !== head || shouldBeLast) {
+        head.appendChild(el); // appendChild déplace le noeud s'il existe déjà
+      }
+    } catch (e) {
+      try { head.appendChild(el); } catch (e2) {}
+    }
+    return el;
+  }
+
+  function apply(css) {
+    css = String(css == null ? '' : css);
+    var el = ensureEl();
     el.textContent = css;
     if (window.BTTStore) window.BTTStore.set('customCss', css);
   }
@@ -752,7 +768,21 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     try { if (window.BTTStore) window.BTTStore.remove('customCss'); } catch (e) {}
   }
 
-  window.BTTStyles = { apply: apply, get: get, clear: clear, STYLE_ID: STYLE_ID };
+  // Couche CSS perso (bt-custom-css) TOUJOURS après le thème (bt-theme-css) :
+  // c'est l'utilisateur qui a le dernier mot sur tout le site.
+  function keepCustomLast() {
+    try {
+      var head = document.head || (document.getElementsByTagName && document.getElementsByTagName('head')[0]);
+      if (!head) return;
+      var custom = document.getElementById('bt-custom-css');
+      var theme = document.getElementById('bt-theme-css');
+      if (custom && theme && head.lastChild !== custom && (custom.compareDocumentPosition(theme) & 2)) {
+        head.appendChild(custom);
+      }
+    } catch (e) {}
+  }
+
+  window.BTTStyles = { apply: apply, get: get, clear: clear, STYLE_ID: STYLE_ID, keepCustomLast: keepCustomLast };
   if (typeof module !== 'undefined' && module.exports) module.exports = window.BTTStyles;
 })();
 
@@ -1227,7 +1257,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.5';
+  var v = '1.6.6';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -1747,7 +1777,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.5',
+      version: '1.6.6',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -3036,11 +3066,17 @@ var src_default = GIFEncoder;
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.5 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v1.6.6 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {
       try { ui.ensureInjected(); } catch (e) {}
+      // Ré-ancre les couches CSS en fin de <head> : le SPA de band.us peut
+      // déplacer/supplanter les <style> lors des navigations → le CSS perso
+      // et le thème restent appliqués à tout le site en permanence.
+      try { window.BTTThemes.applyActive(); } catch (e) {}
+      try { window.BTTStyles.apply(window.BTTStyles.get()); } catch (e) {}
+      try { window.BTTStyles.keepCustomLast(); } catch (e) {}
     }, 2500);
     if (tick && typeof tick.unref === 'function') tick.unref();
   })();

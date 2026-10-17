@@ -62,7 +62,15 @@
       el = document.createElement('style');
       el.id = id;
       el.setAttribute('data-bt-root', '1');
-      head.appendChild(el);
+    }
+    // Toujours en fin de <head> (prioritaire sur le CSS de band.us à
+    // spécificité égale) ; le SPA peut déplacer les noeuds, on ré-ancre.
+    try {
+      if (!el.parentNode || el.parentNode !== head || head.lastChild !== el) {
+        head.appendChild(el);
+      }
+    } catch (e) {
+      try { head.appendChild(el); } catch (e2) {}
     }
     el.textContent = css || '';
   }

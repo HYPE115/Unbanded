@@ -20,11 +20,17 @@
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.5 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v1.6.6 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {
       try { ui.ensureInjected(); } catch (e) {}
+      // Ré-ancre les couches CSS en fin de <head> : le SPA de band.us peut
+      // déplacer/supplanter les <style> lors des navigations → le CSS perso
+      // et le thème restent appliqués à tout le site en permanence.
+      try { window.BTTThemes.applyActive(); } catch (e) {}
+      try { window.BTTStyles.apply(window.BTTStyles.get()); } catch (e) {}
+      try { window.BTTStyles.keepCustomLast(); } catch (e) {}
     }, 2500);
     if (tick && typeof tick.unref === 'function') tick.unref();
   })();
