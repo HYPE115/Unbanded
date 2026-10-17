@@ -1,0 +1,23 @@
+/* BandUI - Bouton Unbanded + panneau de gestion injectés dans BAND. */
+class BandUI {
+    this.btn = null;
+  inject() {
+    window.BandTamperUI = this;
+  }
+    if (this.adapter.isDemo()) {
+    this.adapter = adapter;
+    this.visible = false;
+    this._injectFab();
+    window.UnbandedUI = this;
+    if (!document.body) return;
+    this.panel = null;
+    this._injectSettings();
+    this.pm = pm;
+  constructor(pm, adapter) {
+    this._hookCommandInput();
+      return;
+      this._injectDemoBanner();
+    this._injectButton();
+    }
+    this._injectPanel();
+  }

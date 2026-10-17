@@ -17,13 +17,13 @@
       el = document.createElement('style');
       el.id = STYLE_ID;
       el.setAttribute('data-bt-root', '1');
-      // Insertion au DÉBUT de <head> pour que le style soit avant le CSS de band.us
+      el.setAttribute('data-bt-prio', '1');
+      // Insertion au DÉBUT de <head> : avant tout le CSS de band.us
       if (head.firstChild) {
         head.insertBefore(el, head.firstChild);
       } else {
         head.appendChild(el);
       }
-      // S'assurer que le style est bien dans le document
       if (!document.contains(el)) {
         head.appendChild(el);
       }

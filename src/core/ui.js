@@ -107,16 +107,16 @@ class BandUI {
       target.appendChild(this.btn);
       return;
     }
-    // 5) dernier recours : bouton flottant en bas à droite (au-dessus du FAB ⚙)
+    // 5) dernier recours : bouton discret en haut à droite (jamais sur Envoyer)
     Object.assign(this.btn.style, {
-      position: 'fixed', bottom: '76px', right: '18px', padding: '8px 12px',
+      position: 'fixed', top: '70px', right: '68px', padding: '8px 12px',
       background: '#6c5ce7', color: '#fff', borderRadius: '6px',
       zIndex: '10000', boxShadow: '0 2px 6px rgba(0,0,0,.3)'
     });
     document.body.appendChild(this.btn);
   }
 
-  /* ---------- Bouton flottant ⚙ : toggle la GUI depuis la page principale ---------- */
+  /* ---------- Bouton ⚙ : docké dans le header BAND, jamais en flottant ---------- */
   _injectFab() {
     if (!document.body) return;
     if (this.fab && document.body.contains(this.fab)) return;
@@ -126,18 +126,49 @@ class BandUI {
     fab.textContent = '⚙';
     fab.title = 'Unbanded — afficher/masquer le panneau';
     fab.setAttribute('data-bt-root', '1');
-    fab.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:10001;width:46px;height:46px;' +
-      'border:none;border-radius:50%;cursor:pointer;font-size:21px;line-height:1;color:#fff;' +
+    fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
+    fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; fab.style.opacity = ''; };
+    fab.onclick = () => this.toggleGui();
+
+    // 1) Dock dans le header BAND, après la barre de recherche
+    //    (.gnbLogoSearchArea) : respecte la DA du site, jamais sur Envoyer.
+    const searchArea = document.querySelector('#header .headerInner .gnbLogoSearchArea');
+    if (searchArea) {
+      fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
+        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
+        'line-height:1;color:inherit;background:transparent;' +
+        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
+        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+      searchArea.appendChild(fab);
+      this.fab = fab;
+      this._syncFabState();
+      this.adapter.log('Bouton ⚙ docké dans le header BAND.');
+      return;
+    }
+    // 2) Header présent sans zone logo/recherche : fin du headerInner.
+    const headerInner = document.querySelector('#header .headerInner, #header');
+    if (headerInner) {
+      fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
+        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
+        'line-height:1;color:inherit;background:transparent;' +
+        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
+        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+      headerInner.appendChild(fab);
+      this.fab = fab;
+      this._syncFabState();
+      this.adapter.log('Bouton ⚙ docké dans le header BAND.');
+      return;
+    }
+    // 3) Dernier recours : flottant discret en haut à droite (jamais en bas).
+    fab.style.cssText = 'position:fixed;right:18px;top:70px;z-index:10001;width:40px;height:40px;' +
+      'border:none;border-radius:50%;cursor:pointer;font-size:19px;line-height:1;color:#fff;' +
       'background:var(--btt-accent,#6c5ce7);box-shadow:0 4px 14px rgba(0,0,0,.4);' +
       'display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
-      'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
-    fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
-    fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; };
-    fab.onclick = () => this.toggleGui();
+      'opacity:.75;transition:transform .15s ease,opacity .2s ease;';
     document.body.appendChild(fab);
     this.fab = fab;
     this._syncFabState();
-    this.adapter.log('Bouton flottant ⚙ injecté (bas droite).');
+    this.adapter.log('Bouton flottant ⚙ injecté (haut droite, repli).');
   }
 
   toggleGui() {

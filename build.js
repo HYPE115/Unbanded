@@ -1,7 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
-const root = 'c:\\Users\\imperiex\\AppData\\Roaming\\spicetify\\band client tamper';
+const root = __dirname;
+
+const VERSION = '1.6.1';
+const REPO = 'HYPE115/band_tamper';
+const BRANCH = 'main';
+const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/unbanded.user.js`;
 
 const order = [
   'src/core/storage.js',
@@ -25,9 +30,13 @@ const order = [
 const header = `// ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.0
-// @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton flottant ⚙, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
+// @version      ${VERSION}
+// @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
+// @homepageURL  https://github.com/${REPO}
+// @supportURL   https://github.com/${REPO}/issues
+// @updateURL    ${RAW}
+// @downloadURL  ${RAW}
 // @match        *://band.us/*
 // @match        *://*.band.us/*
 // @grant        none

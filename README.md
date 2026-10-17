@@ -33,10 +33,16 @@ Un chargeur de **plugins** pour le client web/desktop de BAND, avec une interfac
 - **Tampermonkey** (Chrome, Edge, Firefox) ou
 - **Violentmonkey** ou **Greasemonkey**.
 
-### 2. Installer le script
-Ouvrez `unbanded.user.js` (à la racine) et installez-le :
-- soit en glissant le fichier dans l'extension Tampermonkey,
-- soit en copiant tout le contenu dans un nouveau script Tampermonkey.
+### 2. Installer le script (avec mises à jour auto)
+
+**Méthode recommandée — installation par URL (auto-update activé) :**
+1. Poussez `unbanded.user.js` sur GitHub (`main`).
+2. Dans Tampermonkey → onglet **Utilitaires** → champ **Installer depuis une URL** → collez :
+   `https://raw.githubusercontent.com/HYPE115/band_tamper/main/unbanded.user.js` → **Installer**.
+3. Tampermonkey vérifie `@updateURL` automatiquement (défaut : toutes les 24 h, réglable dans **Paramètres → Intervalle de vérification des mises à jour**). Chaque `node build.js` bumpé en version + `git push` déclenche la MAJ chez les utilisateurs.
+
+**Méthode manuelle (sans auto-update) :**
+- Glissez `unbanded.user.js` dans Tampermonkey, ou copiez son contenu dans un nouveau script. Les MAJ devront être réinstallées à la main.
 
 Le script s'active sur `*://band.us/*` et `*://*.band.us/*`.
 
@@ -83,7 +89,7 @@ Si l'avatar est injoignable (CORS, réseau…), le plugin renvoie une **image st
 | `/settings` | Ouvre la **page Paramètres** (thèmes, CSS personnalisé, plugins) |
 | `/btdbg` | Diagnostics : champ de saisie, bouton d'envoi, type de conversation, commandes chargées |
 
-Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic pour fermer). Au chargement, un toast « ✓ Band Tamper chargé » confirme que le script tourne. L'interception se fait au niveau global (`document`, phase de capture) : elle survit aux changements de DOM du SPA et fonctionne avec les champs `contenteditable` de BAND.
+Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic pour fermer). Au chargement, un toast « ✓ Unbanded v1.6.0 chargé » confirme que le script tourne. L'interception se fait au niveau global (`document`, phase de capture) : elle survit aux changements de DOM du SPA et fonctionne avec les champs `contenteditable` de BAND.
 
 ## 🛠 Dépannage (si ça ne répond pas)
 

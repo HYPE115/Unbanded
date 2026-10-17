@@ -1,9 +1,13 @@
 // ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.0
-// @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton flottant ⚙, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
+// @version      1.6.1
+// @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
+// @homepageURL  https://github.com/HYPE115/band_tamper
+// @supportURL   https://github.com/HYPE115/band_tamper/issues
+// @updateURL    https://raw.githubusercontent.com/HYPE115/band_tamper/main/unbanded.user.js
+// @downloadURL  https://raw.githubusercontent.com/HYPE115/band_tamper/main/unbanded.user.js
 // @match        *://band.us/*
 // @match        *://*.band.us/*
 // @grant        none
@@ -575,7 +579,7 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     el.textContent = css || '';
   }
 
-  // Restyle des éléments Band Tamper existants (panneau, bouton) via variables CSS.
+  // Restyle des éléments Unbanded existants (panneau, bouton) via variables CSS.
   function coreCss() {
     return '#bt-band-panel{background:var(--btt-surface,#232f3e)!important;color:var(--btt-text,#fff)!important}' +
       '#bt-band-panel hr{border-top-color:var(--btt-border,#3d4f60)!important}' +
@@ -728,13 +732,13 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
       el = document.createElement('style');
       el.id = STYLE_ID;
       el.setAttribute('data-bt-root', '1');
-      // Insertion au DÉBUT de <head> pour que le style soit avant le CSS de band.us
+      el.setAttribute('data-bt-prio', '1');
+      // Insertion au DÉBUT de <head> : avant tout le CSS de band.us
       if (head.firstChild) {
         head.insertBefore(el, head.firstChild);
       } else {
         head.appendChild(el);
       }
-      // S'assurer que le style est bien dans le document
       if (!document.contains(el)) {
         head.appendChild(el);
       }
@@ -920,16 +924,16 @@ class BandUI {
       target.appendChild(this.btn);
       return;
     }
-    // 5) dernier recours : bouton flottant en bas à droite (au-dessus du FAB ⚙)
+    // 5) dernier recours : bouton discret en haut à droite (jamais sur Envoyer)
     Object.assign(this.btn.style, {
-      position: 'fixed', bottom: '76px', right: '18px', padding: '8px 12px',
+      position: 'fixed', top: '70px', right: '68px', padding: '8px 12px',
       background: '#6c5ce7', color: '#fff', borderRadius: '6px',
       zIndex: '10000', boxShadow: '0 2px 6px rgba(0,0,0,.3)'
     });
     document.body.appendChild(this.btn);
   }
 
-  /* ---------- Bouton flottant ⚙ : toggle la GUI depuis la page principale ---------- */
+  /* ---------- Bouton ⚙ : docké dans le header BAND, jamais en flottant ---------- */
   _injectFab() {
     if (!document.body) return;
     if (this.fab && document.body.contains(this.fab)) return;
@@ -939,18 +943,49 @@ class BandUI {
     fab.textContent = '⚙';
     fab.title = 'Unbanded — afficher/masquer le panneau';
     fab.setAttribute('data-bt-root', '1');
-    fab.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:10001;width:46px;height:46px;' +
-      'border:none;border-radius:50%;cursor:pointer;font-size:21px;line-height:1;color:#fff;' +
+    fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
+    fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; fab.style.opacity = ''; };
+    fab.onclick = () => this.toggleGui();
+
+    // 1) Dock dans le header BAND, après la barre de recherche
+    //    (.gnbLogoSearchArea) : respecte la DA du site, jamais sur Envoyer.
+    const searchArea = document.querySelector('#header .headerInner .gnbLogoSearchArea');
+    if (searchArea) {
+      fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
+        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
+        'line-height:1;color:inherit;background:transparent;' +
+        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
+        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+      searchArea.appendChild(fab);
+      this.fab = fab;
+      this._syncFabState();
+      this.adapter.log('Bouton ⚙ docké dans le header BAND.');
+      return;
+    }
+    // 2) Header présent sans zone logo/recherche : fin du headerInner.
+    const headerInner = document.querySelector('#header .headerInner, #header');
+    if (headerInner) {
+      fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
+        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
+        'line-height:1;color:inherit;background:transparent;' +
+        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
+        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+      headerInner.appendChild(fab);
+      this.fab = fab;
+      this._syncFabState();
+      this.adapter.log('Bouton ⚙ docké dans le header BAND.');
+      return;
+    }
+    // 3) Dernier recours : flottant discret en haut à droite (jamais en bas).
+    fab.style.cssText = 'position:fixed;right:18px;top:70px;z-index:10001;width:40px;height:40px;' +
+      'border:none;border-radius:50%;cursor:pointer;font-size:19px;line-height:1;color:#fff;' +
       'background:var(--btt-accent,#6c5ce7);box-shadow:0 4px 14px rgba(0,0,0,.4);' +
       'display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
-      'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
-    fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
-    fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; };
-    fab.onclick = () => this.toggleGui();
+      'opacity:.75;transition:transform .15s ease,opacity .2s ease;';
     document.body.appendChild(fab);
     this.fab = fab;
     this._syncFabState();
-    this.adapter.log('Bouton flottant ⚙ injecté (bas droite).');
+    this.adapter.log('Bouton flottant ⚙ injecté (haut droite, repli).');
   }
 
   toggleGui() {
@@ -1075,7 +1110,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.0';
+  var v = '1.6.1';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -1595,7 +1630,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.0',
+      version: '1.6.1',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -1619,7 +1654,7 @@ BandUI.prototype._importConfig = function () {
   this._pickFile('application/json,.json', function (raw) {
     try {
       var cfg = JSON.parse(raw);
-      if (!cfg || (cfg.app !== 'unbanded' && cfg.app !== 'band-tamper')) throw new Error('ce n\'est pas une config Unbanded');
+      if (!cfg || (cfg.app !== 'unbanded')) throw new Error('ce n\'est pas une config Unbanded');
       if (cfg.options) {
         window.BTTStore.set('startupToast', cfg.options.startupToast !== false);
         window.BTTStore.set('toastDuration', Math.max(1, parseInt(cfg.options.toastDuration, 10) || 5));
@@ -2889,7 +2924,7 @@ var src_default = GIFEncoder;
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.0 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v1.6.1 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {

@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.0';
+  var v = '1.6.1';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -541,7 +541,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.0',
+      version: '1.6.1',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -565,7 +565,7 @@ BandUI.prototype._importConfig = function () {
   this._pickFile('application/json,.json', function (raw) {
     try {
       var cfg = JSON.parse(raw);
-      if (!cfg || (cfg.app !== 'unbanded' && cfg.app !== 'band-tamper')) throw new Error('ce n\'est pas une config Unbanded');
+      if (!cfg || (cfg.app !== 'unbanded')) throw new Error('ce n\'est pas une config Unbanded');
       if (cfg.options) {
         window.BTTStore.set('startupToast', cfg.options.startupToast !== false);
         window.BTTStore.set('toastDuration', Math.max(1, parseInt(cfg.options.toastDuration, 10) || 5));

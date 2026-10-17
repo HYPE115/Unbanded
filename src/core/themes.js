@@ -67,7 +67,7 @@
     el.textContent = css || '';
   }
 
-  // Restyle des éléments Band Tamper existants (panneau, bouton) via variables CSS.
+  // Restyle des éléments Unbanded existants (panneau, bouton) via variables CSS.
   function coreCss() {
     return '#bt-band-panel{background:var(--btt-surface,#232f3e)!important;color:var(--btt-text,#fff)!important}' +
       '#bt-band-panel hr{border-top-color:var(--btt-border,#3d4f60)!important}' +
