@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.2
+// @version      1.6.3
 // @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @homepageURL  https://github.com/HYPE115/band_tamper
@@ -945,7 +945,9 @@ class BandUI {
     fab.setAttribute('data-bt-root', '1');
     fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
     fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; fab.style.opacity = ''; };
-    fab.onclick = () => this.toggleGui();
+    // Ouvre directement les Paramètres sur l'onglet "À propos" (Unbanded vX.Y.Z),
+    // pas le panneau Plugins.
+    fab.onclick = () => this.openSettings('about');
 
     // 1) Dock dans le header BAND, après la barre de recherche
     //    (.gnbLogoSearchArea) : respecte la DA du site, jamais sur Envoyer.
@@ -989,22 +991,21 @@ class BandUI {
   }
 
   toggleGui() {
-    // Si la page Paramètres est ouverte : ferme tout. Sinon bascule le panneau.
+    // Le FAB ⚙ ouvre les Paramètres (À propos). Le panneau Plugins se bascule
+    // via le bouton "Unbanded" du header.
     if (this.settingsVisible) {
       this.closeSettings();
-      this._syncFabState();
       return;
     }
     this.toggle();
   }
 
   _syncFabState() {
+    // Le FAB reste un ⚙ fixe : il ouvre les Paramètres, pas le panneau.
     if (!this.fab) return;
-    const open = !!this.visible && !this.settingsVisible;
     try {
-      this.fab.textContent = open ? '✕' : '⚙';
-      this.fab.style.opacity = open ? '1' : '0.8';
-      this.fab.title = open ? 'Unbanded — masquer le panneau' : 'Unbanded — afficher le panneau';
+      this.fab.textContent = '⚙';
+      this.fab.title = 'Unbanded — paramètres';
     } catch (e) {}
   }
 }
@@ -1110,7 +1111,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.2';
+  var v = '1.6.3';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -1630,7 +1631,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.2',
+      version: '1.6.3',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -2919,7 +2920,7 @@ var src_default = GIFEncoder;
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.2 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v1.6.3 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {

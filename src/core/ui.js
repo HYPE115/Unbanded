@@ -128,7 +128,9 @@ class BandUI {
     fab.setAttribute('data-bt-root', '1');
     fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
     fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; fab.style.opacity = ''; };
-    fab.onclick = () => this.toggleGui();
+    // Ouvre directement les Paramètres sur l'onglet "À propos" (Unbanded vX.Y.Z),
+    // pas le panneau Plugins.
+    fab.onclick = () => this.openSettings('about');
 
     // 1) Dock dans le header BAND, après la barre de recherche
     //    (.gnbLogoSearchArea) : respecte la DA du site, jamais sur Envoyer.
@@ -172,22 +174,21 @@ class BandUI {
   }
 
   toggleGui() {
-    // Si la page Paramètres est ouverte : ferme tout. Sinon bascule le panneau.
+    // Le FAB ⚙ ouvre les Paramètres (À propos). Le panneau Plugins se bascule
+    // via le bouton "Unbanded" du header.
     if (this.settingsVisible) {
       this.closeSettings();
-      this._syncFabState();
       return;
     }
     this.toggle();
   }
 
   _syncFabState() {
+    // Le FAB reste un ⚙ fixe : il ouvre les Paramètres, pas le panneau.
     if (!this.fab) return;
-    const open = !!this.visible && !this.settingsVisible;
     try {
-      this.fab.textContent = open ? '✕' : '⚙';
-      this.fab.style.opacity = open ? '1' : '0.8';
-      this.fab.title = open ? 'Unbanded — masquer le panneau' : 'Unbanded — afficher le panneau';
+      this.fab.textContent = '⚙';
+      this.fab.title = 'Unbanded — paramètres';
     } catch (e) {}
   }
 }
