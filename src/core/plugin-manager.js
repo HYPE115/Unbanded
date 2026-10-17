@@ -22,7 +22,48 @@ class PluginManager {
     this.ui = ui;
     this.plugins = new Map();        // id -> { spec, url, enabled, specObj }
     this.commands = new Map();       // nom commande -> { pluginId, handler, desc }
+    this.aliases = new Map();        // alias -> nom réel (ex: btdbg -> debug)
     this.defaultPlugins = [];
+  }
+
+  /** Enregistre un alias de commande (insensible à la casse, '/' initial toléré).
+   *  La résolution chaînée + anti-boucle vit dans resolveCommand()
+   *  (plugin-manager-builtin.js). */
+  registerAlias(alias, target) {
+    if (typeof this.resolveCommand !== 'function') {
+      this.aliases.set(String(alias).toLowerCase(), String(target).toLowerCase());
+      return;
+    }
+    // Délègue au prototype partagé (normalisation + log).
+    PluginManager.prototype.registerAlias.call(this, alias, target);
+  }
+
+  /** Supprime un alias de commande. */
+  unregisterAlias(alias) {
+    try {
+      if (typeof PluginManager.prototype.unregisterAlias === 'function' &&
+          PluginManager.prototype.unregisterAlias !== this.unregisterAlias) {
+        PluginManager.prototype.unregisterAlias.call(this, alias);
+        return;
+      }
+      this.aliases.delete(String(alias || '').toLowerCase().replace(/^\//, ''));
+    } catch (e) {}
+  }
+
+  /** Liste des alias : { alias: cible }. Utile pour /help et l'autocomplétion. */
+  listAliases() {
+    const out = {};
+    try {
+      for (const [a, t] of this.aliases) out[a] = t;
+    } catch (e) {}
+    return out;
+  }
+
+  /** Détail d'une commande (résout les alias). Retourne null si introuvable. */
+  getCommand(name) {
+    const n = (typeof this.resolveCommand === 'function')
+      ? this.resolveCommand(name) : String(name || '').toLowerCase();
+    return this.commands.get(n) || null;
   }
 
   registerDefaultPlugin(url) {
@@ -132,6 +173,8 @@ class PluginManager {
       unregisterCommand: (name) => {
         self.commands.delete(name.toLowerCase());
       },
+      registerAlias: (alias, target) => self.registerAlias(alias, target),
+      unregisterAlias: (alias) => self.unregisterAlias(alias),
       sendText: (text) => api.sendText(text),
       sendFile: (blob, filename) => api.sendFile(blob, filename),
       getCurrentUser: () => api.getCurrentUser(),
@@ -146,7 +189,9 @@ class PluginManager {
   async runCommand(inputText, messageInfo) {
     const match = inputText.match(/^\/([^\s]+)(?:\s+(.*))?$/);
     if (!match) return false;
-    const name = match[1].toLowerCase();
+    let name = match[1].toLowerCase();
+    // Alias : résout les chaînes (ex /btdbg → /debug) via resolveCommand().
+    if (typeof this.resolveCommand === 'function') name = this.resolveCommand(name);
     const args = (match[2] || '').trim().split(/\s+/).filter(Boolean);
     const cmd = this.commands.get(name);
     if (!cmd) return false;

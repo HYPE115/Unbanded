@@ -52,8 +52,33 @@ BandUI.prototype._hookCommandInput = function () {
   // et intercepte Entrée AVANT les handlers de BAND (contenteditable).
   doc.addEventListener('keydown', async function (e) {
     try {
-      if (!e || e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
       const el = e.target;
+      // Historique des commandes : ↑/↓ rappelle la dernière commande tapée
+      // (seulement quand le champ contient déjà un "/" en cours de frappe).
+      if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (self._isEditable(el) && !self._isSearchField(el) &&
+            !(el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]')))) {
+          const cur = self._readValue(el);
+          if (cur.charAt(0) === '/' && self._cmdHistory && self._cmdHistory.length) {
+            e.preventDefault();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            if (typeof self._histIdx !== 'number') self._histIdx = self._cmdHistory.length;
+            self._histIdx += (e.key === 'ArrowUp' ? -1 : 1);
+            if (self._histIdx < 0) self._histIdx = 0;
+            if (self._histIdx >= self._cmdHistory.length) {
+              self._histIdx = self._cmdHistory.length;
+              self._setValue(el, '/');
+            } else {
+              self._setValue(el, self._cmdHistory[self._histIdx]);
+            }
+            return;
+          }
+        }
+        return;
+      }
+      if (!e || e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
+      // Shift+Entrée = saut de ligne (jamais une exécution de commande).
+      if (e.shiftKey) return;
       if (!self._isEditable(el)) return;
       if (self._isSearchField(el)) return;
       if (el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]'))) return;
@@ -63,6 +88,15 @@ BandUI.prototype._hookCommandInput = function () {
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
       if (e.stopPropagation) e.stopPropagation();
       self._setValue(el, '');
+      // Mémorise dans l'historique (max 30, sans doublon consécutif).
+      try {
+        self._cmdHistory = self._cmdHistory || [];
+        if (self._cmdHistory[self._cmdHistory.length - 1] !== text) {
+          self._cmdHistory.push(text);
+          if (self._cmdHistory.length > 30) self._cmdHistory.shift();
+        }
+        self._histIdx = self._cmdHistory.length;
+      } catch (eHist) {}
       const name = text.split(' ')[0];
       window.__BTT_toast('… exécution de ' + name);
       const info = {
@@ -77,18 +111,51 @@ BandUI.prototype._hookCommandInput = function () {
     }
   }, true);
   this.adapter.log('Hook clavier global actif (Entrée + "/").');
+
+  // Raccourcis globaux : Ctrl+, = Paramètres, Échap = fermer Paramètres/autocomplete.
+  // Ignorés dans les champs de saisie (sauf Échap) pour ne pas casser la frappe.
+  if (!this._shortcutsHooked) {
+    this._shortcutsHooked = true;
+    doc.addEventListener('keydown', function (e) {
+      try {
+        if (!e) return;
+        // Ctrl+, (ou Ctrl+;) → Paramètres.
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === ',' || e.key === ';')) {
+          e.preventDefault();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+          if (self.settingsVisible) self.closeSettings();
+          else self.openSettings();
+          return;
+        }
+        if (e.key !== 'Escape') return;
+        const el = e.target;
+        const inField = self._isEditable(el) &&
+          !(el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]')));
+        if (inField) return; // laisse BAND gérer Échap dans ses champs
+        let closed = false;
+        if (self.settingsVisible && self.closeSettings) { self.closeSettings(); closed = true; }
+        if (self._acHide) { try { self._acHide(); } catch (eAc) {} }
+        if (closed) {
+          e.preventDefault();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        }
+      } catch (err) {}
+    }, true);
+  }
 };
 
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-window.__BTT_toast = function (text, type) {
+window.__BTT_toast = function (text, type, opts) {
+  // opts : { sticky: bool (pas de disparition auto), html: bool (interprète le HTML) }
   try {
     if (typeof document === 'undefined' || !document.body) {
-      console.log('[Unbanded]', text);
-      return;
+      console.log('[Unbanded]', String(text == null ? '' : text).replace(/<[^>]*>/g, ''));
+      return null;
     }
+    opts = (opts && typeof opts === 'object') ? opts : {};
     let wrap = document.getElementById('bt-toasts');
     if (!wrap) {
       wrap = document.createElement('div');
@@ -97,12 +164,32 @@ window.__BTT_toast = function (text, type) {
       wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:2147483647;display:flex;flex-direction:column;gap:8px;align-items:center;font-family:sans-serif;';
       document.body.appendChild(wrap);
     }
+    // Évite l'empilement infini : max 5 toasts, le plus vieux est retiré.
+    while (wrap.children.length >= 5 && wrap.firstChild) wrap.removeChild(wrap.firstChild);
     const t = document.createElement('div');
     let bg = '#1e272e';
     if (type === 'error') bg = '#c0392b';
     if (type === 'ok') bg = '#27ae60';
-    t.style.cssText = 'max-width:420px;background:' + bg + ';color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.45;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:pre-wrap;word-break:break-word;cursor:pointer;';
-    t.textContent = String(text == null ? '' : text);
+    t.style.cssText = 'max-width:460px;max-height:40vh;overflow-y:auto;background:' + bg + ';color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.45;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:pre-wrap;word-break:break-word;cursor:pointer;';
+    if (opts.html) t.innerHTML = String(text == null ? '' : text);
+    else t.textContent = String(text == null ? '' : text);
+    // Bouton "Copier" pour les toasts longs (debug, help…).
+    const plain = t.textContent || '';
+    if (plain.length > 80) {
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.textContent = '⧉ Copier';
+      copy.style.cssText = 'display:block;margin-top:6px;padding:3px 10px;border:1px solid rgba(255,255,255,.5);border-radius:5px;background:transparent;color:#fff;font-size:11px;cursor:pointer;';
+      copy.onclick = function (ev) {
+        if (ev && ev.stopPropagation) ev.stopPropagation();
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(plain);
+          copy.textContent = '✓ Copié';
+          setTimeout(function () { copy.textContent = '⧉ Copier'; }, 1500);
+        } catch (e) { copy.textContent = 'Copie impossible'; }
+      };
+      t.appendChild(copy);
+    }
     t.onclick = function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); };
     wrap.appendChild(t);
     var duration = 5000;
@@ -112,7 +199,10 @@ window.__BTT_toast = function (text, type) {
         if (secs > 0) duration = secs * 1000;
       }
     } catch (eStore) {}
-    setTimeout(function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); }, duration);
+    if (!opts.sticky) {
+      setTimeout(function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); }, duration);
+    }
+    return t;
   } catch (e) {
     try { console.log('[Unbanded]', text); } catch (e2) {}
   }

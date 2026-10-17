@@ -84,10 +84,15 @@ Si l'avatar est injoignable (CORS, réseau…), le plugin renvoie une **image st
 
 | Commande | Effet |
 |----------|-------|
-| `/help` | Affiche la liste des commandes (toast local, rien n'est envoyé au chat) |
-| `/plugins` | Ouvre/ferme le panneau Plugins |
+| `/help` | Affiche la liste des commandes (`/help <commande>` pour le détail, toast local, rien n'est envoyé au chat) |
+| `/plugins` | Ouvre la page Paramètres sur l'onglet Plugins |
 | `/settings` | Ouvre la **page Paramètres** (thèmes, CSS personnalisé, plugins) |
-| `/debug` | Diagnostics : champ de saisie, bouton d'envoi, type de conversation, commandes chargées |
+| `/debug` | Diagnostics (URL, page chat, champ de saisie, bouton d'envoi, plugins/commandes) + **copie auto dans le presse-papiers** |
+| `/version` | Affiche la version Unbanded |
+| `/clear` | Efface les toasts Unbanded affichés |
+| `/btdbg` | Alias historique de `/debug` |
+
+Quand tu tapes `/` + début de commande, un **popup façon Discord** suggère les commandes (↑/↓ pour naviguer, Tab ou Entrée pour compléter, Échap pour fermer). **↑/↓** sur un champ commençant par `/` rappelle l'historique de tes commandes. **Ctrl+,** ouvre/ferme les Paramètres, **Échap** ferme la modale.
 
 Chaque commande affiche son résultat dans un **toast** en bas de l'écran (clic pour fermer). Au chargement, un toast « ✓ Unbanded v1.6.0 chargé » confirme que le script tourne. L'interception se fait au niveau global (`document`, phase de capture) : elle survit aux changements de DOM du SPA et fonctionne avec les champs `contenteditable` de BAND.
 

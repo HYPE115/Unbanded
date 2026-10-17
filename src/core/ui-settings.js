@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.9';
+  var v = '1.7.0';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -33,7 +33,7 @@ BandUI.prototype._settingsMarkup = function () {
         '<button type="button" class="bt-set-tab" data-tab="css">{ } CSS personnalisé</button>' +
         '<button type="button" class="bt-set-tab" data-tab="about">ℹ À propos</button>' +
       '</nav>' +
-      '<div class="bt-set-side-foot">Raccourci : tape <b>/settings</b> dans le chat</div>' +
+      '<div class="bt-set-side-foot">Raccourcis : <b>/settings</b> · <b>Ctrl+,</b> · <b>Échap</b> pour fermer</div>' +
     '</aside>' +
     '<main class="bt-set-main">' +
       '<header class="bt-set-head"><h2 id="bt-set-title">Général</h2>' +
@@ -373,6 +373,8 @@ BandUI.prototype._settingsClick = function (e) {
   var toast = window.__BTT_toast || function () {};
   // fermeture
   if (t.id === 'bt-settings-close') { this.closeSettings(); return; }
+  // Clic sur le fond assombri (hors fenêtre) → ferme la modale.
+  if (t === this.settingsEl) { this.closeSettings(); return; }
   // onglets (data-tab)
   var el = t;
   while (el && el !== this.settingsEl) {
@@ -548,7 +550,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.9',
+      version: '1.7.0',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,

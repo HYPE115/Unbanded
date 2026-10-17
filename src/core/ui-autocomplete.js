@@ -182,7 +182,6 @@ BandUI.prototype._hookCommandAutocomplete = function () {
   doc.addEventListener('focusout', function () { setTimeout(hide, 150); }, true);
 
   this.adapter.log('Autocompletion slash facon Discord active.');
-// __PART2__
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = BandUI;

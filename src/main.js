@@ -1,6 +1,7 @@
 (function () {
   'use strict';
 
+  var t0 = Date.now();
   var adapter = new window.BandAdapter();
   var pm = new window.PluginManager(adapter, null);
   var ui = new window.BandUI(pm, adapter);
@@ -17,12 +18,33 @@
     // Plugins persistés (imports URL/fichier des sessions précédentes)
     try { await pm.loadPersisted(); } catch (ePersist) { console.warn('[Unbanded] Plugins persistés :', ePersist); }
     ui.inject();
+    // API publique (plugins avancés, console, scripts externes).
+    try {
+      window.Unbanded = {
+        version: window.BTT_VERSION || 'dev',
+        adapter: adapter,
+        pm: pm,
+        ui: ui,
+        store: window.BTTStore,
+        themes: window.BTTThemes,
+        styles: window.BTTStyles,
+        toast: window.__BTT_toast,
+        openSettings: function (tab) { return ui.openSettings(tab); },
+        closeSettings: function () { return ui.closeSettings(); },
+        registerCommand: function (name, desc, handler) { return pm.registerCommand(name, desc, handler); },
+        registerAlias: function (alias, target) { return pm.registerAlias(alias, target); },
+        // Ajout express de plugin (content-script privé / console).
+        // Ex : Unbanded.addPlugin('https://…/mon-plugin.js')
+        addPlugin: function (url, opts) { return pm.loadPlugin(url, opts); }
+      };
+    } catch (eApi) { console.warn('[Unbanded] API publique :', eApi); }
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
+    var ms = Date.now() - t0;
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.9 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v' + (window.BTT_VERSION || 'dev') + ' chargé en ' + ms + ' ms — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
-    console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
+    console.log('[Unbanded] Prêt en ' + ms + ' ms. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {
       try { ui.ensureInjected(); } catch (e) {}
       // Ré-ancre les couches CSS en fin de <head> : le SPA de band.us peut

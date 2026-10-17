@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.9
+// @version      1.7.0
 // @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @homepageURL  https://github.com/HYPE115/band_tamper
@@ -17,6 +17,7 @@
 
 (function () {
 'use strict';
+window.BTT_VERSION = '1.7.0';
 var module = { exports: {} };
 
 /**
@@ -271,7 +272,48 @@ class PluginManager {
     this.ui = ui;
     this.plugins = new Map();        // id -> { spec, url, enabled, specObj }
     this.commands = new Map();       // nom commande -> { pluginId, handler, desc }
+    this.aliases = new Map();        // alias -> nom réel (ex: btdbg -> debug)
     this.defaultPlugins = [];
+  }
+
+  /** Enregistre un alias de commande (insensible à la casse, '/' initial toléré).
+   *  La résolution chaînée + anti-boucle vit dans resolveCommand()
+   *  (plugin-manager-builtin.js). */
+  registerAlias(alias, target) {
+    if (typeof this.resolveCommand !== 'function') {
+      this.aliases.set(String(alias).toLowerCase(), String(target).toLowerCase());
+      return;
+    }
+    // Délègue au prototype partagé (normalisation + log).
+    PluginManager.prototype.registerAlias.call(this, alias, target);
+  }
+
+  /** Supprime un alias de commande. */
+  unregisterAlias(alias) {
+    try {
+      if (typeof PluginManager.prototype.unregisterAlias === 'function' &&
+          PluginManager.prototype.unregisterAlias !== this.unregisterAlias) {
+        PluginManager.prototype.unregisterAlias.call(this, alias);
+        return;
+      }
+      this.aliases.delete(String(alias || '').toLowerCase().replace(/^\//, ''));
+    } catch (e) {}
+  }
+
+  /** Liste des alias : { alias: cible }. Utile pour /help et l'autocomplétion. */
+  listAliases() {
+    const out = {};
+    try {
+      for (const [a, t] of this.aliases) out[a] = t;
+    } catch (e) {}
+    return out;
+  }
+
+  /** Détail d'une commande (résout les alias). Retourne null si introuvable. */
+  getCommand(name) {
+    const n = (typeof this.resolveCommand === 'function')
+      ? this.resolveCommand(name) : String(name || '').toLowerCase();
+    return this.commands.get(n) || null;
   }
 
   registerDefaultPlugin(url) {
@@ -381,6 +423,8 @@ class PluginManager {
       unregisterCommand: (name) => {
         self.commands.delete(name.toLowerCase());
       },
+      registerAlias: (alias, target) => self.registerAlias(alias, target),
+      unregisterAlias: (alias) => self.unregisterAlias(alias),
       sendText: (text) => api.sendText(text),
       sendFile: (blob, filename) => api.sendFile(blob, filename),
       getCurrentUser: () => api.getCurrentUser(),
@@ -395,7 +439,9 @@ class PluginManager {
   async runCommand(inputText, messageInfo) {
     const match = inputText.match(/^\/([^\s]+)(?:\s+(.*))?$/);
     if (!match) return false;
-    const name = match[1].toLowerCase();
+    let name = match[1].toLowerCase();
+    // Alias : résout les chaînes (ex /btdbg → /debug) via resolveCommand().
+    if (typeof this.resolveCommand === 'function') name = this.resolveCommand(name);
     const args = (match[2] || '').trim().split(/\s+/).filter(Boolean);
     const cmd = this.commands.get(name);
     if (!cmd) return false;
@@ -486,6 +532,38 @@ if (typeof module !== 'undefined' && module.exports) module.exports = PluginMana
 PluginManager.prototype.registerCommand = function (name, desc, handler) {
   this.commands.set(name.toLowerCase(), { pluginId: 'builtin', handler: handler, desc: desc || '' });
   this.adapter.log('Commande enregistrée : /' + name);
+};
+
+/**
+ * registerAlias(alias, cible) — ex : registerAlias('btdbg', 'debug').
+ * L'alias est résolu dans runCommand(), /help et l'autocomplétion.
+ * Les alias ne sont pas persistés (re-déclarés au chargement).
+ */
+PluginManager.prototype.registerAlias = function (alias, target) {
+  if (!this.aliases) this.aliases = new Map();
+  var a = String(alias || '').toLowerCase().replace(/^\//, '');
+  var t = String(target || '').toLowerCase().replace(/^\//, '');
+  if (!a || !t || a === t) return;
+  this.aliases.set(a, t);
+  this.adapter.log('Alias enregistré : /' + a + ' → /' + t);
+};
+
+PluginManager.prototype.unregisterAlias = function (alias) {
+  if (!this.aliases) return;
+  this.aliases.delete(String(alias || '').toLowerCase().replace(/^\//, ''));
+};
+
+/** Résout un nom de commande via les alias (chaînés, anti-boucle). */
+PluginManager.prototype.resolveCommand = function (name) {
+  var n = String(name || '').toLowerCase();
+  if (!this.aliases) return n;
+  var seen = {};
+  var guard = 0;
+  while (this.aliases.has(n) && !seen[n] && guard++ < 10) {
+    seen[n] = true;
+    n = this.aliases.get(n);
+  }
+  return n;
 };
 
 PluginManager.prototype.registerBuiltin = function (spec, url) {
@@ -826,21 +904,34 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
 
 /**
  * Commandes slash intégrées (disponibles même sans plugin).
+ * Version centralisée : build.js définit window.BTT_VERSION avant la concaténation
+ * (repli "dev" si le script est chargé sans passer par le build).
  */
 function registerBuiltInCommands(pm) {
+  var BTT_VERSION = 'dev';
+  try { if (window.BTT_VERSION) BTT_VERSION = window.BTT_VERSION; } catch (e) {}
   pm.registerCommand('pat', "Fais un pet-pet à quelqu'un. Usage : /pat [user] (user requis en groupe)", async () => {
     // Redondant : le plugin pet-pet (chargé juste après) remplace ce stub.
   });
 
-  pm.registerCommand('help', "Affiche la liste des commandes", async (args, info) => {
-    const lines = ['=== Commandes Unbanded ==='];
+  pm.registerCommand('help', "Affiche la liste des commandes (ou le détail : /help <commande>)", async (args, info) => {
+    const q = String((args && args[0]) || '').toLowerCase().replace(/^\//, '');
+    if (q) {
+      const cmd = pm.commands.get(q);
+      const msg = cmd ? '/' + q + ' — ' + (cmd.desc || '(pas de description)') + '\n(affichage local uniquement)'
+                      : 'Commande inconnue : /' + q + ' (tape /help pour la liste)';
+      if (window.__BTT_toast) window.__BTT_toast(msg, cmd ? undefined : 'error');
+      else info.api.log(msg);
+      return;
+    }
+    const lines = ['=== Commandes Unbanded v' + BTT_VERSION + ' ==='];
     for (const [name, cmd] of pm.commands) {
       lines.push('/' + name + ' — ' + (cmd.desc || ''));
     }
-    lines.push('', '(affichage local uniquement)');
-    if (window.__BTT_toast) window.__BTT_toast(lines.join('\n'));
-    else info.api.log(lines.join('\n'));
-  });
+    lines.push('', 'Astuce : /help <commande> pour le détail · (affichage local uniquement)');
+     if (window.__BTT_toast) window.__BTT_toast(lines.join('\n'));
+     else info.api.log(lines.join('\n'));
+   });
 
   pm.registerCommand('plugins', "Ouvre la page Paramètres sur l'onglet Plugins", async (args, info) => {
     const ui = window.UnbandedUI || window.BandTamperUI;
@@ -866,18 +957,42 @@ function registerBuiltInCommands(pm) {
     const input = a.getChatInput ? a.getChatInput() : null;
     const fileInputs = a.$$('input[type="file"]').length;
     const lines = [
-      '=== debug Unbanded ===',
+      '=== debug Unbanded v' + BTT_VERSION + ' ===',
+      'URL : ' + String((typeof location !== 'undefined' && location.href) || '?'),
       'Host : ' + a.host + ' | démo : ' + a.isDemo(),
+      'Page chat : ' + ((window.UnbandedUI && window.UnbandedUI._isChatPage) ? window.UnbandedUI._isChatPage() : '?'),
       'Type conversation : ' + a.getConversationType(),
       'Canal : ' + a.getCurrentChannelId(),
       'Champ de saisie : ' + (input ? input.tagName + (input.isContentEditable ? ' (contenteditable)' : '') : 'INTROUVABLE'),
       'Bouton envoyer : ' + (a.getSendButton && a.getSendButton() ? 'trouvé' : 'introuvable'),
       'input[type=file] : ' + fileInputs,
-      'Commandes : ' + Array.from(pm.commands.keys()).join(', ')
+      'Plugins : ' + pm.plugins.size + ' | Commandes : ' + Array.from(pm.commands.keys()).join(', ')
     ];
-    console.log('[Unbanded][debug]\n' + lines.join('\n'));
-    if (window.__BTT_toast) window.__BTT_toast(lines.join('\n'));
+    const text = lines.join('\n');
+    console.log('[Unbanded][debug]\n' + text);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
+    } catch (e) {}
+    if (window.__BTT_toast) window.__BTT_toast(text + '\n(copié dans le presse-papiers)');
   });
+
+  pm.registerCommand('version', 'Affiche la version Unbanded', async (args, info) => {
+    const msg = 'Unbanded v' + BTT_VERSION;
+    if (window.__BTT_toast) window.__BTT_toast(msg, 'ok');
+    else info.api.log(msg);
+  });
+
+  pm.registerCommand('clear', 'Efface les toasts Unbanded affichés', async () => {
+    try {
+      const wrap = document.getElementById('bt-toasts');
+      if (wrap) wrap.innerHTML = '';
+      const ui = window.UnbandedUI || window.BandTamperUI;
+      if (ui && ui._acHide) ui._acHide();
+    } catch (e) {}
+  });
+
+  // Alias historique : /btdbg continue de fonctionner après le renommage en /debug.
+  try { if (pm.registerAlias) pm.registerAlias('btdbg', 'debug'); } catch (eAlias) {}
 }
 
 window.registerBuiltInCommands = registerBuiltInCommands;
@@ -1258,7 +1373,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.9';
+  var v = '1.7.0';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -1270,7 +1385,7 @@ BandUI.prototype._settingsMarkup = function () {
         '<button type="button" class="bt-set-tab" data-tab="css">{ } CSS personnalisé</button>' +
         '<button type="button" class="bt-set-tab" data-tab="about">ℹ À propos</button>' +
       '</nav>' +
-      '<div class="bt-set-side-foot">Raccourci : tape <b>/settings</b> dans le chat</div>' +
+      '<div class="bt-set-side-foot">Raccourcis : <b>/settings</b> · <b>Ctrl+,</b> · <b>Échap</b> pour fermer</div>' +
     '</aside>' +
     '<main class="bt-set-main">' +
       '<header class="bt-set-head"><h2 id="bt-set-title">Général</h2>' +
@@ -1610,6 +1725,8 @@ BandUI.prototype._settingsClick = function (e) {
   var toast = window.__BTT_toast || function () {};
   // fermeture
   if (t.id === 'bt-settings-close') { this.closeSettings(); return; }
+  // Clic sur le fond assombri (hors fenêtre) → ferme la modale.
+  if (t === this.settingsEl) { this.closeSettings(); return; }
   // onglets (data-tab)
   var el = t;
   while (el && el !== this.settingsEl) {
@@ -1785,7 +1902,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.9',
+      version: '1.7.0',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -1911,8 +2028,33 @@ BandUI.prototype._hookCommandInput = function () {
   // et intercepte Entrée AVANT les handlers de BAND (contenteditable).
   doc.addEventListener('keydown', async function (e) {
     try {
-      if (!e || e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
       const el = e.target;
+      // Historique des commandes : ↑/↓ rappelle la dernière commande tapée
+      // (seulement quand le champ contient déjà un "/" en cours de frappe).
+      if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (self._isEditable(el) && !self._isSearchField(el) &&
+            !(el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]')))) {
+          const cur = self._readValue(el);
+          if (cur.charAt(0) === '/' && self._cmdHistory && self._cmdHistory.length) {
+            e.preventDefault();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            if (typeof self._histIdx !== 'number') self._histIdx = self._cmdHistory.length;
+            self._histIdx += (e.key === 'ArrowUp' ? -1 : 1);
+            if (self._histIdx < 0) self._histIdx = 0;
+            if (self._histIdx >= self._cmdHistory.length) {
+              self._histIdx = self._cmdHistory.length;
+              self._setValue(el, '/');
+            } else {
+              self._setValue(el, self._cmdHistory[self._histIdx]);
+            }
+            return;
+          }
+        }
+        return;
+      }
+      if (!e || e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
+      // Shift+Entrée = saut de ligne (jamais une exécution de commande).
+      if (e.shiftKey) return;
       if (!self._isEditable(el)) return;
       if (self._isSearchField(el)) return;
       if (el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]'))) return;
@@ -1922,6 +2064,15 @@ BandUI.prototype._hookCommandInput = function () {
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
       if (e.stopPropagation) e.stopPropagation();
       self._setValue(el, '');
+      // Mémorise dans l'historique (max 30, sans doublon consécutif).
+      try {
+        self._cmdHistory = self._cmdHistory || [];
+        if (self._cmdHistory[self._cmdHistory.length - 1] !== text) {
+          self._cmdHistory.push(text);
+          if (self._cmdHistory.length > 30) self._cmdHistory.shift();
+        }
+        self._histIdx = self._cmdHistory.length;
+      } catch (eHist) {}
       const name = text.split(' ')[0];
       window.__BTT_toast('… exécution de ' + name);
       const info = {
@@ -1936,18 +2087,51 @@ BandUI.prototype._hookCommandInput = function () {
     }
   }, true);
   this.adapter.log('Hook clavier global actif (Entrée + "/").');
+
+  // Raccourcis globaux : Ctrl+, = Paramètres, Échap = fermer Paramètres/autocomplete.
+  // Ignorés dans les champs de saisie (sauf Échap) pour ne pas casser la frappe.
+  if (!this._shortcutsHooked) {
+    this._shortcutsHooked = true;
+    doc.addEventListener('keydown', function (e) {
+      try {
+        if (!e) return;
+        // Ctrl+, (ou Ctrl+;) → Paramètres.
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === ',' || e.key === ';')) {
+          e.preventDefault();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+          if (self.settingsVisible) self.closeSettings();
+          else self.openSettings();
+          return;
+        }
+        if (e.key !== 'Escape') return;
+        const el = e.target;
+        const inField = self._isEditable(el) &&
+          !(el.closest && (el.closest('#bt-band-panel') || el.closest('#bt-settings') || el.closest('[data-bt-root]')));
+        if (inField) return; // laisse BAND gérer Échap dans ses champs
+        let closed = false;
+        if (self.settingsVisible && self.closeSettings) { self.closeSettings(); closed = true; }
+        if (self._acHide) { try { self._acHide(); } catch (eAc) {} }
+        if (closed) {
+          e.preventDefault();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        }
+      } catch (err) {}
+    }, true);
+  }
 };
 
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-window.__BTT_toast = function (text, type) {
+window.__BTT_toast = function (text, type, opts) {
+  // opts : { sticky: bool (pas de disparition auto), html: bool (interprète le HTML) }
   try {
     if (typeof document === 'undefined' || !document.body) {
-      console.log('[Unbanded]', text);
-      return;
+      console.log('[Unbanded]', String(text == null ? '' : text).replace(/<[^>]*>/g, ''));
+      return null;
     }
+    opts = (opts && typeof opts === 'object') ? opts : {};
     let wrap = document.getElementById('bt-toasts');
     if (!wrap) {
       wrap = document.createElement('div');
@@ -1956,12 +2140,32 @@ window.__BTT_toast = function (text, type) {
       wrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:2147483647;display:flex;flex-direction:column;gap:8px;align-items:center;font-family:sans-serif;';
       document.body.appendChild(wrap);
     }
+    // Évite l'empilement infini : max 5 toasts, le plus vieux est retiré.
+    while (wrap.children.length >= 5 && wrap.firstChild) wrap.removeChild(wrap.firstChild);
     const t = document.createElement('div');
     let bg = '#1e272e';
     if (type === 'error') bg = '#c0392b';
     if (type === 'ok') bg = '#27ae60';
-    t.style.cssText = 'max-width:420px;background:' + bg + ';color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.45;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:pre-wrap;word-break:break-word;cursor:pointer;';
-    t.textContent = String(text == null ? '' : text);
+    t.style.cssText = 'max-width:460px;max-height:40vh;overflow-y:auto;background:' + bg + ';color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.45;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:pre-wrap;word-break:break-word;cursor:pointer;';
+    if (opts.html) t.innerHTML = String(text == null ? '' : text);
+    else t.textContent = String(text == null ? '' : text);
+    // Bouton "Copier" pour les toasts longs (debug, help…).
+    const plain = t.textContent || '';
+    if (plain.length > 80) {
+      const copy = document.createElement('button');
+      copy.type = 'button';
+      copy.textContent = '⧉ Copier';
+      copy.style.cssText = 'display:block;margin-top:6px;padding:3px 10px;border:1px solid rgba(255,255,255,.5);border-radius:5px;background:transparent;color:#fff;font-size:11px;cursor:pointer;';
+      copy.onclick = function (ev) {
+        if (ev && ev.stopPropagation) ev.stopPropagation();
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(plain);
+          copy.textContent = '✓ Copié';
+          setTimeout(function () { copy.textContent = '⧉ Copier'; }, 1500);
+        } catch (e) { copy.textContent = 'Copie impossible'; }
+      };
+      t.appendChild(copy);
+    }
     t.onclick = function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); };
     wrap.appendChild(t);
     var duration = 5000;
@@ -1971,7 +2175,10 @@ window.__BTT_toast = function (text, type) {
         if (secs > 0) duration = secs * 1000;
       }
     } catch (eStore) {}
-    setTimeout(function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); }, duration);
+    if (!opts.sticky) {
+      setTimeout(function () { if (t.remove) t.remove(); else if (t.parentNode) t.parentNode.removeChild(t); }, duration);
+    }
+    return t;
   } catch (e) {
     try { console.log('[Unbanded]', text); } catch (e2) {}
   }
@@ -2166,7 +2373,6 @@ BandUI.prototype._hookCommandAutocomplete = function () {
   doc.addEventListener('focusout', function () { setTimeout(hide, 150); }, true);
 
   this.adapter.log('Autocompletion slash facon Discord active.');
-// __PART2__
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = BandUI;
@@ -3248,6 +3454,7 @@ var src_default = GIFEncoder;
 (function () {
   'use strict';
 
+  var t0 = Date.now();
   var adapter = new window.BandAdapter();
   var pm = new window.PluginManager(adapter, null);
   var ui = new window.BandUI(pm, adapter);
@@ -3264,12 +3471,33 @@ var src_default = GIFEncoder;
     // Plugins persistés (imports URL/fichier des sessions précédentes)
     try { await pm.loadPersisted(); } catch (ePersist) { console.warn('[Unbanded] Plugins persistés :', ePersist); }
     ui.inject();
+    // API publique (plugins avancés, console, scripts externes).
+    try {
+      window.Unbanded = {
+        version: window.BTT_VERSION || 'dev',
+        adapter: adapter,
+        pm: pm,
+        ui: ui,
+        store: window.BTTStore,
+        themes: window.BTTThemes,
+        styles: window.BTTStyles,
+        toast: window.__BTT_toast,
+        openSettings: function (tab) { return ui.openSettings(tab); },
+        closeSettings: function () { return ui.closeSettings(); },
+        registerCommand: function (name, desc, handler) { return pm.registerCommand(name, desc, handler); },
+        registerAlias: function (alias, target) { return pm.registerAlias(alias, target); },
+        // Ajout express de plugin (content-script privé / console).
+        // Ex : Unbanded.addPlugin('https://…/mon-plugin.js')
+        addPlugin: function (url, opts) { return pm.loadPlugin(url, opts); }
+      };
+    } catch (eApi) { console.warn('[Unbanded] API publique :', eApi); }
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
+    var ms = Date.now() - t0;
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.9 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v' + (window.BTT_VERSION || 'dev') + ' chargé en ' + ms + ' ms — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
-    console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
+    console.log('[Unbanded] Prêt en ' + ms + ' ms. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {
       try { ui.ensureInjected(); } catch (e) {}
       // Ré-ancre les couches CSS en fin de <head> : le SPA de band.us peut
