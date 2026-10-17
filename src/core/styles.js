@@ -45,15 +45,21 @@
     try { if (window.BTTStore) window.BTTStore.remove('customCss'); } catch (e) {}
   }
 
-  // Couche CSS perso (bt-custom-css) TOUJOURS après le thème (bt-theme-css) :
-  // c'est l'utilisateur qui a le dernier mot sur tout le site.
+  // Couches CSS dans l'ordre : theme-css < theme-site < custom.
+  // Le CSS perso de l'utilisateur a TOUJOURS le dernier mot.
   function keepCustomLast() {
     try {
       var head = document.head || (document.getElementsByTagName && document.getElementsByTagName('head')[0]);
       if (!head) return;
       var custom = document.getElementById('bt-custom-css');
+      var site = document.getElementById('bt-theme-site');
       var theme = document.getElementById('bt-theme-css');
-      if (custom && theme && head.lastChild !== custom && (custom.compareDocumentPosition(theme) & 2)) {
+      // 1) theme-site juste apres theme-css
+      if (site && theme && theme.nextSibling !== site) {
+        head.insertBefore(site, theme.nextSibling);
+      }
+      // 2) custom en tout dernier
+      if (custom && head.lastChild !== custom) {
         head.appendChild(custom);
       }
     } catch (e) {}

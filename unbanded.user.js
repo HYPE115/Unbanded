@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.6
+// @version      1.6.7
 // @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @homepageURL  https://github.com/HYPE115/band_tamper
@@ -625,8 +625,42 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     }
     ensureStyle('bt-core-css', coreCss());
     ensureStyle('bt-theme-css', t.css || '');
+    ensureStyle('bt-theme-site', siteEnabled() ? siteCss(c) : '');
     try { window.BTTStore.set('activeTheme', t.id); } catch (e) {}
     return t;
+  }
+
+  function siteEnabled() {
+    try {
+      if (window.BTTStore) return window.BTTStore.get('themeSite', true) !== false;
+    } catch (e) {}
+    return true;
+  }
+
+  function siteCss(c) {
+    // Recolore band.us avec les couleurs du theme, sur TOUT le site.
+    // Le panel Unbanded ([data-bt-root]) est exclu pour garder sa propre DA.
+    return '' +
+    'body,body #wrap,body #content,body main' +
+    '{background-color:' + c.bg + ' !important;color:' + c.text + ' !important}' +
+    'body #header,body .headerWrap,body header[role="banner"]' +
+    '{background-color:' + c.surface + ' !important;color:' + c.text + ' !important;' +
+    'border-bottom:1px solid ' + c.border + ' !important}' +
+    'body #header a,body .headerWrap a' +
+    '{color:' + c.text + ' !important}' +
+    'body a:not([data-bt-root]){color:' + c.accent + '}' +
+    'body a:not([data-bt-root]):hover{color:' + c.accentHover + '}' +
+    'body input:not([data-bt-root]),' +
+    'body textarea:not([data-bt-root]),' +
+    'body select:not([data-bt-root]),' +
+    'body [contenteditable="true"]:not([data-bt-root])' +
+    '{background-color:' + c.surface2 + ' !important;color:' + c.text + ' !important;' +
+    'border-color:' + c.border + ' !important}' +
+    'body input:not([data-bt-root])::placeholder,' +
+    'body textarea:not([data-bt-root])::placeholder' +
+    '{color:' + c.muted + ' !important;opacity:1}' +
+    'body time:not([data-bt-root])' +
+    '{color:' + c.muted + '}';
   }
 
   function applyActive() {
@@ -768,15 +802,21 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     try { if (window.BTTStore) window.BTTStore.remove('customCss'); } catch (e) {}
   }
 
-  // Couche CSS perso (bt-custom-css) TOUJOURS après le thème (bt-theme-css) :
-  // c'est l'utilisateur qui a le dernier mot sur tout le site.
+  // Couches CSS dans l'ordre : theme-css < theme-site < custom.
+  // Le CSS perso de l'utilisateur a TOUJOURS le dernier mot.
   function keepCustomLast() {
     try {
       var head = document.head || (document.getElementsByTagName && document.getElementsByTagName('head')[0]);
       if (!head) return;
       var custom = document.getElementById('bt-custom-css');
+      var site = document.getElementById('bt-theme-site');
       var theme = document.getElementById('bt-theme-css');
-      if (custom && theme && head.lastChild !== custom && (custom.compareDocumentPosition(theme) & 2)) {
+      // 1) theme-site juste apres theme-css
+      if (site && theme && theme.nextSibling !== site) {
+        head.insertBefore(site, theme.nextSibling);
+      }
+      // 2) custom en tout dernier
+      if (custom && head.lastChild !== custom) {
         head.appendChild(custom);
       }
     } catch (e) {}
@@ -1257,7 +1297,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.6';
+  var v = '1.6.7';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -1319,7 +1359,9 @@ BandUI.prototype._settingsMarkup = function () {
             '</div>' +
             '<div class="bt-set-hint">Format : <code>{"name":"...","colors":{"accent":"#ff7ac6","bg":"#1a1625",...},"css":"/* optionnel */"}</code> — les couleurs manquantes prennent le défaut violet.</div>' +
           '</div>' +
-          '<div class="bt-set-card"><h3>Thèmes</h3><div id="bt-set-theme-grid" class="bt-set-grid"></div></div>' +
+          '<div class="bt-set-card"><h3>Thèmes</h3>' +
+          '<label class="bt-set-switch" style="margin-bottom:10px"><input type="checkbox" data-act="opt-theme-site"> Appliquer le thème à tout le site band.us</label>' +
+          '<div id="bt-set-theme-grid" class="bt-set-grid"></div></div>' +
         '</section>' +
 
         '<section class="bt-page" data-page="css" hidden>' +
@@ -1540,6 +1582,8 @@ BandUI.prototype.renderSettingsThemes = function () {
   var c = document.getElementById('bt-set-theme-grid');
   if (!c) return;
   c.innerHTML = '';
+  var cb = document.querySelector ? document.querySelector('#bt-settings [data-act="opt-theme-site"]') : null;
+  if (cb) { try { cb.checked = window.BTTStore.get('themeSite', true) !== false; } catch (e) {} }
   var activeId = 'default';
   try { activeId = window.BTTStore.get('activeTheme', 'default'); } catch (e) {}
   var themes = window.BTTThemes.list();
@@ -1734,6 +1778,9 @@ BandUI.prototype._settingsChange = function (e) {
   var act = t.getAttribute('data-act');
   if (act === 'opt-startup-toast') {
     window.BTTStore.set('startupToast', !!t.checked);
+  } else if (act === 'opt-theme-site') {
+    window.BTTStore.set('themeSite', !!t.checked);
+    try { window.BTTThemes.applyActive(); } catch (e) {}
   } else if (act === 'opt-toast-duration') {
     window.BTTStore.set('toastDuration', Math.max(1, parseInt(t.value, 10) || 5));
   }
@@ -1777,11 +1824,12 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.6',
+      version: '1.6.7',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
-        toastDuration: window.BTTStore.get('toastDuration', 5)
+        toastDuration: window.BTTStore.get('toastDuration', 5),
+        themeSite: window.BTTStore.get('themeSite', true) !== false
       },
       activeTheme: window.BTTStore.get('activeTheme', 'default'),
       customCss: window.BTTStyles.get(),
@@ -1805,6 +1853,7 @@ BandUI.prototype._importConfig = function () {
       if (cfg.options) {
         window.BTTStore.set('startupToast', cfg.options.startupToast !== false);
         window.BTTStore.set('toastDuration', Math.max(1, parseInt(cfg.options.toastDuration, 10) || 5));
+        window.BTTStore.set('themeSite', cfg.options.themeSite !== false);
       }
       var importedCount = 0;
       if (Array.isArray(cfg.themes)) {
@@ -1837,6 +1886,7 @@ BandUI.prototype._resetAll = function () {
     window.BTTStore.remove('plugins');
     window.BTTStore.remove('startupToast');
     window.BTTStore.remove('toastDuration');
+    window.BTTStore.remove('themeSite');
     this._renderSettingsTab(this._settingsTab || 'general');
     toast('Réinitialisation effectuée', 'ok');
   } catch (e) { toast('Reset impossible : ' + e.message, 'error'); }
@@ -3066,7 +3116,7 @@ var src_default = GIFEncoder;
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.6 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v1.6.7 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {

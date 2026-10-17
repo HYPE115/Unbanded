@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.6';
+  var v = '1.6.7';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -83,7 +83,9 @@ BandUI.prototype._settingsMarkup = function () {
             '</div>' +
             '<div class="bt-set-hint">Format : <code>{"name":"...","colors":{"accent":"#ff7ac6","bg":"#1a1625",...},"css":"/* optionnel */"}</code> — les couleurs manquantes prennent le défaut violet.</div>' +
           '</div>' +
-          '<div class="bt-set-card"><h3>Thèmes</h3><div id="bt-set-theme-grid" class="bt-set-grid"></div></div>' +
+          '<div class="bt-set-card"><h3>Thèmes</h3>' +
+          '<label class="bt-set-switch" style="margin-bottom:10px"><input type="checkbox" data-act="opt-theme-site"> Appliquer le thème à tout le site band.us</label>' +
+          '<div id="bt-set-theme-grid" class="bt-set-grid"></div></div>' +
         '</section>' +
 
         '<section class="bt-page" data-page="css" hidden>' +
@@ -304,6 +306,8 @@ BandUI.prototype.renderSettingsThemes = function () {
   var c = document.getElementById('bt-set-theme-grid');
   if (!c) return;
   c.innerHTML = '';
+  var cb = document.querySelector ? document.querySelector('#bt-settings [data-act="opt-theme-site"]') : null;
+  if (cb) { try { cb.checked = window.BTTStore.get('themeSite', true) !== false; } catch (e) {} }
   var activeId = 'default';
   try { activeId = window.BTTStore.get('activeTheme', 'default'); } catch (e) {}
   var themes = window.BTTThemes.list();
@@ -498,6 +502,9 @@ BandUI.prototype._settingsChange = function (e) {
   var act = t.getAttribute('data-act');
   if (act === 'opt-startup-toast') {
     window.BTTStore.set('startupToast', !!t.checked);
+  } else if (act === 'opt-theme-site') {
+    window.BTTStore.set('themeSite', !!t.checked);
+    try { window.BTTThemes.applyActive(); } catch (e) {}
   } else if (act === 'opt-toast-duration') {
     window.BTTStore.set('toastDuration', Math.max(1, parseInt(t.value, 10) || 5));
   }
@@ -541,11 +548,12 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.6',
+      version: '1.6.7',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
-        toastDuration: window.BTTStore.get('toastDuration', 5)
+        toastDuration: window.BTTStore.get('toastDuration', 5),
+        themeSite: window.BTTStore.get('themeSite', true) !== false
       },
       activeTheme: window.BTTStore.get('activeTheme', 'default'),
       customCss: window.BTTStyles.get(),
@@ -569,6 +577,7 @@ BandUI.prototype._importConfig = function () {
       if (cfg.options) {
         window.BTTStore.set('startupToast', cfg.options.startupToast !== false);
         window.BTTStore.set('toastDuration', Math.max(1, parseInt(cfg.options.toastDuration, 10) || 5));
+        window.BTTStore.set('themeSite', cfg.options.themeSite !== false);
       }
       var importedCount = 0;
       if (Array.isArray(cfg.themes)) {
@@ -601,6 +610,7 @@ BandUI.prototype._resetAll = function () {
     window.BTTStore.remove('plugins');
     window.BTTStore.remove('startupToast');
     window.BTTStore.remove('toastDuration');
+    window.BTTStore.remove('themeSite');
     this._renderSettingsTab(this._settingsTab || 'general');
     toast('Réinitialisation effectuée', 'ok');
   } catch (e) { toast('Reset impossible : ' + e.message, 'error'); }

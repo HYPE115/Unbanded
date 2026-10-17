@@ -113,8 +113,42 @@
     }
     ensureStyle('bt-core-css', coreCss());
     ensureStyle('bt-theme-css', t.css || '');
+    ensureStyle('bt-theme-site', siteEnabled() ? siteCss(c) : '');
     try { window.BTTStore.set('activeTheme', t.id); } catch (e) {}
     return t;
+  }
+
+  function siteEnabled() {
+    try {
+      if (window.BTTStore) return window.BTTStore.get('themeSite', true) !== false;
+    } catch (e) {}
+    return true;
+  }
+
+  function siteCss(c) {
+    // Recolore band.us avec les couleurs du theme, sur TOUT le site.
+    // Le panel Unbanded ([data-bt-root]) est exclu pour garder sa propre DA.
+    return '' +
+    'body,body #wrap,body #content,body main' +
+    '{background-color:' + c.bg + ' !important;color:' + c.text + ' !important}' +
+    'body #header,body .headerWrap,body header[role="banner"]' +
+    '{background-color:' + c.surface + ' !important;color:' + c.text + ' !important;' +
+    'border-bottom:1px solid ' + c.border + ' !important}' +
+    'body #header a,body .headerWrap a' +
+    '{color:' + c.text + ' !important}' +
+    'body a:not([data-bt-root]){color:' + c.accent + '}' +
+    'body a:not([data-bt-root]):hover{color:' + c.accentHover + '}' +
+    'body input:not([data-bt-root]),' +
+    'body textarea:not([data-bt-root]),' +
+    'body select:not([data-bt-root]),' +
+    'body [contenteditable="true"]:not([data-bt-root])' +
+    '{background-color:' + c.surface2 + ' !important;color:' + c.text + ' !important;' +
+    'border-color:' + c.border + ' !important}' +
+    'body input:not([data-bt-root])::placeholder,' +
+    'body textarea:not([data-bt-root])::placeholder' +
+    '{color:' + c.muted + ' !important;opacity:1}' +
+    'body time:not([data-bt-root])' +
+    '{color:' + c.muted + '}';
   }
 
   function applyActive() {
