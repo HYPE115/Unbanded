@@ -53,11 +53,6 @@
       } else if (window.__BTT_toast) {
         window.__BTT_toast('⚠ Image statique envoyée à ' + who + ' (GIF animé indisponible)', 'warn');
       }
-      try {
-        await info.api.sendText('👋 Pet-pet à ' + (target && target.name ? target.name : 'quelqu\'un') + ' !');
-      } catch (eText) {
-        info.api.log('message texte non envoyé :', eText);
-      }
     }
   };
   window.PluginPetPet = PLUGIN;

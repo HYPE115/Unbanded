@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
-// @version      1.6.1
+// @version      1.6.2
 // @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
 // @author       Cline
 // @homepageURL  https://github.com/HYPE115/band_tamper
@@ -1110,7 +1110,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.6.1';
+  var v = '1.6.2';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -1630,7 +1630,7 @@ BandUI.prototype._exportConfig = function () {
   try {
     var cfg = {
       app: 'unbanded',
-      version: '1.6.1',
+      version: '1.6.2',
       exportedAt: new Date().toISOString(),
       options: {
         startupToast: window.BTTStore.get('startupToast', true) !== false,
@@ -2890,11 +2890,6 @@ var src_default = GIFEncoder;
       } else if (window.__BTT_toast) {
         window.__BTT_toast('⚠ Image statique envoyée à ' + who + ' (GIF animé indisponible)', 'warn');
       }
-      try {
-        await info.api.sendText('👋 Pet-pet à ' + (target && target.name ? target.name : 'quelqu\'un') + ' !');
-      } catch (eText) {
-        info.api.log('message texte non envoyé :', eText);
-      }
     }
   };
   window.PluginPetPet = PLUGIN;
@@ -2924,7 +2919,7 @@ var src_default = GIFEncoder;
     var showToast = true;
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v1.6.1 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast('✓ Unbanded v1.6.2 chargé — /help pour les commandes, /settings pour les paramètres', 'ok');
     }
     console.log('[Unbanded] Prêt. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {
