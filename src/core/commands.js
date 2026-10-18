@@ -6,21 +6,21 @@
 function registerBuiltInCommands(pm) {
   var BTT_VERSION = 'dev';
   try { if (window.BTT_VERSION) BTT_VERSION = window.BTT_VERSION; } catch (e) {}
-  pm.registerCommand('pat', "Fait un pet-pet à quelqu'un (GIF)", async () => {
+  pm.registerCommand('pat', 'Sends a pet-pet GIF to someone', async () => {
     // Redondant : le plugin pet-pet (chargé juste après) remplace ce stub.
-  }, '/pat [user] — user requis en groupe');
+  }, '/pat [user] — required in group chats');
 
-  pm.registerCommand('help', 'Affiche les commandes disponibles', async (args, info) => {
+  pm.registerCommand('help', 'Shows the available commands', async (args, info) => {
     const q = String((args && args[0]) || '').toLowerCase().replace(/^\//, '');
     if (q) {
       const cmd = pm.commands.get(q);
       let msg;
       if (cmd) {
-        msg = '/' + q + ' — ' + (cmd.desc || '(pas de description)');
-        if (cmd.usage) msg += '\nUsage : ' + cmd.usage;
-        msg += '\n(affichage local uniquement)';
+        msg = '/' + q + ' — ' + (cmd.desc || '(no description)');
+        if (cmd.usage) msg += '\nUsage: ' + cmd.usage;
+        msg += '\n(local display only)';
       } else {
-        msg = (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t('help.unknown', {name: q}) : 'Commande inconnue : /' + q + ' (tape /help pour la liste)';
+        msg = (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t('help.unknown', {name: q}) : 'Unknown command: /' + q + ' (type /help for the list)';
       }
       if (window.__BTT_toast) window.__BTT_toast(msg, cmd ? undefined : 'error');
       else info.api.log(msg);
@@ -30,61 +30,61 @@ function registerBuiltInCommands(pm) {
     for (const [name, cmd] of pm.commands) {
       lines.push('/' + name + ' — ' + (cmd.desc || ''));
     }
-    lines.push('', 'Astuce : /help <commande> pour le détail · (affichage local uniquement)');
+    lines.push('', 'Tip: /help <command> for details · (local display only)');
      if (window.__BTT_toast) window.__BTT_toast(lines.join('\n'));
      else info.api.log(lines.join('\n'));
    });
 
-  pm.registerCommand('plugins', 'Ouvre les paramètres (onglet Plugins)', async (args, info) => {
+  pm.registerCommand('plugins', 'Opens settings (Plugins tab)', async (args, info) => {
     const ui = window.UnbandedUI || window.BandTamperUI;
     if (ui && ui.openSettings) {
       ui.openSettings('plugins');
-      if (window.__BTT_toast) window.__BTT_toast('Page Paramètres → Plugins');
+      if (window.__BTT_toast) window.__BTT_toast('Settings page → Plugins');
     } else if (window.__BTT_toast) {
-      window.__BTT_toast('Page Paramètres indisponible', 'error');
+      window.__BTT_toast('Settings page unavailable', 'error');
     }
   });
 
-  pm.registerCommand('settings', 'Ouvre la page Paramètres', async (args, info) => {
+  pm.registerCommand('settings', 'Opens the settings page', async (args, info) => {
     const ui = window.UnbandedUI || window.BandTamperUI;
     if (ui && ui.openSettings) {
       ui.openSettings();
     } else if (window.__BTT_toast) {
-      window.__BTT_toast('Page Paramètres indisponible', 'error');
+      window.__BTT_toast('Settings page unavailable', 'error');
     }
   });
 
-  pm.registerCommand('debug', 'Diagnostics Unbanded (sélecteurs, DOM, état)', async (args, info) => {
+  pm.registerCommand('debug', 'Unbanded diagnostics (selectors, DOM, state)', async (args, info) => {
     const a = (info && info.api) || pm.adapter;
     const input = a.getChatInput ? a.getChatInput() : null;
     const fileInputs = a.$$('input[type="file"]').length;
     const lines = [
       '=== debug Unbanded v' + BTT_VERSION + ' ===',
       'URL : ' + String((typeof location !== 'undefined' && location.href) || '?'),
-      'Host : ' + a.host + ' | démo : ' + a.isDemo(),
-      'Page chat : ' + ((window.UnbandedUI && window.UnbandedUI._isChatPage) ? window.UnbandedUI._isChatPage() : '?'),
-      'Type conversation : ' + a.getConversationType(),
-      'Canal : ' + a.getCurrentChannelId(),
-      'Champ de saisie : ' + (input ? input.tagName + (input.isContentEditable ? ' (contenteditable)' : '') : 'INTROUVABLE'),
-      'Bouton envoyer : ' + (a.getSendButton && a.getSendButton() ? 'trouvé' : 'introuvable'),
+      'Host: ' + a.host + ' | demo: ' + a.isDemo(),
+      'Chat page: ' + ((window.UnbandedUI && window.UnbandedUI._isChatPage) ? window.UnbandedUI._isChatPage() : '?'),
+      'Conversation type: ' + a.getConversationType(),
+      'Channel: ' + a.getCurrentChannelId(),
+      'Input field: ' + (input ? input.tagName + (input.isContentEditable ? ' (contenteditable)' : '') : 'NOT FOUND'),
+      'Send button: ' + (a.getSendButton && a.getSendButton() ? 'found' : 'not found'),
       'input[type=file] : ' + fileInputs,
-      'Plugins : ' + pm.plugins.size + ' | Commandes : ' + Array.from(pm.commands.keys()).join(', ')
+      'Plugins: ' + pm.plugins.size + ' | Commands: ' + Array.from(pm.commands.keys()).join(', ')
     ];
     const text = lines.join('\n');
     console.log('[Unbanded][debug]\n' + text);
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
     } catch (e) {}
-    if (window.__BTT_toast) window.__BTT_toast(text + '\n(copié dans le presse-papiers)');
+    if (window.__BTT_toast) window.__BTT_toast(text + '\n(copied to clipboard)');
   });
 
-  pm.registerCommand('version', "Affiche la version d'Unbanded", async (args, info) => {
+  pm.registerCommand('version', "Shows Unbanded's version", async (args, info) => {
     const msg = 'Unbanded v' + BTT_VERSION;
     if (window.__BTT_toast) window.__BTT_toast(msg, 'ok');
     else info.api.log(msg);
   });
 
-  pm.registerCommand('clear', 'Efface les toasts affichés', async () => {
+  pm.registerCommand('clear', 'Clears the displayed toasts', async () => {
     try {
       const wrap = document.getElementById('bt-toasts');
       if (wrap) wrap.innerHTML = '';

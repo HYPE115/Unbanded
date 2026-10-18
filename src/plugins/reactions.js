@@ -9,24 +9,24 @@
 (function () {
   var API = 'https://api.waifu.pics/sfw/';
   var REACTIONS = {
-    hug: { emoji: '🤗', text: 'te fait un gros câlin' },
-    cuddle: { emoji: '🥰', text: 'se blottit contre' },
-    slap: { emoji: '👋', text: 'gifle' },
-    tickle: { emoji: '😆', text: 'chatouille' },
-    kiss: { emoji: '😘', text: 'embrasse' },
+    hug: { emoji: '🤗', text: 'gives a big hug to' },
+    cuddle: { emoji: '🥰', text: 'cuddles with' },
+    slap: { emoji: '👋', text: 'slaps' },
+    tickle: { emoji: '😆', text: 'tickles' },
+    kiss: { emoji: '😘', text: 'kisses' },
     poke: { emoji: '👉', text: 'poke' },
-    bonk: { emoji: '🔨', text: 'bonke' },
-    dance: { emoji: '💃', text: 'danse avec' },
-    wave: { emoji: '👋', text: 'salue' },
-    blush: { emoji: '😳', text: 'rougit devant' },
-    smile: { emoji: '😊', text: 'sourit à' },
-    smug: { emoji: '😏', text: 'fait un smug à' },
-    cry: { emoji: '😭', text: 'pleure sur' },
-    nom: { emoji: '🍜', text: 'mange avec' },
+    bonk: { emoji: '🔨', text: 'bonks' },
+    dance: { emoji: '💃', text: 'dances with' },
+    wave: { emoji: '👋', text: 'waves at' },
+    blush: { emoji: '😳', text: 'blushes at' },
+    smile: { emoji: '😊', text: 'smiles at' },
+    smug: { emoji: '😏', text: 'smirks at' },
+    cry: { emoji: '😭', text: 'cries on' },
+    nom: { emoji: '🍜', text: 'noms with' },
     yeet: { emoji: '🚀', text: 'yeet' },
-    wink: { emoji: '😉', text: "fait un clin d'œil à" },
-    laugh: { emoji: '😂', text: 'rit avec' },
-    happy: { emoji: '😄', text: 'est content avec' }
+    wink: { emoji: '😉', text: "winks at" },
+    laugh: { emoji: '😂', text: 'laughs with' },
+    happy: { emoji: '😄', text: 'is happy with' }
   };
 
   /** Résout la cible (même logique que /pat) : groupe = requis, DM = interlocuteur. */
@@ -36,7 +36,7 @@
     if (type === 'group') {
       if (!args.length) throw new Error("En groupe, l'utilisateur est requis : /hug @pseudo");
       target = info.getUserByMention(args[0]) || info.getUserByMention(args.join(' '));
-      if (!target) throw new Error('Utilisateur introuvable : ' + args[0]);
+      if (!target) throw new Error((window.BTTI18n?window.BTTI18n.t('rx.notFound',{name:args[0]}):'User not found: '+args[0]));
     } else {
       var me = info.getCurrentUser();
       target = info.getUserByMention('@' + (me && me.name ? me.name : '')) || me;
@@ -49,7 +49,7 @@
     var r = await fetch(API + cat, { credentials: 'omit' });
     if (!r.ok) throw new Error('API ' + r.status);
     var j = await r.json();
-    if (!j || !j.url) throw new Error('Réponse vide');
+    if (!j || !j.url) throw new Error('Empty response');
     var img = await fetch(j.url, { credentials: 'omit' });
     if (!img.ok) throw new Error('Image ' + img.status);
     return await img.blob();
@@ -60,28 +60,29 @@
     var who = target && target.name ? target.name : '?';
     var toast = window.__BTT_toast || function () {};
     try {
-      toast('⏳ Recherche d\'un GIF « ' + cat + ' » pour ' + who + '…');
+      toast((window.BTTI18n?window.BTTI18n.t('rx.generating',{cat:cat,who:who}):'Loading '+cat+' GIF for '+who));
       var blob = await fetchGif(cat);
       var ext = blob.type === 'image/gif' ? 'gif' : (blob.type.split('/')[1] || 'png');
       await info.sendFile(blob, cat + '-' + String(who).replace(/\s+/g, '_') + '.' + ext);
-      toast('✅ GIF « ' + cat + ' » envoyé à ' + who, 'ok');
+      toast((window.BTTI18n?window.BTTI18n.t('rx.sent',{cat:cat,who:who}):'GIF sent to '+who), 'ok');
     } catch (e) {
       // Repli texte (CSP/réseau) : le message part quand même.
       await info.sendText(r.emoji + ' ' + who + ' ' + r.text + ' !');
-      toast('⚠ GIF indisponible (' + (e && e.message ? e.message : e) + ') — message texte envoyé', 'warn');
+      toast((window.BTTI18n?window.BTTI18n.t('rx.fallback',{msg:(e&&e.message?e.message:e)}):'GIF unavailable'), 'warn');
     }
   }
 
   var PLUGIN = {
     name: 'reactions',
     version: '1.0.0',
-    description: 'Commandes fun : GIF hug/cuddle/slap/kiss/… (waifu.pics) avec repli texte si le réseau est bloqué',
+    description: 'Fun commands: hug/cuddle/slap/kiss GIFs (waifu.pics) with text fallback if network is blocked',
+    descriptionKey: 'plg.desc.reactions',
     onLoad: function (ctx) {
       Object.keys(REACTIONS).forEach(function (cat) {
         var r = REACTIONS[cat];
-        ctx.registerCommand(cat, 'Envoie un GIF « ' + cat + ' » à quelqu\'un', function (args, info) {
+        ctx.registerCommand(cat, 'Sends a '+cat+' GIF to someone', function (args, info) {
           return run(cat, r, args, info);
-        }, '/' + cat + ' [user] — user requis en groupe');
+        }, '/'+cat+' [user] — required in group chats');
       });
     }
   };

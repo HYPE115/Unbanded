@@ -40,42 +40,43 @@
   var PLUGIN = {
     name: 'games',
     version: '1.0.0',
-    description: 'Mini-jeux locaux : boule magique 8ball, dés /roll, pile ou face, choix aléatoire',
+    description: 'Local mini-games: magic 8ball, /roll dice, coin flip, random pick',
+    descriptionKey: 'plg.desc.games',
     onLoad: function (ctx) {
-      ctx.registerCommand('8ball', 'Boule magique répond à ta question', async function (args, info) {
-        if (!args.length) throw new Error('Pose une question : /8ball est-ce que je gagne ?');
+      ctx.registerCommand('8ball', 'Magic 8-ball answers your question', async function (args, info) {
+        if (!args.length) throw new Error((window.BTTI18n?window.BTTI18n.t('gm.needQuestion'):'Ask a question: /8ball will I win?'));
         await info.sendText('🎱 ' + args.join(' ') + ' → ' + pick(BALL));
       }, '/8ball <question>');
       ctx.registerAlias('8b', '8ball');
 
-      ctx.registerCommand('roll', 'Lance des dés', async function (args, info) {
+      ctx.registerCommand('roll', 'Rolls dice', async function (args, info) {
         var d = parseDice(args[0] || '1d6');
-        if (!d) throw new Error('Format invalide : /roll 2d20+5 (N ≤ 20 dés, M ≤ 1000 faces)');
+        if (!d) throw new Error((window.BTTI18n?window.BTTI18n.t('gm.badDice'):'Invalid format: /roll 2d20+5'));
         var sum = d.rolls.reduce(function (a, b) { return a + b; }, 0) + d.mod;
         var label = d.n + 'd' + d.sides + (d.mod ? (d.mod > 0 ? '+' + d.mod : d.mod) : '');
         var detail = d.rolls.join(' + ') + (d.mod ? ' ' + (d.mod > 0 ? '+' + d.mod : '- ' + Math.abs(d.mod)) : '');
         await info.sendText('🎲 ' + label + ' → ' + detail + ' = ' + sum);
-      }, '/roll [NdM±K] — ex : /roll 2d20+5 (défaut 1d6)');
+      }, '/roll [NdM±K] — e.g. /roll 2d20+5 (default 1d6)');
       ctx.registerAlias('dice', 'roll');
       ctx.registerAlias('d', 'roll');
 
-      ctx.registerCommand('coin', 'Pile ou face', async function (args, info) {
-        await info.sendText('🪙 ' + (rand(2) ? 'Pile !' : 'Face !'));
+      ctx.registerCommand('coin', 'Coin flip', async function (args, info) {
+        await info.sendText((window.BTTI18n?(rand(2)?window.BTTI18n.t('gm.coinHeads'):window.BTTI18n.t('gm.coinTails')):'coin'));
       });
       ctx.registerAlias('flip', 'coin');
 
-      ctx.registerCommand('choose', 'Choisis au hasard parmi tes options', async function (args, info) {
+      ctx.registerCommand('choose', 'Picks a random option among yours', async function (args, info) {
         var raw = args.join(' ');
         var opts = raw.split(/\s*[|,/]\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
-        if (opts.length < 2) throw new Error('Donne au moins 2 options : /choose a | b | c');
-        await info.sendText('🎯 Je choisis : ' + pick(opts));
+        if (opts.length < 2) throw new Error((window.BTTI18n?window.BTTI18n.t('gm.chooseNeed'):'Give at least 2 options: /choose a | b | c'));
+        await info.sendText((window.BTTI18n?window.BTTI18n.t('gm.chooseOut',{pick:pick(opts)}):'Pick: '+pick(opts)));
       }, '/choose <a | b | c>');
       ctx.registerAlias('pick', 'choose');
 
-      ctx.registerCommand('rand', 'Nombre aléatoire', async function (args, info) {
+      ctx.registerCommand('rand', 'Random number', async function (args, info) {
         var a = parseInt(args[0], 10), b = parseInt(args[1], 10);
         if (isNaN(a) || isNaN(b) || a > b) throw new Error('Usage: /rand 1 100');
-        if (b - a > 1000000) throw new Error('Plage trop grande (max 1 000 000)');
+        if (b - a > 1000000) throw new Error((window.BTTI18n?window.BTTI18n.t('gm.randRange'):'Range too large'));
         await info.sendText('🔢 ' + a + '–' + b + ' → ' + (a + rand(b - a + 1)));
       }, '/rand <min> <max>');
       ctx.registerAlias('rnd', 'rand');

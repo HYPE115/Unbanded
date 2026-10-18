@@ -22,95 +22,93 @@ BandUI.prototype._injectSettings = function () {
 
 BandUI.prototype._settingsMarkup = function () {
   var v = '1.8.1';
-  var _t = function (k, def) { return (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t(k) : def; };
+  var _t = function (k, def, params) { try { if (window.BTTI18n && typeof window.BTTI18n.t === 'function') { var s = window.BTTI18n.t(k, params); if (s != null && s !== k) return s; } } catch (e) {} return def; };
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="' + _t('settings.title', 'Unbanded Settings') + '">' +
     '<aside class="bt-set-side">' +
       '<div class="bt-set-brand"><span class="bt-set-dot"></span> Unbanded <small>v' + v + '</small></div>' +
       '<nav>' +
-        '<button type="button" class="bt-set-tab" data-tab="general">' + _t('tab.general', '⚙ Général') + '</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="plugins">' + _t('tab.plugins', '🧩 Plugins') + '</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="themes">' + _t('tab.themes', '🎨 Thèmes') + '</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="css">' + _t('tab.css', '{ } CSS personnalisé') + '</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="about">' + _t('tab.about', 'ℹ À propos') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="general">' + _t('tab.general', 'General') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="plugins">' + _t('tab.plugins', 'Plugins') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="themes">' + _t('tab.themes', 'Themes') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="css">' + _t('tab.css', 'Custom CSS') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="about">' + _t('tab.about', 'About') + '</button>' +
       '</nav>' +
       '<div class="bt-set-side-foot">' + _t('side.shortcuts', 'Shortcuts: /settings · Ctrl+, · Esc to close') + '</div>' +
     '</aside>' +
     '<main class="bt-set-main">' +
-      '<header class="bt-set-head"><h2 id="bt-set-title">' + _t('gen.title', 'Général') + '</h2>' +
-        '<button type="button" id="bt-settings-close" class="bt-set-close" title="' + _t('gen.title', 'Fermer') + '">✕</button></header>' +
+      '<header class="bt-set-head"><h2 id="bt-set-title">' + _t('gen.title', 'General') + '</h2>' +
+        '<button type="button" id="bt-settings-close" class="bt-set-close" title="' + _t('gen.title', 'Close') + '">✕</button></header>' +
       '<div class="bt-set-body">' +
 
         '<section class="bt-page" data-page="general">' +
           '<div class="bt-set-card">' +
-            '<h3>' + _t('gen.title', 'Général') + '</h3>' +
-            '<label class="bt-set-switch"><input type="checkbox" data-act="opt-startup-toast"> ' + _t('gen.startupToast', 'Afficher le toast de démarrage') + '</label>' +
-            '<label class="bt-set-line">' + _t('gen.toastDuration', 'Durée des toasts :') + ' ' +
+            '<h3>' + _t('gen.title', 'General') + '</h3>' +
+            '<label class="bt-set-switch"><input type="checkbox" data-act="opt-startup-toast"> ' + _t('gen.startupToast', 'Show startup toast') + '</label>' +
+            '<label class="bt-set-line">' + _t('gen.toastDuration', 'Toast duration:') + ' ' +
               '<select data-act="opt-toast-duration"><option value="3">3 s</option><option value="5">5 s</option><option value="8">8 s</option><option value="12">12 s</option></select>' +
             '</label>' +
-            '<label class="bt-set-line">' + _t('gen.lang', 'Langue :') + ' ' +
-              '<select data-act="opt-lang"><option value="auto">' + _t('gen.langAuto', 'Auto (détectée)') + '</option><option value="en">English</option><option value="fr">Français</option></select>' +
+            '<label class="bt-set-line">' + _t('gen.lang', 'Language:') + ' ' +
+              '<select data-act="opt-lang"><option value="auto">' + _t('gen.langAuto', 'Auto (detected)') + '</option><option value="en">English</option><option value="fr">Français</option></select>' +
             '</label>' +
           '</div>' +
           '<div class="bt-set-card">' +
             '<h3>' + _t('gen.config', 'Configuration') + '</h3>' +
             '<div class="bt-set-row">' +
-              '<button type="button" class="bt-btn" data-act="export-config">' + _t('gen.export', 'Exporter (JSON)') + '</button>' +
-              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-config">' + _t('gen.import', 'Importer (JSON)') + '</button>' +
-              '<button type="button" class="bt-btn bt-btn-danger" data-act="reset-all">' + _t('gen.reset', 'Tout réinitialiser') + '</button>' +
+              '<button type="button" class="bt-btn" data-act="export-config">' + _t('gen.export', 'Export (JSON)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-config">' + _t('gen.import', 'Import (JSON)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-danger" data-act="reset-all">' + _t('gen.reset', 'Reset all') + '</button>' +
             '</div>' +
-            '<div class="bt-set-hint">' + _t('gen.exportHint', "L'export inclut plugins, thèmes, CSS personnalisé et options — parfait pour migrer vers un autre navigateur.") + '</div>' +
+            '<div class="bt-set-hint">' + _t('gen.exportHint', "The export includes plugins, themes, custom CSS and options.") + '</div>' +
           '</div>' +
         '</section>' +
 
         '<section class="bt-page" data-page="plugins" hidden>' +
           '<div class="bt-set-card">' +
-            '<h3>' + _t('plg.add', 'Ajouter un plugin') + '</h3>' +
+            '<h3>' + _t('plg.add', 'Add a plugin') + '</h3>' +
             '<div class="bt-set-row">' +
-              '<input type="text" id="bt-set-plugin-url" placeholder="https://exemple.com/plugin.js">' +
-              '<button type="button" class="bt-btn" data-act="add-plugin-url">' + _t('plg.addUrl', 'Ajouter (URL)') + '</button>' +
-              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-plugin-file">' + _t('plg.importFile', 'Importer un fichier .js') + '</button>' +
+              '<input type="text" id="bt-set-plugin-url" placeholder="https://example.com/plugin.js">' +
+              '<button type="button" class="bt-btn" data-act="add-plugin-url">' + _t('plg.addUrl', 'Add (URL)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-plugin-file">' + _t('plg.importFile', 'Import a .js file') + '</button>' +
             '</div>' +
-            '<div class="bt-set-hint">' + _t('plg.hint', 'Un plugin est un JS exposant <code>module.exports = { name, version, description, onLoad(ctx), commands }</code>. Les plugins ajoutés sont mémorisés et rechargés au démarrage.') + '</div>' +
+            '<div class="bt-set-hint">' + _t('plg.hint', 'A plugin is a JS exposing <code>module.exports = { name, version, description, onLoad(ctx), commands }</code>. Added plugins are saved and reloaded at startup.') + '</div>' +
           '</div>' +
-          '<div class="bt-set-card"><h3>' + _t('plg.installed', 'Plugins installés') + '</h3><div id="bt-set-plugin-list" class="bt-set-list"></div></div>' +
+          '<div class="bt-set-card"><h3>' + _t('plg.installed', 'Installed plugins') + '</h3><div id="bt-set-plugin-list" class="bt-set-list"></div></div>' +
         '</section>' +
 
 
         '<section class="bt-page" data-page="themes" hidden>' +
           '<div class="bt-set-card">' +
-            '<h3>' + _t('thm.import', 'Importer un thème') + '</h3>' +
+            '<h3>' + _t('thm.import', 'Import a theme') + '</h3>' +
             '<div class="bt-set-row">' +
-              '<input type="text" id="bt-set-theme-url" placeholder="https://exemple.com/mon-theme.json">' +
-              '<button type="button" class="bt-btn" data-act="add-theme-url">' + _t('thm.importUrl', 'Importer (URL)') + '</button>' +
-              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-theme-file">' + _t('thm.importFile', 'Importer un fichier .json') + '</button>' +
+              '<input type="text" id="bt-set-theme-url" placeholder="https://example.com/my-theme.json">' +
+              '<button type="button" class="bt-btn" data-act="add-theme-url">' + _t('thm.importUrl', 'Import (URL)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-theme-file">' + _t('thm.importFile', 'Import a .json file') + '</button>' +
             '</div>' +
-            '<div class="bt-set-hint">' + _t('thm.hint', 'Format : <code>{"name":"...","colors":{"accent":"#ff7ac6","bg":"#1a1625",...},"css":"/* optionnel */"}</code> — les couleurs manquantes prennent le défaut violet.') + '</div>' +
+            '<div class="bt-set-hint">' + _t('thm.hint', 'Format: <code>{"name":"...","colors":{...},"css":"/* optional */"}</code> — missing colors fall back to the default violet.') + '</div>' +
           '</div>' +
-          '<div class="bt-set-card"><h3>' + _t('thm.title', 'Thèmes') + '</h3>' +
-          '<label class="bt-set-switch" style="margin-bottom:10px"><input type="checkbox" data-act="opt-theme-site">' + _t('thm.site', 'Appliquer le thème à tout le site band.us') + '</label>' +
+          '<div class="bt-set-card"><h3>' + _t('thm.title', 'Themes') + '</h3>' +
+          '<label class="bt-set-switch" style="margin-bottom:10px"><input type="checkbox" data-act="opt-theme-site">' + _t('thm.site', 'Apply the theme to the whole band.us site') + '</label>' +
           '<div id="bt-set-theme-grid" class="bt-set-grid"></div></div>' +
         '</section>' +
 
         '<section class="bt-page" data-page="css" hidden>' +
           '<div class="bt-set-card">' +
-            '<h3>' + _t('css.title', 'CSS personnalisé') + '</h3>' +
-            '<textarea id="bt-set-css" spellcheck="false" placeholder="/* ton CSS, appliqué à band.us en direct */"></textarea>' +
+            '<h3>' + _t('css.title', 'Custom CSS') + '</h3>' +
+            '<textarea id="bt-set-css" spellcheck="false" placeholder="' + _t('css.placeholder', '/* your CSS, applied live to band.us */') + '"></textarea>' +
             '<div class="bt-set-row">' +
-              '<button type="button" class="bt-btn" data-act="save-css">' + _t('css.save', 'Appliquer &amp; enregistrer') + '</button>' +
-              '<button type="button" class="bt-btn bt-btn-ghost" data-act="preview-css">' + _t('css.preview', 'Aperçu (sans enregistrer)') + '</button>' +
-              '<button type="button" class="bt-btn bt-btn-danger" data-act="clear-css">' + _t('css.reset', 'Réinitialiser') + '</button>' +
+              '<button type="button" class="bt-btn" data-act="save-css">' + _t('css.save', 'Apply &amp; save') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="preview-css">' + _t('css.preview', 'Preview (don\'t save)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-danger" data-act="clear-css">' + _t('css.reset', 'Reset') + '</button>' +
             '</div>' +
-            '<div class="bt-set-hint">' + _t('css.hint', "Le CSS est injecté dans la page (élément <code>&lt;style id=\"bt-custom-css\"&gt;</code>) et conservé après rechargement. L'aperçu ne persiste pas.") + '</div>' +
+            '<div class="bt-set-hint">' + _t('css.hint', 'The CSS is injected into the page (<code>&lt;style id=\"bt-custom-css\"&gt;</code>) and kept after reload. The preview does not persist.') + '</div>' +
           '</div>' +
         '</section>' +
 
         '<section class="bt-page" data-page="about" hidden>' +
           '<div class="bt-set-card">' +
-            '<div class="bt-set-hint">' + _t('about.desc', 'Chargeur de plugins type Vencord pour BAND (band.us). Commandes : /pat · /help · /plugins · /settings · /debug.<br>') +
-            'GIF pet-pet : algorithme <a href="https://github.com/aDu/pet-pet-gif" target="_blank" rel="noopener" style="color:var(--btt-accent)">aDu/pet-pet-gif</a> + encodeur <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener" style="color:var(--btt-accent)">gifenc</a> embarqué (aucun CDN, compatible CSP band.us).<br>' +
-            'Licence MIT · <a href="https://github.com/HYPE115/band_tamper" target="_blank" rel="noopener" style="color:var(--btt-accent)">github.com/HYPE115/band_tamper</a></div>' +
-            '<div class="bt-set-row"><span class="bt-badge" id="bt-set-stat-plugins">? plugins</span><span class="bt-badge" id="bt-set-stat-commands">? commandes</span><span class="bt-badge" id="bt-set-stat-themes">? thèmes</span></div>' +
+            '<div class="bt-set-hint">' + _t('about.desc', 'Unbanded — Vencord-style plugin loader for BAND (band.us). Commands: /pat · /help · /plugins · /settings · /debug.<br>GIF pet-pet: algorithm <a href="https://github.com/aDu/pet-pet-gif" target="_blank" rel="noopener" style="color:var(--btt-accent)">aDu/pet-pet-gif</a> + encoder <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener" style="color:var(--btt-accent)">gifenc</a> embedded (no CDN, CSP-compatible band.us).<br>MIT License · <a href="https://github.com/HYPE115/band_tamper" target="_blank" rel="noopener" style="color:var(--btt-accent)">github.com/HYPE115/band_tamper</a>') + '</div>' +
+            '<div class="bt-set-row"><span class="bt-badge" id="bt-set-stat-plugins">? plugins</span><span class="bt-badge" id="bt-set-stat-commands">? commands</span><span class="bt-badge" id="bt-set-stat-themes">? themes</span></div>' +
           '</div>' +
         '</section>' +
 
@@ -258,12 +256,13 @@ BandUI.prototype._renderSettingsCss = function () {
 };
 
 BandUI.prototype._renderSettingsAbout = function () {
+  var _t2 = (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t.bind(window.BTTI18n) : function (k, p) { return k; };
   var p = document.getElementById('bt-set-stat-plugins');
-  if (p) p.textContent = this.pm.plugins.size + ' plugin(s)';
+  if (p) p.textContent = _t2('about.plugins', { n: this.pm.plugins.size });
   var c = document.getElementById('bt-set-stat-commands');
-  if (c) c.textContent = this.pm.commands.size + ' commande(s)';
+  if (c) c.textContent = _t2('about.commands', { n: this.pm.commands.size });
   var t = document.getElementById('bt-set-stat-themes');
-  if (t) t.textContent = window.BTTThemes.list().length + ' thème(s)';
+  if (t) t.textContent = _t2('about.themes', { n: window.BTTThemes.list().length });
 };
 
 
@@ -272,7 +271,16 @@ BandUI.prototype.renderSettingsPlugins = function () {
   var c = document.getElementById('bt-set-plugin-list');
   if (!c) return;
   c.innerHTML = '';
-  var sourceLabel = { url: 'URL', file: 'Fichier', builtin: 'Intégré' };
+  var sourceLabel = { url: 'URL', file: _t('plg.srcFile', 'File'), builtin: _t('plg.srcBuiltin', 'Built-in') };
+  var descOf = function (spec) {
+    try {
+      if (spec && spec.descriptionKey && window.BTTI18n && typeof window.BTTI18n.t === 'function') {
+        var s = window.BTTI18n.t(spec.descriptionKey);
+        if (s && s !== spec.descriptionKey) return s;
+      }
+    } catch (e) {}
+    return (spec && spec.description) || '';
+  };
   for (var it = this.pm.plugins.entries(), step; !(step = it.next()).done; ) {
     var pair = step.value;
     var id = pair[0];
@@ -282,29 +290,29 @@ BandUI.prototype.renderSettingsPlugins = function () {
     var info = document.createElement('div');
     info.className = 'bt-idx';
     info.innerHTML = '<div class="bt-iname">' + escapeHtml(entry.spec.name) + ' ' +
-      '<span class="bt-badge' + (entry.enabled ? ' bt-badge-on' : ' bt-badge-off') + '">' + (entry.enabled ? 'actif' : 'inactif') + '</span>' +
+      '<span class="bt-badge' + (entry.enabled ? ' bt-badge-on' : ' bt-badge-off') + '">' + (entry.enabled ? _t('plg.active', 'active') : _t('plg.inactive', 'inactive')) + '</span>' +
       '<span class="bt-badge">' + escapeHtml(sourceLabel[entry.source] || 'URL') + '</span></div>' +
-      '<div class="bt-idesc">' + escapeHtml(entry.spec.description || '') + ' · v' + escapeHtml(entry.spec.version || '?') + ' · ' + escapeHtml(id) + '</div>';
+      '<div class="bt-idesc">' + escapeHtml(descOf(entry.spec)) + ' · v' + escapeHtml(entry.spec.version || '?') + ' · ' + escapeHtml(id) + '</div>';
     row.appendChild(info);
     if (!entry.builtin) {
       var tog = document.createElement('button');
       tog.type = 'button';
       tog.className = 'bt-btn bt-btn-ghost bt-btn-sm';
-      tog.textContent = entry.enabled ? 'Désactiver' : 'Activer';
+      tog.textContent = entry.enabled ? _t('plg.disable', 'Disable') : _t('plg.enable', 'Enable');
       tog.setAttribute('data-act', 'plugin-toggle');
       tog.setAttribute('data-id', id);
       row.appendChild(tog);
       var del = document.createElement('button');
       del.type = 'button';
       del.className = 'bt-btn bt-btn-danger bt-btn-sm';
-      del.textContent = 'Supprimer';
+      del.textContent = _t('plg.delete', 'Delete');
       del.setAttribute('data-act', 'plugin-remove');
       del.setAttribute('data-id', id);
       row.appendChild(del);
     }
     c.appendChild(row);
   }
-  if (this.pm.plugins.size === 0) c.innerHTML = '<div class="bt-set-hint">Aucun plugin chargé.</div>';
+  if (this.pm.plugins.size === 0) c.innerHTML = '<div class="bt-set-hint">' + _t('plg.none', 'No plugin loaded.') + '</div>';
 };
 
 /* ---------- Galerie des thèmes (onglet Paramètres) ---------- */
@@ -328,22 +336,22 @@ BandUI.prototype.renderSettingsThemes = function () {
     var dots = '';
     var dotKeys = ['accent', 'bg', 'surface', 'text'];
     for (var d = 0; d < dotKeys.length; d++) dots += '<span class="bt-dot" style="background:' + merged[dotKeys[d]] + '"></span>';
-    card.innerHTML = '<div class="bt-theme-name">' + escapeHtml(t.name) + (t.id === activeId ? ' ✓' : '') + '</div>' +
-      '<div class="bt-theme-meta">' + escapeHtml(t.author || 'inconnu') + (t.version ? ' · v' + escapeHtml(t.version) : '') + (t.builtin ? ' · intégré' : ' · importé') + '</div>' +
+    card.innerHTML = '<div class="bt-theme-name">' + escapeHtml(_t('thm.' + t.id, t.name)) + (t.id === activeId ? ' ✓' : '') + '</div>' +
+      '<div class="bt-theme-meta">' + escapeHtml(t.author || _t('thm.unknown', 'unknown')) + (t.version ? ' · v' + escapeHtml(t.version) : '') + (t.builtin ? ' · ' + _t('thm.builtin', 'built-in') : ' · ' + _t('thm.importedLabel', 'imported')) + '</div>' +
       '<div class="bt-dots">' + dots + '</div>';
     var actions = document.createElement('div');
     actions.className = 'bt-set-actions';
     var applyBtn = document.createElement('button');
     applyBtn.type = 'button';
     applyBtn.className = 'bt-btn bt-btn-sm';
-    applyBtn.textContent = t.id === activeId ? 'Appliqué' : 'Appliquer';
+    applyBtn.textContent = t.id === activeId ? _t('thm.applied', 'Applied') : _t('thm.apply', 'Apply');
     applyBtn.setAttribute('data-act', 'theme-apply');
     applyBtn.setAttribute('data-id', t.id);
     actions.appendChild(applyBtn);
     var exp = document.createElement('button');
     exp.type = 'button';
     exp.className = 'bt-btn bt-btn-ghost bt-btn-sm';
-    exp.textContent = 'Exporter';
+    exp.textContent = _t('thm.export', 'Export');
     exp.setAttribute('data-act', 'theme-export');
     exp.setAttribute('data-id', t.id);
     actions.appendChild(exp);
@@ -351,7 +359,7 @@ BandUI.prototype.renderSettingsThemes = function () {
       var rm = document.createElement('button');
       rm.type = 'button';
       rm.className = 'bt-btn bt-btn-danger bt-btn-sm';
-      rm.textContent = 'Supprimer';
+      rm.textContent = _t('thm.delete', 'Delete');
       rm.setAttribute('data-act', 'theme-remove');
       rm.setAttribute('data-id', t.id);
       actions.appendChild(rm);
@@ -396,18 +404,18 @@ BandUI.prototype._settingsClick = function (e) {
     case 'add-plugin-url': {
       var input = document.getElementById('bt-set-plugin-url');
       var url = (input && input.value ? input.value : '').trim();
-      if (!url) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
-      if (!url) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
+      if (!url) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
+      if (!url) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
       this.pm.loadPlugin(url, { enabled: true, source: 'url' })
-        .then(function () { if (input) input.value = ''; toast(_t('plg.added', 'Plugin ajouté : ') + url, 'ok'); self.renderSettingsPlugins(); })
-        .catch(function (err) { toast(_t('plg.failed', 'Échec plugin : ') + err.message, 'error'); });
+        .then(function () { if (input) input.value = ''; toast(_t('plg.added', 'Plugin added: ') + url, 'ok'); self.renderSettingsPlugins(); })
+        .catch(function (err) { toast(_t('plg.failed', 'Plugin failed : ') + err.message, 'error'); });
       return;
     }
     case 'import-plugin-file':
       this._pickFile('.js,.txt,text/javascript', function (code, name) {
         self.pm.loadPlugin('file:' + name, { enabled: true, source: 'file', code: code })
-          .then(function () { toast(_t('plg.imported', 'Plugin importé : ') + name, 'ok'); self.renderSettingsPlugins(); })
-          .catch(function (err) { toast(_t('plg.importFailed', 'Échec import : ') + err.message, 'error'); });
+          .then(function () { toast(_t('plg.imported', 'Plugin imported : ') + name, 'ok'); self.renderSettingsPlugins(); })
+          .catch(function (err) { toast(_t('plg.importFailed', 'Import failed : ') + err.message, 'error'); });
       });
       return;
     case 'plugin-toggle':
@@ -417,41 +425,41 @@ BandUI.prototype._settingsClick = function (e) {
     case 'plugin-remove':
       this.pm.unloadPlugin(id);
       this.renderSettingsPlugins();
-      toast(_t('plg.removed', 'Plugin supprimé'));
+      toast(_t('plg.removed', 'Plugin removed'));
       return;
     case 'add-theme-url': {
       var tinput = document.getElementById('bt-set-theme-url');
       var turl = (tinput && tinput.value ? tinput.value : '').trim();
-      if (!turl) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
-      if (!turl) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
+      if (!turl) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
+      if (!turl) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
       window.BTTThemes.importFromUrl(turl)
-        .then(function (t) { if (tinput) tinput.value = ''; toast(_t('thm.imported', 'Thème importé : ') + t.name, 'ok'); self.renderSettingsThemes(); })
-        .catch(function (err) { toast(_t('thm.importFailed', 'Échec thème : ') + err.message, 'error'); });
+        .then(function (t) { if (tinput) tinput.value = ''; toast(_t('thm.imported', 'Theme imported : ') + t.name, 'ok'); self.renderSettingsThemes(); })
+        .catch(function (err) { toast(_t('thm.importFailed', 'Theme failed : ') + err.message, 'error'); });
       return;
     }
     case 'import-theme-file':
       this._pickFile('application/json,.json', function (raw) {
         try {
           var t = window.BTTThemes.importJson(JSON.parse(raw));
-          toast(_t('thm.imported', 'Thème importé : ') + t.name, 'ok');
+          toast(_t('thm.imported', 'Theme imported : ') + t.name, 'ok');
           self.renderSettingsThemes();
-        } catch (err) { toast(_t('plg.importFailed', 'Échec import : ') + err.message, 'error'); }
+        } catch (err) { toast(_t('plg.importFailed', 'Import failed : ') + err.message, 'error'); }
       });
       return;
     case 'theme-apply': {
       var applied = window.BTTThemes.apply(id);
-      toast(_t('thm.appliedToast', 'Thème appliqué : ') + applied.name, 'ok');
+      toast(_t('thm.appliedToast', 'Theme applied : ') + applied.name, 'ok');
       this.renderSettingsThemes();
       return;
     }
     case 'theme-export':
-      try { window.BTTThemes.exportTheme(id); toast(_t('thm.exported', 'Thème exporté (fichier JSON)'), 'ok'); }
-      catch (err) { toast(_t('thm.exportFailed', 'Export impossible : ') + err.message, 'error'); }
+      try { window.BTTThemes.exportTheme(id); toast(_t('thm.exported', 'Theme exported (fichier JSON)'), 'ok'); }
+      catch (err) { toast(_t('thm.exportFailed', 'Export failed : ') + err.message, 'error'); }
       return;
     case 'theme-remove':
       window.BTTThemes.remove(id);
       this.renderSettingsThemes();
-      toast(_t('thm.removed', 'Thème supprimé'));
+      toast(_t('thm.removed', 'Theme removed'));
       return;
   }
 };
@@ -465,19 +473,19 @@ BandUI.prototype._settingsClick2 = function (actEl, act) {
     case 'save-css': {
       var ta = document.getElementById('bt-set-css');
       window.BTTStyles.apply(ta ? ta.value : '');
-      toast(_t('css.applied', 'CSS appliqué et enregistré'), 'ok');
+      toast(_t('css.applied', 'CSS applied and saved'), 'ok');
       return true;
     }
     case 'preview-css': {
       var pta = document.getElementById('bt-set-css');
       window.BTTStyles.apply(pta ? pta.value : '');
-      toast(_t('css.previewToast', 'Aperçu appliqué (non enregistré)'));
+      toast(_t('css.previewToast', 'Preview applied (not saved)'));
       return true;
     }
     case 'clear-css':
       window.BTTStyles.clear();
       this._renderSettingsCss();
-      toast('CSS réinitialisé');
+      toast(_t('css.resetToast', 'CSS reset'));
       return true;
     case 'export-config':
       this._exportConfig();
@@ -520,7 +528,7 @@ BandUI.prototype._settingsChange = function (e) {
   } else if (act === 'opt-lang') {
     var newLang = window.BTTI18n.set(t.value);
     if (newLang) {
-      (window.__BTT_toast || function () {})(_t('cfg.langChanged', 'Langue : ' + newLang + ' — rechargement…'), 'ok');
+      (window.__BTT_toast || function () {})(_t('cfg.langChanged', 'Language: ' + newLang + ' — reloading…'), 'ok');
       setTimeout(function () { location.reload(); }, 700);
     }
   }
@@ -537,10 +545,10 @@ BandUI.prototype._pickFile = function (accept, cb) {
     if (!f) return;
     try {
       var reader = new FileReader();
-      reader.onload = function () { cb(String(reader.result == null ? '' : reader.result), f.name || 'fichier'); };
-      reader.onerror = function () { if (window.__BTT_toast) window.__BTT_toast(_t('file.readFailed', 'Lecture du fichier impossible'), 'error'); };
+      reader.onload = function () { cb(String(reader.result == null ? '' : reader.result), f.name || 'file'); };
+      reader.onerror = function () { if (window.__BTT_toast) window.__BTT_toast(_t('file.readFailed', 'Cannot read the file'), 'error'); };
       reader.readAsText(f);
-    } catch (e2) { if (window.__BTT_toast) window.__BTT_toast(_t('file.noReader', 'FileReader indisponible : ') + e2.message, 'error'); }
+    } catch (e2) { if (window.__BTT_toast) window.__BTT_toast(_t('file.noReader', 'FileReader unavailable: ') + e2.message, 'error'); }
   };
   document.body.appendChild(input);
   input.click();
@@ -577,9 +585,9 @@ BandUI.prototype._exportConfig = function () {
       plugins: window.BTTStore.get('plugins', [])
     };
     this._downloadText(JSON.stringify(cfg, null, 2), 'unbanded-config.json', 'application/json');
-    (window.__BTT_toast || function () {})(_t('cfg.exported', 'Configuration exportée'), 'ok');
+    (window.__BTT_toast || function () {})(_t('cfg.exported', 'Configuration exported'), 'ok');
   } catch (e) {
-    (window.__BTT_toast || function () {})(_t('cfg.exportFailed', 'Export impossible : ') + e.message, 'error');
+    (window.__BTT_toast || function () {})(_t('cfg.exportFailed', 'Export failed: ') + e.message, 'error');
   }
 };
 
@@ -589,7 +597,7 @@ BandUI.prototype._importConfig = function () {
   this._pickFile('application/json,.json', function (raw) {
     try {
       var cfg = JSON.parse(raw);
-      if (!cfg || (cfg.app !== 'unbanded')) throw new Error('ce n\'est pas une config Unbanded');
+      if (!cfg || (cfg.app !== 'unbanded')) throw new Error('this is not an Unbanded configuration');
       if (cfg.options) {
         window.BTTStore.set('startupToast', cfg.options.startupToast !== false);
         window.BTTStore.set('toastDuration', Math.max(1, parseInt(cfg.options.toastDuration, 10) || 5));
@@ -604,14 +612,14 @@ BandUI.prototype._importConfig = function () {
       if (typeof cfg.customCss === 'string') window.BTTStyles.apply(cfg.customCss);
       if (cfg.activeTheme) window.BTTThemes.apply(cfg.activeTheme);
       if (Array.isArray(cfg.plugins)) window.BTTStore.set('plugins', cfg.plugins);
-      toast(_t('cfg.imported', 'Config importée ({n} thème(s)) — recharge la page pour les plugins').replace('{n}', importedCount), 'ok');
+      toast(_t('cfg.imported', 'Configuration imported ({n} theme(s)) — reload the page for plugins').replace('{n}', importedCount), 'ok');
       self._renderSettingsTab(self._settingsTab || 'general');
-    } catch (err) { toast(_t('cfg.importFailed', 'Import impossible : ') + err.message, 'error'); }
+    } catch (err) { toast(_t('cfg.importFailed', 'Import failed: ') + err.message, 'error'); }
   });
 };
 
 BandUI.prototype._resetAll = function () {
-  if (typeof window.confirm === 'function' && !window.confirm(_t('cfg.resetConfirm', 'Tout réinitialiser ? (plugins, thèmes, CSS, options)'))) return;
+  if (typeof window.confirm === 'function' && !window.confirm(_t('cfg.resetConfirm', 'Reset everything? (plugins, themes, CSS, options)'))) return;
   var toast = window.__BTT_toast || function () {};
   try {
     var ids = [];
@@ -628,8 +636,8 @@ BandUI.prototype._resetAll = function () {
     window.BTTStore.remove('toastDuration');
     window.BTTStore.remove('themeSite');
     this._renderSettingsTab(this._settingsTab || 'general');
-    toast(_t('cfg.resetDone', 'Réinitialisation effectuée'), 'ok');
-  } catch (e) { toast(_t('cfg.resetFailed', 'Reset impossible : ') + e.message, 'error'); }
+    toast(_t('cfg.resetDone', 'Reset done'), 'ok');
+  } catch (e) { toast(_t('cfg.resetFailed', 'Reset failed: ') + e.message, 'error'); }
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = BandUI;

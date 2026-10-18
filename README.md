@@ -112,3 +112,7 @@ Requires Node.js. The result is `unbanded.user.js`.
 ## License
 
 MIT. The pet-pet plugin is inspired by [aDu/pet-pet-gif](https://github.com/aDu/pet-pet-gif) (MIT); the embedded GIF encoder is [gifenc](https://github.com/mattdesl/gifenc) (MIT).
+
+## Translations (AI)
+
+This documentation and the README were cleaned and translated into English by AI. All past translations have been regenerated and you can check the final result in the source files.

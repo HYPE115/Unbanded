@@ -20,18 +20,19 @@
   var PLUGIN = {
     name: 'tools',
     version: '1.0.0',
-    description: 'Outils : rappels /remind, emotes texte (/shrug, /tableflip…)',
+    description: 'Tools: /remind reminders, text emotes (/shrug, /tableflip…)',
+    descriptionKey: 'plg.desc.tools',
     onLoad: function (ctx) {
       var toast = function () { try { (window.__BTT_toast || TOOL).apply(null, arguments); } catch (e) {} };
 
-      ctx.registerCommand('remind', 'Rappelle-toi quelque chose plus tard', function (args, info) {
+      ctx.registerCommand('remind', 'Reminds you of something later', function (args, info) {
         var ms = parseDelay(args[0]);
-        if (ms === null) throw new Error('Durée invalide : /remind 30m sortir le trash (1 s à 24 h)');
+        if (ms === null) throw new Error((window.BTTI18n?window.BTTI18n.t('tl.remindBad'):'Invalid duration'));
         var text = args.slice(1).join(' ').trim();
-        if (!text) throw new Error('Ajoute un message : /remind 2h répondre à Marie');
+        if (!text) throw new Error((window.BTTI18n?window.BTTI18n.t('tl.remindNoText'):'Add a message'));
         var wasHidden = false;
         setTimeout(function () {
-          toast('⏰ Rappel : ' + text, 'ok', 12000);
+          toast((window.BTTI18n?window.BTTI18n.t('tl.remindFire',{text:text}):'Reminder: '+text), 'ok', 12000);
           // Si l'onglet est masqué, on fait clignoter le titre pour attirer l'œil.
           try {
             wasHidden = document.hidden;
@@ -47,7 +48,7 @@
         }, ms);
         var secs = Math.round(ms / 1000);
         var human = secs >= 3600 ? Math.round(secs / 360) / 10 + ' h' : secs >= 60 ? Math.round(secs / 6) / 10 + ' min' : secs + ' s';
-        toast('⏰ Rappel dans ' + human + ' : ' + text);
+        toast((window.BTTI18n?window.BTTI18n.t('tl.remindSet',{when:human,text:text}):'Reminder in '+human+': '+text));
       }, '/remind <30|30m|2h|45s> <texte> — cap 24 h');
       ctx.registerAlias('rmd', 'remind');
 
@@ -59,8 +60,8 @@
       };
       var EMOTE_DESC = {
         shrug: 'Shrug ¯\\_(ツ)_/¯',
-        tableflip: 'Renverse la table',
-        unflip: 'Remet la table à plat',
+        tableflip: 'Flips the table',
+        unflip: 'Unflips the table',
         lenny: 'Lenny face ( ͡° ͜ʖ ͡°)'
       };
       Object.keys(EMOTES).forEach(function (name) {

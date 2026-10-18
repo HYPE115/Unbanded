@@ -1,75 +1,75 @@
-# 📚 Documentation — Créer des thèmes et des plugins pour Unbanded
+# 📚 Documentation — How to Create Themes and Plugins for Unbanded
 
-Ce document explique comment écrire vos propres **plugins** (commandes `/slash`, logique JS) et **thèmes** (apparence visuelle) pour Unbanded (anciennement Band Tamper), le Vencord de BAND (band.us).
+This document explains how to write your own **plugins** (slash commands, JS logic) and **themes** (visual appearance) for Unbanded (formerly Band Tamper), a Vencord-style plugin loader for BAND (band.us).
 
 ---
 
-## 🔌 Créer un plugin
+## 🔌 Creating a plugin
 
-Un plugin est un fichier JavaScript qui expose un objet global (par défaut `window.MonPlugin`). Il est chargé dynamiquement depuis une **URL** ou un **fichier `.js` local** via la page **Paramètres → Plugins** ou le panneau rapide (bouton ⚙).
+A plugin is a JavaScript file that exposes a global object (by default `window.MonPlugin`). It is loaded dynamically from a **URL** or a local **`.js` file** through the **Settings → Plugins** page or the quick panel (⚙ button).
 
-### Structure minimale
+### Minimal structure
 
 ```js
 window.MonPlugin = {
   name: 'mon-plugin',
   version: '1.0.0',
-  description: 'Mon premier plugin Unbanded',
+  description: 'My first Unbanded plugin',
   onLoad: function (ctx) {
-    ctx.registerCommand('hello', 'Dis bonjour', function (args, info) {
+    ctx.registerCommand('hello', 'Say hello', function (args, info) {
       return info.api.sendText('Salut !');
     });
-    ctx.log('Plugin mon-plugin chargé.');
+    ctx.log('Plugin mon-plugin loaded.');
   }
 };
 ```
 
-### Le contexte `ctx`
+### The `ctx` context
 
-Lors du chargement, Unbanded appelle `onLoad(ctx)` avec un objet `ctx` contenant :
+When loaded, Unbanded calls `onLoad(ctx)` with a `ctx` object containing:
 
-| Propriété / Méthode | Description |
-|---------------------|-------------|
-| `ctx.api` | Adaptateur BAND (voir détail ci-dessous) |
-| `ctx.registerCommand(name, desc, handler)` | Enregistre une commande slash `/name` |
-| `ctx.sendText(text)` | Envoie un message texte dans la conversation courante |
-| `ctx.sendFile(blob, fileName)` | Envoie un fichier (image, GIF…) |
-| `ctx.log(...)` | Affiche un log dans la console (préfixé `[Unbanded]`) |
+| Property / Method | Description |
+|-------------------|-------------|
+| `ctx.api` | BAND adapter (details below) |
+| `ctx.registerCommand(name, desc, handler)` | Registers a slash command `/name` |
+| `ctx.sendText(text)` | Sends a text message to the current conversation |
+| `ctx.sendFile(blob, fileName)` | Sends a file (image, GIF…) |
+| `ctx.log(...)` | Prints a log to the console (prefixed `[Unbanded]`) |
 
-### L'objet `ctx.api` (BandAdapter)
+### The `ctx.api` object (BandAdapter)
 
-| Méthode | Rôle |
-|---------|------|
-| `sendText(text)` | Envoie un message texte |
-| `sendFile(blob, fileName)` | Envoie un fichier |
-| `getCurrentUser()` | Infos de l'utilisateur connecté |
-| `getConversationType()` | Type de conversation (DM / groupe / salon) |
-| `getCurrentChannelId()` | ID du salon/conv. actuel |
-| `getUserAvatar(userId)` | URL de l'avatar d'un utilisateur |
-| `getUserByMention(mention)` | Résout une mention `@pseudo` vers un objet utilisateur |
-| `onNewMessage(callback)` | Écoute l'arrivée de nouveaux messages |
+| Method | Purpose |
+|--------|---------|
+| `sendText(text)` | Sends a text message |
+| `sendFile(blob, fileName)` | Sends a file |
+| `getCurrentUser()` | Logged-in user info |
+| `getConversationType()` | Conversation type (DM / group / channel) |
+| `getCurrentChannelId()` | Current channel conversation ID |
+| `getUserAvatar(userId)` | User avatar URL |
+| `getUserByMention(mention)` | Resolves an `@username` mention to a user object |
+| `onNewMessage(callback)` | Listens for new messages |
 
-Le handler de commande reçoit `(args, info)` :
-- `args` : tableau des arguments après la commande
-- `info.api` : référence à `ctx.api`
+The command handler receives `(args, info)`:
+- `args` — array of arguments after the command
+- `info.api` — reference to `ctx.api`
 
 
-### Exemple complet : plugin `/pat` (pet-pet GIF)
+### Complete example: `/pat` plugin (pet-pet GIF)
 
 ```js
 window.PatPlugin = {
   name: 'pat',
   version: '1.0.0',
-  description: "Envoie un GIF pet-pet animé",
+  description: "Sends an animated pet-pet GIF",
   onLoad: function (ctx) {
-    ctx.registerCommand('pat', "Envoie un pet-pet GIF", async function (args, info) {
+    ctx.registerCommand('pat', "Send a pet-pet GIF", async function (args, info) {
       const target = args.length > 0 ? args[0] : null;
       let user;
 
       if (target) {
         user = info.api.getUserByMention(target);
         if (!user) {
-          return info.api.sendText('Utilisateur introuvable.');
+          return info.api.sendText('User not found.');
         }
       } else {
         user = info.api.getCurrentUser();
@@ -83,28 +83,28 @@ window.PatPlugin = {
 };
 ```
 
-### Installer / tester votre plugin
+### Install / test your plugin
 
-1. Hébergez le fichier `.js` (GitHub raw, votre propre serveur, etc.) ou gardez-le en local.
-2. Ouvrez band.us, cliquez sur le bouton ⚙ (en haut ou en bas à droite).
-3. Allez dans **Paramètres → Plugins** (ou utilisez le panneau rapide).
-4. Collez l'URL du fichier et cliquez sur **Add**, ou cliquez sur **Import .js file** pour un fichier local.
-5. Le plugin est mémorisé dans `BTTStore` et **rechargé automatiquement au prochain démarrage**.
+1. Host the `.js` file (GitHub raw, your own server, etc.) or keep it local.
+2. Open band.us and click the ⚙ button (top-right or bottom-right).
+3. Go to **Settings → Plugins** (or use the quick panel).
+4. Paste the file URL and click **Add**, or click **Import .js file** for a local file.
+5. The plugin is stored in `BTTStore` and **automatically reloaded on next startup**.
 
-> ⚠️ L'import par URL dépend de la **CSP** de band.us (`connect-src`). Si le domaine distant est bloqué, utilisez l'import par fichier `.js`.
+> ⚠️ URL import depends on band.us **CSP** (`connect-src`). If the remote domain is blocked, use file-import `.js` instead.
 
 ---
 
-## 🎨 Créer un thème
+## 🎨 Creating a theme
 
-Un thème est un fichier JSON qui définit des couleurs CSS (`--btt-*`) appliquées à band.us, plus du CSS optionnel.
+A theme is a JSON file that defines CSS colors (`--btt-*`) applied to band.us, plus optional CSS.
 
-### Format JSON
+### JSON format
 
 ```json
 {
-  "name": "Mon thème",
-  "author": "moi",
+  "name": "My theme",
+  "author": "me",
   "version": "1.0.0",
   "colors": {
     "accent": "#ff7ac6",
@@ -116,96 +116,100 @@ Un thème est un fichier JSON qui définit des couleurs CSS (`--btt-*`) appliqu�
     "muted": "#c7a3bd",
     "border": "#4a3357"
   },
-  "css": "/* CSS optionnel appliqué avec ce thème */"
+  "css": "/* optional CSS applied with this theme */"
 }
 ```
 
-### Détails des champs
+### Field details
 
-| Champ | Type | Obligatoire | Description |
-|-------|------|-------------|-------------|
-| `name` | string | Non | Nom affiché dans la galerie |
-| `author` | string | Non | Auteur du thème |
-| `version` | string | Non | Version du thème |
-| `colors` | object | Non | Couleurs (toutes optionnelles, fallback sur le violet par défaut) |
-| `colors.accent` | string | Non | Couleur principale (format `#rgb` ou `#rrggbb`) |
-| `colors.accentHover` | string | Non | Couleur au survol |
-| `colors.bg` | string | Non | Fond principal |
-| `colors.surface` | string | Non | Surface (cartes, panneaux) |
-| `colors.surface2` | string | Non | Surface secondaire |
-| `colors.text` | string | Non | Texte principal |
-| `colors.muted` | string | Non | Texte atténué / secondaire |
-| `colors.border` | string | Non | Bordures |
-| `css` | string | Non | CSS supplémentaire injecté avec le thème |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | Name shown in the gallery |
+| `author` | string | No | Theme author |
+| `version` | string | No | Theme version |
+| `colors` | object | No | Colors (all optional, fallback is the default purple) |
+| `colors.accent` | string | No | Main color (format `#rgb` or `#rrggbb`) |
+| `colors.accentHover` | string | No | Hover color |
+| `colors.bg` | string | No | Main background |
+| `colors.surface` | string | No | Surface (cards, panels) |
+| `colors.surface2` | string | No | Secondary surface |
+| `colors.text` | string | No | Main text |
+| `colors.muted` | string | No | Muted/secondary text |
+| `colors.border` | string | No | Borders |
+| `css` | string | No | Extra CSS injected with the theme |
 
-### Installer / tester votre thème
+### Install / test your theme
 
-1. Hébergez le fichier `.json` ou gardez-le en local.
-2. Dans band.us, ouvrez **Paramètres → Thèmes**.
-3. Cliquez sur **Import by URL** (collez l'URL du JSON) ou **Import .json file** (fichier local).
-4. Le thème s'applique instantanément (variables CSS `--btt-*` + restyle du panneau).
-5. Vous pouvez aussi **exporter** n'importe quel thème en JSON depuis la galerie.
+1. Host the `.json` file or keep it local.
+2. In band.us, open **Settings → Themes**.
+3. Click **Import by URL** (paste the JSON URL) or **Import .json file** (local file).
+4. The theme applies instantly (CSS variables `--btt-*` + panel restyle).
+5. You can also **export** any theme as JSON from the gallery.
 
 ---
 
-## ⚙️ API d'adaptation aux sélecteurs BAND
+## ⚙️ BAND selector adaptation API
 
-BAND ne publie pas d'API publique et son DOM évolue. Le fichier `src/core/adapter.js` contient les sélecteurs utilisés par Unbanded :
+BAND does not publish a public API and its DOM changes over time. `src/core/adapter.js` contains the selectors used by Unbanded:
 
 ```js
-SELECTORS.input,      // champ de saisie du message
-SELECTORS.sendButton, // bouton d'envoi
-SELECTORS.avatar,     // avatars utilisateur
-SELECTORS.currentChannel, // salon/conv. actuel
+SELECTORS.input,      // message input field
+SELECTORS.sendButton, // send button
+SELECTORS.avatar,     // user avatars
+SELECTORS.currentChannel, // current channel/conversation
 // ...
 ```
 
-Si l'envoi de messages ou la lecture d'avatars ne fonctionne pas :
+If message sending or avatar reading doesn't work:
 
-1. Ouvrez les DevTools (F12) sur band.us.
-2. Inspectez le champ de saisie, le bouton d'envoi, les avatars.
-3. Mettez à jour les sélecteurs dans `src/core/adapter.js`.
-4. Lancez `node build.js` et réinstallez le userscript `unbanded.user.js`.
+1. Open DevTools (F12) on band.us.
+2. Inspect the input field, send button, and avatars.
+3. Update the selectors in `src/core/adapter.js`.
+4. Run `node build.js` and reinstall the `unbanded.user.js` userscript.
 
 ---
 
-## 🧩 Exemples de commandes slash utiles
+## 🧩 Useful slash command examples
 
-Vous pouvez enregistrer autant de commandes que vous voulez dans `onLoad` :
+You can register as many commands as you want in `onLoad`:
 
 ```js
-ctx.registerCommand('dice', 'Lance un dé', function (args) {
+ctx.registerCommand('dice', 'Roll a die', function (args) {
   const n = Math.floor(Math.random() * 6) + 1;
-  return info.api.sendText('🎲 Tu as fait ' + n);
+  return info.api.sendText('🎲 You rolled ' + n);
 });
 
-ctx.registerCommand('ping', 'Test de latence', function (args) {
+ctx.registerCommand('ping', 'Latency test', function (args) {
   return info.api.sendText('Pong ! 🏓');
 });
 
-ctx.registerCommand('user', 'Infos utilisateur', function (args, info) {
+ctx.registerCommand('user', 'User info', function (args, info) {
   const u = info.api.getCurrentUser();
-  return info.api.sendText(`Tu es ${u.username} (ID: ${u.id})`);
+  return info.api.sendText(`You are ${u.username} (ID: ${u.id})`);
 });
 ```
 
 ---
 
-## 🚀 Partager vos créations
+## 🚀 Sharing your creations
 
-- **Plugins** : publiez le fichier `.js` sur GitHub (raw), un gist, ou votre propre hébergement. Partagez l'URL avec d'autres utilisateurs Unbanded.
-- **Thèmes** : publiez le fichier `.json` de la même manière.
-- Ouvrez une **issue** ou une **pull request** sur [HYPE115/band_tamper](https://github.com/HYPE115/band_tamper) pour proposer vos plugins/thèmes built-in.
-
----
-
-## ⚠️ Notes importantes
-
-- Unbanded n'est **pas** affilié à BAND / Nas Media. C'est une couche de personnalisation indépendante sur le client web.
-- Le code des plugins est évalué (`eval`) dans le contexte de la page. N'installez que des plugins dont vous faites confiance à l'auteur.
-- Les données (plugins, thèmes, CSS, options) sont persistées dans `localStorage` via `BTTStore`, avec un fallback en mémoire.
-- La reconstruction du userscript final se fait avec `node build.js`.
+- **Plugins**: host the `.js` file on GitHub (raw), a gist, or your own hosting. Share the URL with other Unbanded users.
+- **Themes**: publish the `.json` file the same way.
+- Open an **issue** or **pull request** on [HYPE115/band_tamper](https://github.com/HYPE115/band_tamper) to propose built-in plugins/themes.
 
 ---
 
-*Documentation pour Unbanded (Band Tamper) — inspiré par Vencord.*
+## ⚠️ Important notes
+
+- Unbanded is **not** affiliated with BAND / Nas Media. It is an independent customization layer on the web client.
+- Plugin code is evaluated (`eval`) in the page context. Only install plugins you trust.
+- Data (plugins, themes, CSS, options) is persisted in `localStorage` via `BTTStore`, with an in-memory fallback.
+- The final userscript is rebuilt with `node build.js`.
+
+---
+
+*Documentation for Unbanded (Band Tamper) — inspired by Vencord.*
+
+---
+
+> **Translations (AI):** This documentation was cleaned and translated into English by AI. All past translations have been regenerated and you can check the final result in the source files.
