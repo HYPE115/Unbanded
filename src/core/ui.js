@@ -13,50 +13,68 @@ class BandUI {
   }
 
   inject() {
-    window.UnbandedUI = this;
-    window.BandTamperUI = this; // alias rétro-compat
+    let self = this;
+    // S'assurer que `self` est bien une instance de BandUI.
+    // Si `this` n'est pas une instance (ex. appel en contexte global),
+    // on crée l'instance correcte avec les dépendances nécessaires.
+    if (!(self instanceof BandUI)) {
+      const pm = (self && self.pm) || {};
+      const adapter = (self && self.adapter) || { log: () => {}, isDemo: () => false };
+      self = new BandUI(pm, adapter);
+    }
+    window.UnbandedUI = self;
+    window.BandTamperUI = self; // alias rétro-compat
     // Autocomplétion AVANT l'exécution : en phase de capture sur document,
     // les listeners s'exécutent dans l'ordre d'enregistrement. L'autocomplete
     // doit voir Entrée en premier pour compléter "/he" → "/help" au lieu
     // de laisser l'exécuteur répondre "Commande inconnue".
-    try { this._hookCommandAutocomplete(); } catch (e) { this.adapter.log('autocomplete KO :', e); }
-    this._hookCommandInput();
+    try {
+      self._hookCommandAutocomplete();
+    } catch (e) {
+      self.adapter.log('autocomplete KO :', e);
+    }
+    self._hookCommandInput();
     if (!document.body) return;
-    this._injectSettings();
-    this._injectFab();
-    if (this.adapter.isDemo()) {
-      this._injectDemoBanner();
-      this._watchNavigation();
+    self._injectSettings();
+    self._injectFab();
+    if (self.adapter.isDemo()) {
+      self._injectDemoBanner();
+      self._watchNavigation();
       return;
     }
     // L'ancien panneau flottant est supprimé : la gestion des plugins
     // se fait dans la page Paramètres (onglet Plugins, via /plugins ou ⚙).
     var stale = document.getElementById('bt-band-panel');
     if (stale && stale.remove) { try { stale.remove(); } catch (e) {} }
-    this.panel = null; this.visible = false;
-    this._injectButton();
+    self.panel = null;
+    self.visible = false;
+    self._injectButton();
     // Inversion accueil/messages : applique + surveille la navigation SPA.
     // (Les commandes slash restent actives partout via le hook clavier global.)
-    this._applyPageVisibility();
-    this._watchNavigation();
+    self._applyPageVisibility();
+    self._watchNavigation();
   }
 
   ensureInjected() {
+    const self = this;
     try {
       if (!document.body) return;
-      if (!this.settingsEl || !document.body.contains(this.settingsEl)) this._injectSettings();
-      if (!this.fab || !document.body.contains(this.fab)) this._injectFab();
-      else this._redockFabIfNeeded();
-      if (this.adapter.isDemo()) {
-        if (!this.banner || !document.body.contains(this.banner)) this._injectDemoBanner();
+      if (!self.settingsEl || !document.body.contains(self.settingsEl)) self._injectSettings();
+      if (!self.fab || !document.body.contains(self.fab)) self._injectFab();
+      else self._redockFabIfNeeded();
+      if (self.adapter.isDemo()) {
+        if (!self.banner || !document.body.contains(self.banner)) self._injectDemoBanner();
         return;
       }
-      if (!this.btn || !document.body.contains(this.btn)) this._injectButton();
+      if (!self.btn || !document.body.contains(self.btn)) self._injectButton();
       var stalePanel = document.getElementById('bt-band-panel');
       if (stalePanel && stalePanel.remove) { try { stalePanel.remove(); } catch (e) {} }
-      this.panel = null; this.visible = false;
-      this._applyPageVisibility();
-    } catch (e) { this.adapter.log('ensureInjected :', e); }
+      self.panel = null;
+      self.visible = false;
+      self._applyPageVisibility();
+    } catch (e) {
+      self.adapter.log('ensureInjected :', e);
+    }
   }
 
   /** Vrai si on est sur une page de conversation/chat (messages). */
@@ -85,19 +103,29 @@ class BandUI {
   }
 
   /**
-   * Inverse l'affichage : boutons (⚙ + "Unbanded") visibles sur la page
-   * principale uniquement, masqués dans les conversations.
+   * Inverse l'affichage : le bouton "Unbanded" du header est visible sur la
+   * page principale uniquement, masqué dans les conversations.
+   * Le FAB ⚙ flottant reste visible partout (y compris en chat) — on n'y
+   * touche jamais ici pour ne pas risquer d'écraser ses styles inline.
    * Les commandes slash restent actives partout (hook clavier global).
    */
   _applyPageVisibility() {
     let chat = false;
     try { chat = this._isChatPage(); } catch (e) {}
     try {
-      if (this.fab) this.fab.style.display = chat ? 'none' : '';
+      if (this.fab) {
+        // Rétablit la valeur de base (`inline-flex` docké / `flex` flottant) :
+        // `display = ''` effacerait la déclaration du cssText injecté.
+        const docked = this.fab.style.position !== 'fixed';
+        const want = chat ? 'none' : (docked ? 'inline-flex' : 'flex');
+        if (this.fab.style.display !== want) this.fab.style.display = want;
+      }
     } catch (e) {}
     try {
       if (this.btn) {
-        this.btn.style.display = chat ? 'none' : '';
+        // Idem : rétablir `inline-flex` (centrage du point ● + gap) au lieu de `''`.
+        const btnWant = chat ? 'none' : 'inline-flex';
+        if (this.btn.style.display !== btnWant) this.btn.style.display = btnWant;
         const li = document.getElementById('bt-header-item');
         if (li) li.style.display = chat ? 'none' : '';
       }
@@ -114,9 +142,19 @@ class BandUI {
     // le réinjecter immédiatement au lieu d'attendre le tick ensureInjected.
     const reattach = function () {
       try {
-        if (self.fab && !document.body.contains(self.fab)) self._injectFab();
-        else if (self.fab && !self.fab.closest('#header') && self.fab.parentElement === document.body) self._redockFabIfNeeded();
-        else self._applyPageVisibility();
+        if (self.fab && !document.body.contains(self.fab)) {
+          // Le FAB a été élagué par le SPA (header remplacé) : nettoyage +
+          // réinjection immédiate.
+          self.fab = null;
+          self._injectFab();
+          return;
+        }
+        if (self.fab && self.fab.style.position === 'fixed' && !self.fab.closest('#header')) {
+          // Repli flottant alors que le header est (re)monté : re-dock.
+          self._redockFabIfNeeded();
+        } else {
+          self._applyPageVisibility();
+        }
       } catch (e) {}
     };
     try {
@@ -139,31 +177,6 @@ class BandUI {
     try {
       window.addEventListener('popstate', check);
       window.addEventListener('hashchange', check);
-    } catch (e) {}
-  }
-
-  /**
-   * Si le ⚙ est en repli flottant alors que le header BAND est désormais
-   * disponible (cas page principale chargée en retard par le SPA),
-   * le re-docke dans le header.
-   */
-  _redockFabIfNeeded() {
-    try {
-      if (!this.fab || !document.body.contains(this.fab)) return;
-      const floating = this.fab.parentElement === document.body &&
-        (this.fab.style.position === 'fixed' || this.fab.id === 'bt-fab' && !this.fab.closest('#header'));
-      if (!floating) return;
-      const target = document.querySelector('#header .headerInner .gnbLogoSearchArea') ||
-        document.querySelector('#header .headerInner, #header');
-      if (!target) return;
-      this.fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
-        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
-        'line-height:1;color:inherit;background:transparent;' +
-        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
-        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
-      target.appendChild(this.fab);
-      this.adapter.log('Bouton ⚙ re-docké dans le header BAND.');
-      this._applyPageVisibility();
     } catch (e) {}
   }
 
@@ -244,7 +257,10 @@ class BandUI {
     document.body.appendChild(this.btn);
   }
 
-  /* ---------- Bouton ⚙ : docké dans le header BAND, jamais en flottant ---------- */
+  // Bouton ⚙ : docké dans le header BAND (ancienne place v1.6.x),
+  // avec repli flottant fixe uniquement si le header n'est pas encore monté.
+  // Les styles de base sont TOUJOURS ré-appliqués d'un seul bloc (cssText)
+  // et jamais effacés (restauration display/opacity explicite).
   _injectFab() {
     if (!document.body) return;
     try { const ex = document.getElementById('bt-fab'); if (ex) { this.fab = ex; this._applyPageVisibility(); return; } } catch (e) {}
@@ -253,53 +269,73 @@ class BandUI {
     fab.id = 'bt-fab';
     fab.type = 'button';
     fab.textContent = '⚙';
-    fab.title = 'Unbanded — afficher/masquer le panneau';
+    fab.title = 'Unbanded — paramètres';
     fab.setAttribute('data-bt-root', '1');
+    // Hover : restaure toujours la valeur de base (jamais `''` qui effacerait
+    // la déclaration inline du cssText).
     fab.onmouseenter = function () { fab.style.transform = 'scale(1.1)'; fab.style.opacity = '1'; };
-    fab.onmouseleave = function () { fab.style.transform = 'scale(1)'; fab.style.opacity = ''; };
-    // Ouvre directement les Paramètres sur l'onglet "À propos" (Unbanded vX.Y.Z),
-    // pas le panneau Plugins.
+    fab.onmouseleave = function () {
+      fab.style.transform = '';
+      fab.style.opacity = fab.dataset.btBaseOpacity || '.8';
+    };
     fab.onclick = () => this.openSettings('about');
 
     // 1) Dock dans le header BAND, après la barre de recherche
     //    (.gnbLogoSearchArea) : respecte la DA du site, jamais sur Envoyer.
     const searchArea = document.querySelector('#header .headerInner .gnbLogoSearchArea');
-    if (searchArea) {
-      fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
-        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
-        'line-height:1;color:inherit;background:transparent;' +
-        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
-        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
-      searchArea.appendChild(fab);
-      this.fab = fab;
-      this._syncFabState();
-      this.adapter.log('Bouton ⚙ docké dans le header BAND.');
-      return;
-    }
-    // 2) Header présent sans zone logo/recherche : fin du headerInner.
-    const headerInner = document.querySelector('#header .headerInner, #header');
+    const headerInner = searchArea || document.querySelector('#header .headerInner, #header');
     if (headerInner) {
-      fab.style.cssText = 'flex:none;align-self:center;width:32px;height:32px;margin-left:10px;' +
+      fab.style.cssText = 'flex:0 0 auto;align-self:center;width:32px;height:32px;margin-left:10px;' +
         'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
         'line-height:1;color:inherit;background:transparent;' +
         'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
         'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+      fab.dataset.btBaseOpacity = fab.style.opacity;
       headerInner.appendChild(fab);
       this.fab = fab;
       this._syncFabState();
+      this._applyPageVisibility();
       this.adapter.log('Bouton ⚙ docké dans le header BAND.');
       return;
     }
-    // 3) Dernier recours : flottant discret en haut à droite (jamais en bas).
-    fab.style.cssText = 'position:fixed;right:18px;top:70px;z-index:10001;width:40px;height:40px;' +
-      'border:none;border-radius:50%;cursor:pointer;font-size:19px;line-height:1;color:#fff;' +
+    // 2) Repli : flottant fixe en bas à droite (header pas encore monté).
+    fab.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:10001;width:46px;height:46px;' +
+      'border:none;border-radius:50%;cursor:pointer;font-size:21px;line-height:1;color:#fff;' +
       'background:var(--btt-accent,#6c5ce7);box-shadow:0 4px 14px rgba(0,0,0,.4);' +
       'display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
-      'opacity:.75;transition:transform .15s ease,opacity .2s ease;';
+      'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+    fab.dataset.btBaseOpacity = fab.style.opacity;
     document.body.appendChild(fab);
     this.fab = fab;
     this._syncFabState();
-    this.adapter.log('Bouton flottant ⚙ injecté (haut droite, repli).');
+    this.adapter.log('Bouton ⚙ flottant injecté (repli, header absent).');
+  }
+
+  /**
+   * Si le ⚙ est en repli flottant alors que le header BAND est désormais
+   * disponible (cas page principale chargée en retard par le SPA),
+   * le re-docke dans le header.
+   */
+  _redockFabIfNeeded() {
+    try {
+      if (!this.fab || !document.body.contains(this.fab)) {
+        this.fab = null;
+        return;
+      }
+      if (this.fab.style.position !== 'fixed') return; // déjà docké
+      const target = document.querySelector('#header .headerInner .gnbLogoSearchArea') ||
+        document.querySelector('#header .headerInner, #header');
+      if (!target) return;
+      this.fab.style.cssText = 'flex:0 0 auto;align-self:center;width:32px;height:32px;margin-left:10px;' +
+        'border:1px solid rgba(128,128,128,.35);border-radius:50%;cursor:pointer;font-size:16px;' +
+        'line-height:1;color:inherit;background:transparent;' +
+        'display:inline-flex;align-items:center;justify-content:center;padding:0;font-family:inherit;' +
+        'opacity:.8;transition:transform .15s ease,opacity .2s ease;';
+      this.fab.dataset.btBaseOpacity = this.fab.style.opacity;
+      target.appendChild(this.fab);
+      this.adapter.log('Bouton ⚙ re-docké dans le header BAND.');
+      this._applyPageVisibility();
+    } catch (e) {}
   }
 
   toggleGui() {

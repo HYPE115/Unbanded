@@ -12,7 +12,12 @@ BandUI.prototype._injectPanel = function () {
   this.panel = null; this.visible = false;
 };
 
-BandUI.prototype.toggle = function () { this.openSettings('plugins'); };
+BandUI.prototype.toggle = function () {
+  // Vrai toggle : ferme si les Paramètres sont déjà ouverts, sinon ouvre
+  // l'onglet Plugins. (L'ancien shim ouvrait toujours, sans fermer.)
+  if (this.settingsVisible && this.closeSettings) this.closeSettings();
+  else this.openSettings('plugins');
+};
 BandUI.prototype.show = function () { this.openSettings('plugins'); };
 BandUI.prototype.hide = function () { if (this.closeSettings) this.closeSettings(); };
 

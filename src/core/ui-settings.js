@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.7.0';
+  var v = '1.7.3';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
@@ -198,7 +198,8 @@ BandUI.prototype.openSettings = function (tab) {
   if (!this.settingsEl) return;
   this.settingsEl.style.display = 'block';
   this.settingsVisible = true;
-  this.hide(); // referme le panneau Plugins si ouvert
+  // NB : ne JAMAIS appeler this.hide() ici — le shim masque le panneau via
+  // closeSettings(), ce qui refermait la modale aussitôt ouverte (bug v1.6.9).
   if (this._syncFabState) this._syncFabState();
   this._switchSettingsTab(tab || this._settingsTab || 'general');
 };
