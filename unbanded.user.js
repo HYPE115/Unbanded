@@ -1448,6 +1448,9 @@ BandUI.prototype._settingsMarkup = function () {
             '<label class="bt-set-line">Durée des toasts : ' +
               '<select data-act="opt-toast-duration"><option value="3">3 s</option><option value="5">5 s</option><option value="8">8 s</option><option value="12">12 s</option></select>' +
             '</label>' +
+            '<label class="bt-set-line">Langue : ' +
+              '<select data-act="opt-lang"><option value="auto">Auto (détectée)</option><option value="en">English</option><option value="fr">Français</option></select>' +
+            '</label>' +
           '</div>' +
           '<div class="bt-set-card">' +
             '<h3>Configuration</h3>' +
@@ -1645,6 +1648,8 @@ BandUI.prototype._renderSettingsGeneral = function () {
   if (cb) cb.checked = window.BTTStore.get('startupToast', true) !== false;
   var sel = document.querySelector ? document.querySelector('#bt-settings [data-act="opt-toast-duration"]') : null;
   if (sel) sel.value = String(window.BTTStore.get('toastDuration', 5));
+  var langSel = document.querySelector ? document.querySelector('#bt-settings [data-act="opt-lang"]') : null;
+  if (langSel) langSel.value = window.BTTI18n.pref();
 };
 
 BandUI.prototype._renderSettingsCss = function () {
@@ -1910,6 +1915,12 @@ BandUI.prototype._settingsChange = function (e) {
     try { window.BTTThemes.applyActive(); } catch (e) {}
   } else if (act === 'opt-toast-duration') {
     window.BTTStore.set('toastDuration', Math.max(1, parseInt(t.value, 10) || 5));
+  } else if (act === 'opt-lang') {
+    var newLang = window.BTTI18n.set(t.value);
+    if (newLang) {
+      this._renderSettingsTab(this._settingsTab || 'general');
+      (window.__BTT_toast || function () {})('Langue : ' + newLang, 'ok');
+    }
   }
 };
 
