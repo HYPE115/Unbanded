@@ -22,43 +22,44 @@ BandUI.prototype._injectSettings = function () {
 
 BandUI.prototype._settingsMarkup = function () {
   var v = '1.8.1';
+  var _t = function (k, def) { return (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t(k) : def; };
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +
       '<div class="bt-set-brand"><span class="bt-set-dot"></span> Unbanded <small>v' + v + '</small></div>' +
       '<nav>' +
-        '<button type="button" class="bt-set-tab" data-tab="general">⚙ Général</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="plugins">🧩 Plugins</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="themes">🎨 Thèmes</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="css">{ } CSS personnalisé</button>' +
-        '<button type="button" class="bt-set-tab" data-tab="about">ℹ À propos</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="general">' + _t('tab.general', '⚙ Général') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="plugins">' + _t('tab.plugins', '🧩 Plugins') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="themes">' + _t('tab.themes', '🎨 Thèmes') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="css">' + _t('tab.css', '{ } CSS personnalisé') + '</button>' +
+        '<button type="button" class="bt-set-tab" data-tab="about">' + _t('tab.about', 'ℹ À propos') + '</button>' +
       '</nav>' +
       '<div class="bt-set-side-foot">Raccourcis : <b>/settings</b> · <b>Ctrl+,</b> · <b>Échap</b> pour fermer</div>' +
     '</aside>' +
     '<main class="bt-set-main">' +
-      '<header class="bt-set-head"><h2 id="bt-set-title">Général</h2>' +
-        '<button type="button" id="bt-settings-close" class="bt-set-close" title="Fermer">✕</button></header>' +
+      '<header class="bt-set-head"><h2 id="bt-set-title">' + _t('gen.title', 'Général') + '</h2>' +
+        '<button type="button" id="bt-settings-close" class="bt-set-close" title="' + _t('gen.title', 'Fermer') + '">✕</button></header>' +
       '<div class="bt-set-body">' +
 
         '<section class="bt-page" data-page="general">' +
           '<div class="bt-set-card">' +
-            '<h3>Général</h3>' +
-            '<label class="bt-set-switch"><input type="checkbox" data-act="opt-startup-toast"> Afficher le toast de démarrage</label>' +
-            '<label class="bt-set-line">Durée des toasts : ' +
+            '<h3>' + _t('gen.title', 'Général') + '</h3>' +
+            '<label class="bt-set-switch"><input type="checkbox" data-act="opt-startup-toast"> ' + _t('gen.startupToast', 'Afficher le toast de démarrage') + '</label>' +
+            '<label class="bt-set-line">' + _t('gen.toastDuration', 'Durée des toasts :') + ' ' +
               '<select data-act="opt-toast-duration"><option value="3">3 s</option><option value="5">5 s</option><option value="8">8 s</option><option value="12">12 s</option></select>' +
             '</label>' +
-            '<label class="bt-set-line">Langue : ' +
-              '<select data-act="opt-lang"><option value="auto">Auto (détectée)</option><option value="en">English</option><option value="fr">Français</option></select>' +
+            '<label class="bt-set-line">' + _t('gen.lang', 'Langue :') + ' ' +
+              '<select data-act="opt-lang"><option value="auto">' + _t('gen.langAuto', 'Auto (détectée)') + '</option><option value="en">English</option><option value="fr">Français</option></select>' +
             '</label>' +
           '</div>' +
           '<div class="bt-set-card">' +
-            '<h3>Configuration</h3>' +
+            '<h3>' + _t('gen.config', 'Configuration') + '</h3>' +
             '<div class="bt-set-row">' +
-              '<button type="button" class="bt-btn" data-act="export-config">Exporter (JSON)</button>' +
-              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-config">Importer (JSON)</button>' +
-              '<button type="button" class="bt-btn bt-btn-danger" data-act="reset-all">Tout réinitialiser</button>' +
+              '<button type="button" class="bt-btn" data-act="export-config">' + _t('gen.export', 'Exporter (JSON)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-config">' + _t('gen.import', 'Importer (JSON)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-danger" data-act="reset-all">' + _t('gen.reset', 'Tout réinitialiser') + '</button>' +
             '</div>' +
-            '<div class="bt-set-hint">L\'export inclut plugins, thèmes, CSS personnalisé et options — parfait pour migrer vers un autre navigateur.</div>' +
+            '<div class="bt-set-hint">' + _t('gen.exportHint', "L'export inclut plugins, thèmes, CSS personnalisé et options — parfait pour migrer vers un autre navigateur.") + '</div>' +
           '</div>' +
         '</section>' +
 

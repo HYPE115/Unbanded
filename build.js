@@ -26,6 +26,7 @@ const order = [
   'src/core/commands.js',
   'src/core/ui.js',
   'src/core/ui-panel.js',
+  'src/core/i18n.js',
   'src/core/ui-settings.js',
   'src/core/ui-hooks.js',
   'src/core/ui-autocomplete.js',

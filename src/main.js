@@ -20,6 +20,7 @@
     try { window.BTTStyles.apply(window.BTTStyles.get()); } catch (eCss) { console.warn('[Unbanded] CSS perso :', eCss); }
     // Plugins persistés (imports URL/fichier des sessions précédentes)
     try { await pm.loadPersisted(); } catch (ePersist) { console.warn('[Unbanded] Plugins persistés :', ePersist); }
+    window.BTTI18n.init();
     ui.inject();
     // API publique (plugins avancés, console, scripts externes).
     try {
