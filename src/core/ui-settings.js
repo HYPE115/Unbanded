@@ -24,7 +24,7 @@ BandUI.prototype._settingsMarkup = function () {
   var v = '1.8.1';
   var _t = function (k, def) { return (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t(k) : def; };
   return '' +
-  '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
+  '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="' + _t('settings.title', 'Unbanded Settings') + '">' +
     '<aside class="bt-set-side">' +
       '<div class="bt-set-brand"><span class="bt-set-dot"></span> Unbanded <small>v' + v + '</small></div>' +
       '<nav>' +
@@ -34,7 +34,7 @@ BandUI.prototype._settingsMarkup = function () {
         '<button type="button" class="bt-set-tab" data-tab="css">' + _t('tab.css', '{ } CSS personnalisé') + '</button>' +
         '<button type="button" class="bt-set-tab" data-tab="about">' + _t('tab.about', 'ℹ À propos') + '</button>' +
       '</nav>' +
-      '<div class="bt-set-side-foot">Raccourcis : <b>/settings</b> · <b>Ctrl+,</b> · <b>Échap</b> pour fermer</div>' +
+      '<div class="bt-set-side-foot">' + _t('side.shortcuts', 'Shortcuts: /settings · Ctrl+, · Esc to close') + '</div>' +
     '</aside>' +
     '<main class="bt-set-main">' +
       '<header class="bt-set-head"><h2 id="bt-set-title">' + _t('gen.title', 'Général') + '</h2>' +
@@ -214,13 +214,13 @@ BandUI.prototype.closeSettings = function () {
 };
 
 BandUI.prototype._switchSettingsTab = function (tab) {
-  var titles = { general: 'Général', plugins: 'Plugins', themes: 'Thèmes', css: 'CSS personnalisé', about: 'À propos' };
-  if (!titles[tab]) tab = 'general';
+  var titleKeys = { general: 'tab.general', plugins: 'tab.plugins', themes: 'tab.themes', css: 'tab.css', about: 'tab.about' };
+  if (!titleKeys[tab]) tab = 'general';
   this._settingsTab = tab;
   var root = this.settingsEl;
   if (!root) return;
   var title = document.getElementById('bt-set-title');
-  if (title) title.textContent = titles[tab];
+  if (title) title.textContent = _t(titleKeys[tab], 'Settings');
   var tabs = root.querySelectorAll ? root.querySelectorAll('[data-tab]') : [];
   for (var i = 0; i < tabs.length; i++) {
     tabs[i].className = tabs[i].getAttribute('data-tab') === tab ? 'bt-set-tab bt-active' : 'bt-set-tab';

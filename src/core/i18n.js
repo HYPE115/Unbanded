@@ -50,7 +50,8 @@ var BTTI18n = (function () {
     'cfg.resetFailed': 'Reset failed: {msg}',
     'file.readFailed': 'Cannot read the file',
     'file.noReader': 'FileReader unavailable: {msg}',
-    'cfg.langChanged': 'Language: {lang} — reloading…'
+    'cfg.langChanged': 'Language: {lang} — reloading…',
+    'settings.title': 'Unbanded Settings'
   });
   Object.assign(EN, {
     'plg.add': 'Add a plugin',
@@ -208,7 +209,8 @@ var BTTI18n = (function () {
     'cfg.resetFailed': 'Reset impossible : {msg}',
     'file.readFailed': 'Lecture du fichier impossible',
     'file.noReader': 'FileReader indisponible : {msg}',
-    'cfg.langChanged': 'Langue : {lang} — rechargement…'
+    'cfg.langChanged': 'Langue : {lang} — rechargement…',
+    'settings.title': 'Réglages Unbanded'
   });
   Object.assign(FR, {
     'plg.add': 'Ajouter un plugin',
@@ -339,7 +341,7 @@ var BTTI18n = (function () {
   var current = 'en';
 
   function pref() {
-    try { return window.BTTStore.get('lang', 'auto') || 'auto'; } catch (e) { return 'auto'; }
+    try { return window.BTTStore.get('lang', 'en') || 'en'; } catch (e) { return 'en'; }
   }
 
   function init() {
