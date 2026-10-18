@@ -11,9 +11,9 @@
     description: "Génère un GIF pet-pet à envoyer dans la conversation (aDu/pet-pet-gif)",
     onLoad: function (ctx) {
       var self = this;
-      ctx.registerCommand('pat', 'Fait un pet-pet à quelqu\'un. Usage: /pat [user] (user requis en groupe)', function (args, info) {
+      ctx.registerCommand('pat', "Fait un pet-pet à quelqu'un", function (args, info) {
         return self._run(args, info);
-      });
+      }, '/pat [user] — user requis en groupe');
     },
     _run: async function (args, info) {
       var type = info.getConversationType();

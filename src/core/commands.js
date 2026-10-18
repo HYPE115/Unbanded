@@ -6,16 +6,22 @@
 function registerBuiltInCommands(pm) {
   var BTT_VERSION = 'dev';
   try { if (window.BTT_VERSION) BTT_VERSION = window.BTT_VERSION; } catch (e) {}
-  pm.registerCommand('pat', "Fais un pet-pet à quelqu'un. Usage : /pat [user] (user requis en groupe)", async () => {
+  pm.registerCommand('pat', "Fait un pet-pet à quelqu'un (GIF)", async () => {
     // Redondant : le plugin pet-pet (chargé juste après) remplace ce stub.
-  });
+  }, '/pat [user] — user requis en groupe');
 
-  pm.registerCommand('help', "Affiche la liste des commandes (ou le détail : /help <commande>)", async (args, info) => {
+  pm.registerCommand('help', 'Affiche les commandes disponibles', async (args, info) => {
     const q = String((args && args[0]) || '').toLowerCase().replace(/^\//, '');
     if (q) {
       const cmd = pm.commands.get(q);
-      const msg = cmd ? '/' + q + ' — ' + (cmd.desc || '(pas de description)') + '\n(affichage local uniquement)'
-                      : 'Commande inconnue : /' + q + ' (tape /help pour la liste)';
+      let msg;
+      if (cmd) {
+        msg = '/' + q + ' — ' + (cmd.desc || '(pas de description)');
+        if (cmd.usage) msg += '\nUsage : ' + cmd.usage;
+        msg += '\n(affichage local uniquement)';
+      } else {
+        msg = 'Commande inconnue : /' + q + ' (tape /help pour la liste)';
+      }
       if (window.__BTT_toast) window.__BTT_toast(msg, cmd ? undefined : 'error');
       else info.api.log(msg);
       return;
@@ -29,7 +35,7 @@ function registerBuiltInCommands(pm) {
      else info.api.log(lines.join('\n'));
    });
 
-  pm.registerCommand('plugins', "Ouvre la page Paramètres sur l'onglet Plugins", async (args, info) => {
+  pm.registerCommand('plugins', 'Ouvre les paramètres (onglet Plugins)', async (args, info) => {
     const ui = window.UnbandedUI || window.BandTamperUI;
     if (ui && ui.openSettings) {
       ui.openSettings('plugins');
@@ -39,7 +45,7 @@ function registerBuiltInCommands(pm) {
     }
   });
 
-  pm.registerCommand('settings', 'Ouvre la page Paramètres (thèmes, CSS personnalisé, plugins)', async (args, info) => {
+  pm.registerCommand('settings', 'Ouvre la page Paramètres', async (args, info) => {
     const ui = window.UnbandedUI || window.BandTamperUI;
     if (ui && ui.openSettings) {
       ui.openSettings();
@@ -48,7 +54,7 @@ function registerBuiltInCommands(pm) {
     }
   });
 
-  pm.registerCommand('debug', "Diagnostics Unbanded (sélecteurs, hook, etc.)", async (args, info) => {
+  pm.registerCommand('debug', 'Diagnostics Unbanded (sélecteurs, DOM, état)', async (args, info) => {
     const a = (info && info.api) || pm.adapter;
     const input = a.getChatInput ? a.getChatInput() : null;
     const fileInputs = a.$$('input[type="file"]').length;
@@ -72,13 +78,13 @@ function registerBuiltInCommands(pm) {
     if (window.__BTT_toast) window.__BTT_toast(text + '\n(copié dans le presse-papiers)');
   });
 
-  pm.registerCommand('version', 'Affiche la version Unbanded', async (args, info) => {
+  pm.registerCommand('version', "Affiche la version d'Unbanded", async (args, info) => {
     const msg = 'Unbanded v' + BTT_VERSION;
     if (window.__BTT_toast) window.__BTT_toast(msg, 'ok');
     else info.api.log(msg);
   });
 
-  pm.registerCommand('clear', 'Efface les toasts Unbanded affichés', async () => {
+  pm.registerCommand('clear', 'Efface les toasts affichés', async () => {
     try {
       const wrap = document.getElementById('bt-toasts');
       if (wrap) wrap.innerHTML = '';

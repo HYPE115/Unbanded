@@ -1,5 +1,5 @@
-PluginManager.prototype.registerCommand = function (name, desc, handler) {
-  this.commands.set(name.toLowerCase(), { pluginId: 'builtin', handler: handler, desc: desc || '' });
+PluginManager.prototype.registerCommand = function (name, desc, handler, usage) {
+  this.commands.set(name.toLowerCase(), { pluginId: 'builtin', handler: handler, desc: desc || '', usage: usage || '' });
   this.adapter.log('Commande enregistrée : /' + name);
 };
 
@@ -48,7 +48,7 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
   if (spec.commands) {
     for (var i = 0; i < spec.commands.length; i++) {
       var cmd = spec.commands[i];
-      this.commands.set(cmd.name.toLowerCase(), { pluginId: url, handler: cmd.handler, desc: cmd.desc || '' });
+      this.commands.set(cmd.name.toLowerCase(), { pluginId: url, handler: cmd.handler, desc: cmd.desc || '', usage: cmd.usage || '' });
       this.adapter.log('Commande enregistrée : /' + cmd.name + ' (builtin ' + spec.name + ')');
     }
   }

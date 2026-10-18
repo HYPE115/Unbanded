@@ -12,6 +12,9 @@
     if (window.PluginPetPet) {
       pm.registerBuiltin(window.PluginPetPet);
     }
+    if (window.PluginReactions) pm.registerBuiltin(window.PluginReactions);
+    if (window.PluginGames) pm.registerBuiltin(window.PluginGames);
+    if (window.PluginTools) pm.registerBuiltin(window.PluginTools);
     // Thème actif + CSS personnalisé (persistés)
     try { window.BTTThemes.applyActive(); } catch (eTheme) { console.warn('[Unbanded] Thème :', eTheme); }
     try { window.BTTStyles.apply(window.BTTStyles.get()); } catch (eCss) { console.warn('[Unbanded] CSS perso :', eCss); }

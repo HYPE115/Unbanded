@@ -115,7 +115,8 @@ class PluginManager {
         this.commands.set(cmd.name.toLowerCase(), {
           pluginId: url,
           handler: cmd.handler,
-          desc: cmd.desc || ''
+          desc: cmd.desc || '',
+          usage: cmd.usage || ''
         });
         this.adapter.log('Commande enregistrée : /' + cmd.name + ' (plugin ' + spec.name + ')');
       }
@@ -166,8 +167,8 @@ class PluginManager {
     return {
       api,
       log: (...args) => console.log('[Plugin:' + pluginUrl.split('/').pop() + ']', ...args),
-      registerCommand: (name, desc, handler) => {
-        self.commands.set(name.toLowerCase(), { pluginId: pluginUrl, handler, desc });
+      registerCommand: (name, desc, handler, usage) => {
+        self.commands.set(name.toLowerCase(), { pluginId: pluginUrl, handler, desc, usage });
         api.log('Commande enregistrée : /' + name);
       },
       unregisterCommand: (name) => {

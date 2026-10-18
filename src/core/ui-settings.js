@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.7.4';
+  var v = '1.8.1';
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="Paramètres Unbanded">' +
     '<aside class="bt-set-side">' +

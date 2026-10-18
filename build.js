@@ -3,7 +3,7 @@ const path = require('path');
 
 const root = __dirname;
 
-const VERSION = '1.7.4';
+const VERSION = '1.8.1';
 const REPO = 'HYPE115/band_tamper';
 const BRANCH = 'main';
 const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/unbanded.user.js`;
@@ -33,6 +33,9 @@ const order = [
   'src/vendor/gifenc.js',
   'src/petpet-gif.js',
   'src/plugins/pet-pet.js',
+  'src/plugins/reactions.js',
+  'src/plugins/games.js',
+  'src/plugins/tools.js',
   'src/main.js'
 ];
 
