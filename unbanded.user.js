@@ -1918,8 +1918,8 @@ BandUI.prototype._settingsChange = function (e) {
   } else if (act === 'opt-lang') {
     var newLang = window.BTTI18n.set(t.value);
     if (newLang) {
-      this._renderSettingsTab(this._settingsTab || 'general');
-      (window.__BTT_toast || function () {})('Langue : ' + newLang, 'ok');
+      (window.__BTT_toast || function () {})('Langue : ' + newLang + ' — rechargement…', 'ok');
+      setTimeout(function () { location.reload(); }, 700);
     }
   }
 };
