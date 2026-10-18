@@ -104,7 +104,7 @@ BandUI.prototype._hookCommandInput = function () {
         type: self.adapter.getConversationType()
       };
       const handled = await self.pm.runCommand(text, info);
-      if (!handled) window.__BTT_toast('Commande inconnue : ' + name + ' (tape /help)', 'error');
+      if (!handled) window.__BTT_toast((window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t('hook.unknown', {name: name}) : 'Commande inconnue : ' + name + ' (tape /help)', 'error');
     } catch (err) {
       console.error('[Unbanded] Erreur commande :', err);
       window.__BTT_toast('Erreur : ' + ((err && err.message) ? err.message : String(err)), 'error');

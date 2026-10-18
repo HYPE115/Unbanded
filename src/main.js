@@ -46,7 +46,7 @@
     try { showToast = window.BTTStore.get('startupToast', true) !== false; } catch (eOpt) {}
     var ms = Date.now() - t0;
     if (showToast && window.__BTT_toast) {
-      window.__BTT_toast('✓ Unbanded v' + (window.BTT_VERSION || 'dev') + ' chargé en ' + ms + ' ms — /help pour les commandes, /settings pour les paramètres', 'ok');
+      window.__BTT_toast(window.BTTI18n.t('toast.loaded', {v: window.BTT_VERSION || 'dev', ms: ms}), 'ok');
     }
     console.log('[Unbanded] Prêt en ' + ms + ' ms. Plugins : ' + pm.plugins.size + ' | Commandes : ' + pm.commands.size);
     var tick = setInterval(function () {

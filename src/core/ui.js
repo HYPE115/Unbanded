@@ -1,3 +1,5 @@
+var _t = function (k, def) { return (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t(k) : def; };
+
 /**
  * BandUI - Bouton "Unbanded" + page Paramètres injectés dans BAND.
  * (L'ancien panneau flottant "Unbanded · Plugins" a été supprimé :
@@ -185,7 +187,7 @@ class BandUI {
     const b = document.createElement('div');
     this.banner = b;
     b.style.cssText = 'position:fixed;top:10px;left:10px;z-index:99999;background:#2f3e4e;color:#fff;padding:10px 14px;border-radius:8px;font-family:sans-serif;font-size:13px;max-width:360px;box-shadow:0 4px 12px rgba(0,0,0,.4);';
-    b.innerHTML = '<b>Unbanded (mode démo)</b><br>Tu n\'es pas sur band.us. Les actions réelles ne fonctionnent pas hors de BAND.<br><button id="bt-open-plugins" style="margin-top:8px;padding:6px 10px;cursor:pointer">⚙ Ouvrir Unbanded</button>';
+    b.innerHTML = '<b>' + _t('demo.title', 'Unbanded (mode démo)') + '</b><br>' + _t('demo.desc', "Tu n'es pas sur band.us. Les actions réelles ne fonctionnent pas hors de BAND.") + '<br><button id="bt-open-plugins" style="margin-top:8px;padding:6px 10px;cursor:pointer">' + _t('demo.open', '⚙ Ouvrir Unbanded') + '</button>';
     document.body.appendChild(b);
     const openBtn = document.getElementById('bt-open-plugins');
     if (openBtn) openBtn.onclick = () => this.toggle();
@@ -353,7 +355,7 @@ class BandUI {
     if (!this.fab) return;
     try {
       this.fab.textContent = '⚙';
-      this.fab.title = 'Unbanded — paramètres';
+      this.fab.title = _t('fab.title', 'Unbanded — paramètres');
     } catch (e) {}
   }
 }

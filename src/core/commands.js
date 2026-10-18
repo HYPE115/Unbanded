@@ -20,7 +20,7 @@ function registerBuiltInCommands(pm) {
         if (cmd.usage) msg += '\nUsage : ' + cmd.usage;
         msg += '\n(affichage local uniquement)';
       } else {
-        msg = 'Commande inconnue : /' + q + ' (tape /help pour la liste)';
+        msg = (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t('help.unknown', {name: q}) : 'Commande inconnue : /' + q + ' (tape /help pour la liste)';
       }
       if (window.__BTT_toast) window.__BTT_toast(msg, cmd ? undefined : 'error');
       else info.api.log(msg);
