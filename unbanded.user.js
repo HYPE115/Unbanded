@@ -2209,7 +2209,8 @@ BandUI.prototype._settingsClick = function (e) {
     case 'add-plugin-url': {
       var input = document.getElementById('bt-set-plugin-url');
       var url = (input && input.value ? input.value : '').trim();
-      if (!url) { toast(_t('err.needUrl', \"Colle d'abord une URL\"), 'error'); return; }
+      if (!url) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
+      if (!url) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
       this.pm.loadPlugin(url, { enabled: true, source: 'url' })
         .then(function () { if (input) input.value = ''; toast(_t('plg.added', 'Plugin ajouté : ') + url, 'ok'); self.renderSettingsPlugins(); })
         .catch(function (err) { toast(_t('plg.failed', 'Échec plugin : ') + err.message, 'error'); });
@@ -2234,7 +2235,8 @@ BandUI.prototype._settingsClick = function (e) {
     case 'add-theme-url': {
       var tinput = document.getElementById('bt-set-theme-url');
       var turl = (tinput && tinput.value ? tinput.value : '').trim();
-      if (!turl) { toast(_t('err.needUrl', \"Colle d'abord une URL\"), 'error'); return; }
+      if (!turl) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
+      if (!turl) { toast(_t('err.needUrl', "Colle d'abord une URL"), 'error'); return; }
       window.BTTThemes.importFromUrl(turl)
         .then(function (t) { if (tinput) tinput.value = ''; toast(_t('thm.imported', 'Thème importé : ') + t.name, 'ok'); self.renderSettingsThemes(); })
         .catch(function (err) { toast(_t('thm.importFailed', 'Échec thème : ') + err.message, 'error'); });
