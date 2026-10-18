@@ -12,7 +12,7 @@ Unbanded ne modifie pas BAND lui-même : c'est une **couche de customisation** p
 ## Ce que ça apporte (façon Vencord)
 
 - **🔌 Plugins** — chargeur de plugins JS (par URL ou fichier `.js`), activation/désactivation, persistance et rechargement auto au démarrage. API documentée pour écrire les tiens (voir [Ajouter ses propres plugins](#ajouter-ses-propres-plugins)).
-- **🎉 Plugins intégrés fun & utiles** — 30+ commandes immédiates : GIF réactions (`/hug`, `/cuddle`, `/slap`, `/kiss`…), mini-jeux locaux (`/8ball`, `/roll`, `/coin`, `/choose`), outils (`/remind`, `/shrug`, `/count`, `/copy`, `/time`) et bien sûr `/pat` (pet-pet GIF authentique).
+- **🎉 Plugins intégrés fun & utiles** — 30+ commandes immédiates : GIF réactions (`/hug`, `/cuddle`, `/slap`, `/kiss`…), mini-jeux locaux (`/8ball`, `/roll`, `/coin`, `/choose`), outils (`/remind`, `/shrug`, `/tableflip`, `/lenny`) et `/pat` (pet-pet GIF ).
 - **🎨 Thèmes** — galerie de 10 thèmes, import/export JSON, application instantanée (variables CSS `--btt-*`).
 - **💅 CSS personnalisé** — éditeur intégré, appliqué en direct à tout band.us.
 - **⌨️ Commandes `/slash`** — exécution via Entrée, autocomplétion façon Discord (`/` + début → popup, `↑/↓` + `Tab`/`Entrée`), historique `↑/↓`, alias (`/h` → `/help`…), aide détaillée (`/help <cmd>`).
@@ -38,7 +38,7 @@ Unbanded ne modifie pas BAND lui-même : c'est une **couche de customisation** p
 | `src/plugins/pet-pet.js` | **Plugin d'exemple** : commande `/pat` (montre comment utiliser `sendFile` + `getUserAvatar`) |
 | `src/plugins/reactions.js` | **Plugin builtin** : 18 GIF réactions fun (`/hug`, `/cuddle`, `/slap`…) via waifu.pics + repli texte |
 | `src/plugins/games.js` | **Plugin builtin** : mini-jeux locaux (`/8ball`, `/roll`, `/coin`, `/choose`, `/rand`) |
-| `src/plugins/tools.js` | **Plugin builtin** : outils (`/remind`, `/shrug`, `/tableflip`, `/lenny`, `/count`, `/copy`, `/time`) |
+| `src/plugins/tools.js` | **Plugin builtin** : outils (`/remind`, `/shrug`, `/tableflip`, `/lenny`) |
 | `build.js` | Concatène les sources en `unbanded.user.js` |
 | `tools/embed-hand.js` | Régénère `src/petpet-hand.js` (télécharge img/pet0..pet9.gif du dépôt aDu) |
 | `tools/vendor-gifenc.js` | Régénère `src/vendor/gifenc.js` (vendorise gifenc depuis jsdelivr) |
@@ -123,7 +123,7 @@ En plus de `/pat` (pet-pet), Unbanded embarque **3 plugins builtin** — tous vi
 
 **🎲 `games`** — 100 % locaux, zéro réseau : `/8ball <question>` (boule magique), `/roll [NdM±K]` (`/roll 2d20+5`, défaut 1d6), `/coin` (pile ou face), `/choose a | b | c`, `/rand min max`. Alias : `/8b` `/dice` `/d` `/flip` `/pick` `/rnd`.
 
-**🛠 `tools`** — utiles au quotidien : `/remind <30|30m|2h> <texte>` (rappel par toast + clignotement du titre si l'onglet est masqué, cap 24 h), `/shrug` `/tableflip` `/unflip` `/lenny` (emotes texte façon Discord), `/count <texte>` (mots/caractères), `/copy <texte>` (presse-papiers), `/time`. Alias : `/rmd` `/wc`.
+**🛠 `tools`** — utiles au quotidien : `/remind <30|30m|2h> <texte>` (rappel par toast + clignotement du titre si l'onglet est masqué, cap 24 h), `/shrug` `/tableflip` `/unflip` `/lenny` (emotes texte façon Discord). Alias : `/rmd`.
 
 Quand tu tapes `/` + début de commande, un **popup façon Discord** suggère les commandes (↑/↓ pour naviguer, Tab ou Entrée pour compléter, Échap pour fermer). **↑/↓** sur un champ commençant par `/` rappelle l'historique de tes commandes. **Ctrl+,** ouvre/ferme les Paramètres, **Échap** ferme la modale.
 

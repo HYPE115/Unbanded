@@ -3682,9 +3682,6 @@ var src_default = GIFEncoder;
  * Plugin builtin "tools" — outils utiles (locaux, aucun réseau).
  *   /remind <durée> <texte>  rappel par toast (30, 30m, 2h, 45s — cap 24 h)
  *   /shrug /tableflip /unflip /lenny   emotes texte façon Discord
- *   /count <texte>           compte mots/caractères
- *   /copy <texte>            copie dans le presse-papiers
- *   /time                    date/heure courante
  */
 (function () {
   var TOOL = window.__BTT_toast || function () {};
@@ -3703,7 +3700,7 @@ var src_default = GIFEncoder;
   var PLUGIN = {
     name: 'tools',
     version: '1.0.0',
-    description: 'Outils : rappels /remind, emotes texte (/shrug, /tableflip…), /count, /copy, /time',
+    description: 'Outils : rappels /remind, emotes texte (/shrug, /tableflip…)',
     onLoad: function (ctx) {
       var toast = function () { try { (window.__BTT_toast || TOOL).apply(null, arguments); } catch (e) {} };
 
@@ -3751,36 +3748,6 @@ var src_default = GIFEncoder;
           var suffix = args.length ? ' ' + args.join(' ') : '';
           await info.sendText(EMOTES[name] + suffix);
         });
-      });
-
-      ctx.registerCommand('count', 'Compte les mots et caractères', function (args, info) {
-        var text = args.join(' ');
-        if (!text) throw new Error('Donne un texte : /count bonjour le monde');
-        var words = text.split(/\s+/).filter(Boolean).length;
-        toast('📝 ' + words + ' mot' + (words > 1 ? 's' : '') + ' · ' + text.length + ' caractères');
-      }, '/count <texte>');
-      ctx.registerAlias('wc', 'count');
-
-      ctx.registerCommand('copy', 'Copie du texte dans le presse-papiers', async function (args, info) {
-        var text = args.join(' ');
-        if (!text) throw new Error('Donne un texte à copier');
-        try {
-          await navigator.clipboard.writeText(text);
-          toast('📋 Copié dans le presse-papiers', 'ok');
-        } catch (e) {
-          var ta = document.createElement('textarea');
-          ta.value = text;
-          ta.style.cssText = 'position:fixed;opacity:0';
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand('copy'); toast('📋 Copié', 'ok'); }
-          catch (e2) { toast('✖ Copie impossible : ' + e2.message, 'error'); }
-          document.body.removeChild(ta);
-        }
-      }, '/copy <texte>');
-
-      ctx.registerCommand('time', "Affiche la date et l'heure courantes", async function (args, info) {
-        await info.sendText('🕒 ' + new Date().toLocaleString());
       });
     }
   };
