@@ -3,10 +3,18 @@ const path = require('path');
 
 const root = __dirname;
 
-const VERSION = '1.7.3';
+const VERSION = '1.7.4';
 const REPO = 'HYPE115/band_tamper';
 const BRANCH = 'main';
 const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/unbanded.user.js`;
+
+// Icône du script (dashboard Tampermonkey) : logo.png embarqué en data-URI.
+// Le dépôt étant privé, une URL raw GitHub ne chargerait pas — le data-URI
+// fonctionne partout, y compris hors ligne.
+const LOGO = path.join(root, 'logo.png');
+const ICON = fs.existsSync(LOGO)
+  ? 'data:image/png;base64,' + fs.readFileSync(LOGO).toString('base64')
+  : '';
 
 const order = [
   'src/core/storage.js',
@@ -33,7 +41,7 @@ const header = `// ==UserScript==
 // @namespace    http://tampermonkey.net/
 // @version      ${VERSION}
 // @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
-// @author       Cline
+// @author       HYPE115${ICON ? `\n// @icon        ${ICON}` : ''}
 // @homepageURL  https://github.com/${REPO}
 // @supportURL   https://github.com/${REPO}/issues
 // @updateURL    ${RAW}

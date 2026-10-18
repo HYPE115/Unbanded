@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="Unbanded" width="128">
+</p>
+
 # Unbanded — le Vencord de BAND (band.us)
 
 > Un client moddé pour BAND, inspiré de [Vencord](https://github.com/Vendicated/Vencord) (le mod Discord : plugins + thèmes + réglages par-dessus le client officiel) : **plugins, thèmes, CSS personnalisé et commandes `/slash`**, directement dans band.us via un userscript.
