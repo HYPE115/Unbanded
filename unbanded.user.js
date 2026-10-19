@@ -4043,8 +4043,7 @@ var src_default = GIFEncoder;
       await info.sendFile(blob, cat + '-' + String(who).replace(/\s+/g, '_') + '.' + ext);
       toast((window.BTTI18n?window.BTTI18n.t('rx.sent',{cat:cat,who:who}):'GIF sent to '+who), 'ok');
     } catch (e) {
-      // Repli texte (CSP/réseau) : le message part quand même.
-      await info.sendText(r.emoji + ' ' + who + ' ' + r.text + ' !');
+      // Fallback: pas de texte, le GIF est le seul rendu.
       toast((window.BTTI18n?window.BTTI18n.t('rx.fallback',{msg:(e&&e.message?e.message:e)}):'GIF unavailable'), 'warn');
     }
   }
