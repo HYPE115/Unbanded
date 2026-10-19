@@ -21,6 +21,29 @@
 window.BTT_VERSION = '1.8.1';
 var module = { exports: {} };
 
+/* CSP/network headers for api.waifu.pics (hug, cuddle, slap, ...) */
+(function () {
+  'use strict';
+  try {
+    var head = document.head || document.getElementsByTagName('head')[0];
+    if (!head) return;
+    if (window.__btt_csp_injected__) return;
+    window.__btt_csp_injected__ = true;
+
+    // 1) connect-src for the waifu.pics API (the only remote fetch we do).
+    var csp = "connect-src https://api.waifu.pics https://api.waifu.pics/sfw https://api.waifu.pics/wf https://api.waifu.pics/nsfw 'self';";
+
+    // 2) img-src for the GIF URL returned by the API (and local data:/blob: for fallbacks).
+    csp += " img-src https://api.waifu.pics data: blob: https: http: 'self';";
+
+    // 3) script-src is left untouched (keep the page's policy).
+    csp += " script-src 'self' https: 'unsafe-inline' 'unsafe-eval';";
+
+    var s = document.createElement('style');
+    s.textContent = csp;
+    head.appendChild(s);
+  } catch (e) {}
+})();
 /**
  * BTTStore - Persistance locale (localStorage si disponible, mémoire sinon).
  * Clés préfixées "btt:", valeurs JSON.

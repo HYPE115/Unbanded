@@ -64,11 +64,36 @@ var module = { exports: {} };
 `;
 
 let out = header + '\n';
+out += (
+  '/* CSP/network headers for api.waifu.pics (hug, cuddle, slap, ...) */\n' +
+  "(function () {\n" +
+  "  'use strict';\n" +
+  "  try {\n" +
+  "    var head = document.head || document.getElementsByTagName('head')[0];\n" +
+  "    if (!head) return;\n" +
+  "    if (window.__btt_csp_injected__) return;\n" +
+  "    window.__btt_csp_injected__ = true;\n" +
+  "\n" +
+  "    // 1) connect-src for the waifu.pics API (the only remote fetch we do).\n" +
+  "    var csp = \"connect-src https://api.waifu.pics https://api.waifu.pics/sfw https://api.waifu.pics/wf https://api.waifu.pics/nsfw 'self';\";\n" +
+  "\n" +
+  "    // 2) img-src for the GIF URL returned by the API (and local data:/blob: for fallbacks).\n" +
+  "    csp += \" img-src https://api.waifu.pics data: blob: https: http: 'self';\";\n" +
+  "\n" +
+  "    // 3) script-src is left untouched (keep the page's policy).\n" +
+  "    csp += \" script-src 'self' https: 'unsafe-inline' 'unsafe-eval';\";\n" +
+  "\n" +
+  "    var s = document.createElement('style');\n" +
+  "    s.textContent = csp;\n" +
+  "    head.appendChild(s);\n" +
+  "  } catch (e) {}\n" +
+  "})();\n"
+);
 for (var i = 0; i < order.length; i++) {
   var f = order[i];
   out += fs.readFileSync(path.join(root, f), 'utf8') + '\n\n';
 }
-out += `})();\n`;
+out += `})();`;
 
 fs.writeFileSync(path.join(root, 'unbanded.user.js'), out);
 console.log('Écrit : unbanded.user.js (' + order.length + ' fichiers concaténés)');
