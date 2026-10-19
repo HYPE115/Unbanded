@@ -66,7 +66,7 @@
       await info.sendFile(blob, cat + '-' + String(who).replace(/\s+/g, '_') + '.' + ext);
       toast((window.BTTI18n?window.BTTI18n.t('rx.sent',{cat:cat,who:who}):'GIF sent to '+who), 'ok');
     } catch (e) {
-      // Fallback: pas de texte, le GIF est le seul rendu.
+      // Fallback: pas de texte, le GIF est le seul rendu (si le réseau est bloqué, rien d'autre à afficher).
       toast((window.BTTI18n?window.BTTI18n.t('rx.fallback',{msg:(e&&e.message?e.message:e)}):'GIF unavailable'), 'warn');
     }
   }
