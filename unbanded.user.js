@@ -614,7 +614,6 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
 
   var BUILTIN = [
     { id: 'default', name: 'Site default', author: 'Unbanded', builtin: true, colors: {}, site: true },
-    { id: 'violet', name: 'Violet (Unbanded)', author: 'Unbanded', builtin: true, site: true, colors: {} },
     { id: 'midnight', name: 'Midnight', author: 'Unbanded', builtin: true, colors: { accent: '#3b82f6', accentHover: '#2563eb', bg: '#0b1220', surface: '#111a2e', surface2: '#16233c', text: '#e8eef7', muted: '#8ea3bf', border: '#1f2f4a' } },
     { id: 'dracula', name: 'Dracula', author: 'Unbanded', builtin: true, colors: { accent: '#bd93f9', accentHover: '#a77bf3', bg: '#282a36', surface: '#21222c', surface2: '#343746', text: '#f8f8f2', muted: '#9aa4c0', border: '#44475a' } },
     { id: 'nord', name: 'Nord', author: 'Unbanded', builtin: true, colors: { accent: '#88c0d0', accentHover: '#81a1c1', bg: '#2e3440', surface: '#3b4252', surface2: '#434c5e', text: '#eceff4', muted: '#9aa5b8', border: '#4c566a' } },
@@ -723,6 +722,19 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     ensureStyle('bt-core-css', coreCss());
     ensureStyle('bt-theme-css', t.css || '');
     ensureStyle('bt-theme-site', siteEnabled() ? siteCss(c) : '');
+    // bt-theme-site doit rester juste avant bt-custom-css (dernier style utilisateur)
+    // pour ne pas etre ecrase par d'autres styles injectes par le SPA.
+    try {
+      var siteEl = document.getElementById('bt-theme-site');
+      var customEl = document.getElementById('bt-custom-css');
+      if (siteEl && siteEl.parentNode) {
+        if (customEl && customEl.parentNode) {
+          customEl.parentNode.insertBefore(siteEl, customEl);
+        } else {
+          document.head.appendChild(siteEl);
+        }
+      }
+    } catch (e) {}
     try { window.BTTStore.set('activeTheme', t.id); } catch (e) {}
     return t;
   }
