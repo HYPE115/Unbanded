@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const root = __dirname;
-const VERSION = '1.8.1';
-const REPO = 'HYPE115/band_tamper';
+const VERSION = '1.8.2';
+const REPO = 'HYPE115/Unbanded';
 const BRANCH = 'main';
 const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/unbanded.user.js`;
 // Icône du script (dashboard Tampermonkey) : logo.png embarqué en data-URI.
@@ -60,18 +60,17 @@ var module = { exports: {} };
 
 let out = header + '\n';
 
-for (var i = 0; i < order.length; i++) {
-  var f = order[i];
-  out += fs.readFileSync(path.join(root, f), 'utf8') + '\n\n';
+let lastFileText = '';
+
+for (const f of order) {
+  lastFileText = fs.readFileSync(path.join(root, f), 'utf8');
+  out += lastFileText + '\n\n';
 }
 
 // Close the IIFE. Only add the final '})();' if the last file did not already
 // provide a matching closer (main.js ends with its own '})();'), so we avoid
 // creating a stray '})();' that breaks the bundled userscript.
-const lastChunk = order[order.length - 1];
-const lastFileText = fs.readFileSync(path.join(root, lastChunk), 'utf8');
-const endsWithCloser = lastFileText.endsWith('})();');
-if (!endsWithCloser) {
+if (!lastFileText.endsWith('})();')) {
   out += `})();`;
 }
 

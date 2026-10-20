@@ -195,7 +195,7 @@ ctx.registerCommand('user', 'User info', function (args, info) {
 
 - **Plugins**: host the `.js` file on GitHub (raw), a gist, or your own hosting. Share the URL with other Unbanded users.
 - **Themes**: publish the `.json` file the same way.
-- Open an **issue** or **pull request** on [HYPE115/band_tamper](https://github.com/HYPE115/band_tamper) to propose built-in plugins/themes.
+- Open an **issue** or **pull request** on [HYPE115/Unbanded](https://github.com/HYPE115/Unbanded) to propose built-in plugins/themes.
 
 ---
 

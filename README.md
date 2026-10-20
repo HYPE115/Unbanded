@@ -70,9 +70,7 @@ band client tamper/
     ├── build_assets.py         # fallback: generate the 180 reaction GIFs offline (Pillow)
     ├── gen_reaction_bank.py    # regenerate src/assets/reactions/manifest.json
     ├── embed-hand.js           # regenerate src/petpet-hand.js (pet0..pet9 frames)
-    ├── vendor-gifenc.js        # vendor gifenc → src/vendor/gifenc.js
-    ├── gen_build.js            # regenerate build.js
-    └── prepare-assets.py       # earlier offline pipeline (discover → build → manifest)
+    └── vendor-gifenc.js        # vendor gifenc → src/vendor/gifenc.js
 ```
 
 ## Settings page

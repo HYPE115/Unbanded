@@ -12,33 +12,22 @@
   // sur band.us, c'est "src/assets/reactions/manifest.json" ; sinon modifier ce
   // préfixe pour pointer sur le bon emplacement.
   var BANK_URL = 'src/assets/reactions/manifest.json';
-  var REACTIONS = {
-    hug: { emoji: '🤗', text: 'gives a big hug to' },
-    cuddle: { emoji: '🥰', text: 'cuddles with' },
-    slap: { emoji: '👋', text: 'slaps' },
-    tickle: { emoji: '😆', text: 'tickles' },
-    kiss: { emoji: '😘', text: 'kisses' },
-    poke: { emoji: '👉', text: 'poke' },
-    bonk: { emoji: '🔨', text: 'bonks' },
-    dance: { emoji: '💃', text: 'dances with' },
-    wave: { emoji: '👋', text: 'waves at' },
-    blush: { emoji: '😳', text: 'blushes at' },
-    smile: { emoji: '😊', text: 'smiles at' },
-    smug: { emoji: '😏', text: 'smirks at' },
-    cry: { emoji: '😭', text: 'cries on' },
-    nom: { emoji: '🍜', text: 'noms with' },
-    yeet: { emoji: '🚀', text: 'yeet' },
-    wink: { emoji: '😉', text: "winks at" },
-    laugh: { emoji: '😂', text: 'laughs with' },
-    happy: { emoji: '😄', text: 'is happy with' }
-  };
+  var REACTIONS = [
+    'hug', 'cuddle', 'slap', 'tickle', 'kiss', 'poke', 'bonk', 'dance',
+    'wave', 'blush', 'smile', 'smug', 'cry', 'nom', 'yeet', 'wink',
+    'laugh', 'happy'
+  ];
 
   /** Résout la cible (même logique que /pat) : groupe = requis, DM = interlocuteur. */
-  function resolveTarget(args, info) {
+  function resolveTarget(args, info, cat) {
     var type = info.getConversationType();
     var target;
     if (type === 'group') {
-      if (!args.length) throw new Error("En groupe, l'utilisateur est requis : /hug @pseudo");
+      if (!args.length) {
+        throw new Error(window.BTTI18n
+          ? window.BTTI18n.t('rx.needUser', { cat: cat })
+          : 'In group chats a user is required: /' + cat + ' @name');
+      }
       target = info.getUserByMention(args[0]) || info.getUserByMention(args.join(' '));
       if (!target) throw new Error((window.BTTI18n?window.BTTI18n.t('rx.notFound',{name:args[0]}):'User not found: '+args[0]));
     } else {
@@ -73,8 +62,8 @@
     return entry.files[idx];
   }
 
-  async function run(cat, r, args, info) {
-    var target = resolveTarget(args, info);
+  async function run(cat, args, info) {
+    var target = resolveTarget(args, info, cat);
     var who = target && target.name ? target.name : '?';
     var toast = window.__BTT_toast || function () {};
     try {
@@ -107,10 +96,9 @@
     description: 'Fun commands: hug/cuddle/slap/kiss GIFs from local bank (no network)',
     descriptionKey: 'plg.desc.reactions',
     onLoad: function (ctx) {
-      Object.keys(REACTIONS).forEach(function (cat) {
-        var r = REACTIONS[cat];
+      REACTIONS.forEach(function (cat) {
         ctx.registerCommand(cat, 'Sends a '+cat+' GIF to someone', function (args, info) {
-          return run(cat, r, args, info);
+          return run(cat, args, info);
         }, '/'+cat+' [user] — required in group chats');
       });
     }

@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = '1.8.1';
+  var v = window.BTT_VERSION || '1.8.2';
   var _t = function (k, def, params) { try { if (window.BTTI18n && typeof window.BTTI18n.t === 'function') { var s = window.BTTI18n.t(k, params); if (s != null && s !== k) return s; } } catch (e) {} return def; };
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="' + _t('settings.title', 'Unbanded Settings') + '">' +
@@ -107,7 +107,7 @@ BandUI.prototype._settingsMarkup = function () {
 
         '<section class="bt-page" data-page="about" hidden>' +
           '<div class="bt-set-card">' +
-            '<div class="bt-set-hint">' + _t('about.desc', 'Unbanded — Vencord-style plugin loader for BAND (band.us). Commands: /pat · /help · /plugins · /settings · /debug.<br>GIF pet-pet: algorithm <a href="https://github.com/aDu/pet-pet-gif" target="_blank" rel="noopener" style="color:var(--btt-accent)">aDu/pet-pet-gif</a> + encoder <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener" style="color:var(--btt-accent)">gifenc</a> embedded (no CDN, CSP-compatible band.us).<br>MIT License · <a href="https://github.com/HYPE115/band_tamper" target="_blank" rel="noopener" style="color:var(--btt-accent)">github.com/HYPE115/band_tamper</a>') + '</div>' +
+            '<div class="bt-set-hint">' + _t('about.desc', 'Unbanded — Vencord-style plugin loader for BAND (band.us). Commands: /pat · /help · /plugins · /settings · /debug.<br>GIF pet-pet: algorithm <a href="https://github.com/aDu/pet-pet-gif" target="_blank" rel="noopener" style="color:var(--btt-accent)">aDu/pet-pet-gif</a> + encoder <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener" style="color:var(--btt-accent)">gifenc</a> embedded (no CDN, CSP-compatible band.us).<br>MIT License · <a href="https://github.com/HYPE115/Unbanded" target="_blank" rel="noopener" style="color:var(--btt-accent)">github.com/HYPE115/Unbanded</a>') + '</div>' +
             '<div class="bt-set-row"><span class="bt-badge" id="bt-set-stat-plugins">? plugins</span><span class="bt-badge" id="bt-set-stat-commands">? commands</span><span class="bt-badge" id="bt-set-stat-themes">? themes</span></div>' +
           '</div>' +
         '</section>' +
