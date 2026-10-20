@@ -1,13 +1,17 @@
 /**
  * Plugin builtin "reactions" — commandes fun façon Discord.
- * Envoie un GIF aléatoire (API waifu.pics, gratuite sans clé) :
+ * Envoie un GIF aléatoire depuis la banque locale src/assets/reactions/ :
  *   /hug /cuddle /slap /tickle /kiss /poke /bonk /dance /wave /blush
  *   /smile /smug /cry /nom /yeet /wink /laugh /happy
- * Usage : /hug [user] — user requis en groupe, automatique en DM.
- * Repli si le réseau/CSP bloque : message texte avec emoji.
+ * /pat reste dédié au plugin pet-pet.
+ * Aucun appel réseau externe : fichier statique hébergé avec le script.
+ * Repli si la banque est manquante : toast d'erreur (pas de GIF).
  */
 (function () {
-  var API = 'https://api.waifu.pics/sfw/';
+  // URL de la banque relative au domaine qui sert le script. Si le script est
+  // sur band.us, c'est "src/assets/reactions/manifest.json" ; sinon modifier ce
+  // préfixe pour pointer sur le bon emplacement.
+  var BANK_URL = 'src/assets/reactions/manifest.json';
   var REACTIONS = {
     hug: { emoji: '🤗', text: 'gives a big hug to' },
     cuddle: { emoji: '🥰', text: 'cuddles with' },
@@ -44,15 +48,29 @@
     return target;
   }
 
-  /** Récupère un GIF aléatoire de la catégorie via waifu.pics. */
-  async function fetchGif(cat) {
-    var r = await fetch(API + cat, { credentials: 'omit' });
-    if (!r.ok) throw new Error('API ' + r.status);
-    var j = await r.json();
-    if (!j || !j.url) throw new Error('Empty response');
-    var img = await fetch(j.url, { credentials: 'omit' });
-    if (!img.ok) throw new Error('Image ' + img.status);
-    return await img.blob();
+  /** Charge la banque locale de GIFs. */
+  async function loadBank() {
+    try {
+      var r = await fetch(BANK_URL, { credentials: 'omit', cache: 'no-cache' });
+      if (!r.ok) throw new Error('Bank HTTP ' + r.status);
+      var j = await r.json();
+      if (!j || !Array.isArray(j)) throw new Error('Invalid bank');
+      return j;
+    } catch (e) {
+      // Banque inaccessible : on ne renverra aucun GIF, seul le toast s'affiche.
+      return null;
+    }
+  }
+
+  /** Choisit un GIF aléatoire pour la commande "cat" depuis la banque. */
+  function pickGif(bank, cat) {
+    var entry = null;
+    for (var i = 0; i < bank.length; i++) {
+      if (bank[i].cmd === cat) { entry = bank[i]; break; }
+    }
+    if (!entry || !entry.files || !entry.files.length) return null;
+    var idx = Math.floor(Math.random() * entry.files.length);
+    return entry.files[idx];
   }
 
   async function run(cat, r, args, info) {
@@ -60,21 +78,33 @@
     var who = target && target.name ? target.name : '?';
     var toast = window.__BTT_toast || function () {};
     try {
-      toast((window.BTTI18n?window.BTTI18n.t('rx.generating',{cat:cat,who:who}):'Loading '+cat+' GIF for '+who));
-      var blob = await fetchGif(cat);
+      toast((window.BTTI18n?window.BTTI18n.t('rx.generating',{cat:cat,who:who}):'Generating '+cat+' GIF for '+who));
+      var bank = await loadBank();
+      if (!bank) {
+        throw new Error('Reaction bank not found: ' + BANK_URL);
+      }
+      var file = pickGif(bank, cat);
+      if (!file) {
+        throw new Error('No GIF for ' + cat);
+      }
+      // Chemin local : src/assets/reactions/{cat}/01.gif (relatif au domaine).
+      var url = 'src/assets/reactions/' + cat + '/' + file;
+      var img = await fetch(url, { credentials: 'omit' });
+      if (!img.ok) throw new Error('Image HTTP ' + img.status);
+      var blob = await img.blob();
       var ext = blob.type === 'image/gif' ? 'gif' : (blob.type.split('/')[1] || 'png');
       await info.sendFile(blob, cat + '-' + String(who).replace(/\s+/g, '_') + '.' + ext);
       toast((window.BTTI18n?window.BTTI18n.t('rx.sent',{cat:cat,who:who}):'GIF sent to '+who), 'ok');
     } catch (e) {
-      // Fallback: pas de texte, le GIF est le seul rendu (si le réseau est bloqué, rien d'autre à afficher).
+      // Fallback: pas de GIF réseau, on affiche un toast (la banque est statique).
       toast((window.BTTI18n?window.BTTI18n.t('rx.fallback',{msg:(e&&e.message?e.message:e)}):'GIF unavailable'), 'warn');
     }
   }
 
   var PLUGIN = {
     name: 'reactions',
-    version: '1.0.0',
-    description: 'Fun commands: hug/cuddle/slap/kiss GIFs (waifu.pics) with text fallback if network is blocked',
+    version: '1.1.0',
+    description: 'Fun commands: hug/cuddle/slap/kiss GIFs from local bank (no network)',
     descriptionKey: 'plg.desc.reactions',
     onLoad: function (ctx) {
       Object.keys(REACTIONS).forEach(function (cat) {

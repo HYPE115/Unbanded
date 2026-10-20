@@ -7,7 +7,7 @@
 > A modded client for BAND, inspired by [Vencord](https://github.com/Vendicated/Vencord) (the Discord mod: plugins + themes + settings on top of the official client): **plugins, themes, custom CSS, and `/slash` commands** directly in band.us via a userscript.
 > Formerly **Band Tamper** — renamed **Unbanded** in v1.6.0 (persisted data and plugins remain compatible).
 
-Unbanded doesn't modify BAND itself: it's a **customization layer** on top of the web client — just as [Vencord](https://github.com/Vendicated/Vencord) adds plugins + themes + settings on top of [Discord](https://discord.com), Unbanded adds **plugins + themes + CSS + `/slash` commands** on top of BAND. See [releases](https://github.com/HYPE115/band_tamper/releases) for version history, and [issues](https://github.com/HYPE115/band_tamper/issues) to report bugs.
+Unbanded doesn't modify BAND itself: it's a **customization layer** on top of the web client — just as [Vencord](https://github.com/Vendicated/Vencord) adds plugins + themes + settings on top of [Discord](https://discord.com), Unbanded adds **plugins + themes + CSS + `/slash` commands** on top of BAND. See [releases](https://github.com/HYPE115/Unbanded/releases) for version history, and [issues](https://github.com/HYPE115/Unbanded/issues) to report bugs.
 
 ## What it brings (Vencord-style)
 
@@ -36,7 +36,46 @@ Unbanded doesn't modify BAND itself: it's a **customization layer** on top of th
 | `src/vendor/gifenc.js` | **Embedded** GIF encoder (gifenc 1.0.3, MIT) — no CDN or worker, compatible with band.us CSP |
 | `src/petpet-gif.js` | GIF generator: **exact** aDu/pet-pet-gif algorithm (canvas + gifenc) — used by the example plugin |
 | `src/plugins/pet-pet.js` | Example built-in plugin: `/pat <@user>` sends an animated pet-pet GIF |
-| `src/plugins/reactions.js` | Built-in plugin: 18 fun reaction GIFs (`/hug`, `/cuddle`, `/slap`…) via waifu.pics + text fallback |
+| `src/plugins/reactions.js` | Built-in plugin: 18 fun reaction GIFs (`/hug`, `/cuddle`, `/slap`…) from local bank (no network) |
+| `src/plugins/games.js` | Built-in plugin: local mini-games (`/8ball`, `/roll`, `/coin`, `/choose`) |
+| `src/plugins/tools.js` | Built-in plugin: fun utilities (`/remind`, `/shrug`, `/tableflip`, `/lenny`) |
+| `src/main.js` | Entry point — boots the adapter, the UI, the plugins and the slash commands (always loaded last by `build.js`) |
+| `src/core/i18n.js` | UI translations (`window.BTTI18n`) used by the panel, the settings page and the plugins |
+| `src/assets/reactions/` | Local reaction bank — 18 commands × 10 anime GIFs (scraped from nekos.best at build time) + `manifest.json` |
+| `build.js` | Build script — concatenates the sources (ordered list) + userscript header into `unbanded.user.js` |
+| `manifest.json` | Package metadata (name, version, description, license) |
+| `logo.png` | Project logo — embedded as a data-URI `@icon` in the userscript header |
+| `DOCS_THEMES_PLUGINS.md` | Developer documentation: themes + plugin API |
+| `todo.md` | Roadmap / TODO list |
+
+## Project structure
+
+```text
+band client tamper/
+├── build.js                    # build → unbanded.user.js (ordered concatenation)
+├── unbanded.user.js            # generated userscript (install this)
+├── manifest.json               # package metadata
+├── logo.png                    # logo, embedded as @icon
+├── README.md / DOCS_THEMES_PLUGINS.md / todo.md
+├── src/
+│   ├── main.js                 # entry point (loaded last)
+│   ├── core/                   # adapter · storage · plugin-manager · themes · styles · commands · UI · i18n
+│   ├── plugins/                # pet-pet · reactions · games · tools
+│   ├── assets/reactions/       # 18 commands × 10 GIFs + manifest.json (local bank)
+│   ├── petpet-gif.js           # GIF generator (aDu/pet-pet-gif algorithm)
+│   ├── petpet-hand.js          # 10 hand frames embedded in base64
+│   └── vendor/gifenc.js        # embedded GIF encoder (gifenc 1.0.3, MIT)
+└── tools/                      # dev scripts (not shipped in the userscript)
+    ├── fetch_reaction_gifs.py  # scrape 10 GIFs/command from nekos.best (clears each folder first)
+    ├── build_assets.py         # fallback: generate the 180 reaction GIFs offline (Pillow)
+    ├── gen_reaction_bank.py    # regenerate src/assets/reactions/manifest.json
+    ├── embed-hand.js           # regenerate src/petpet-hand.js (pet0..pet9 frames)
+    ├── vendor-gifenc.js        # vendor gifenc → src/vendor/gifenc.js
+    ├── gen_build.js            # regenerate build.js
+    └── prepare-assets.py       # earlier offline pipeline (discover → build → manifest)
+```
+
+## Settings page
 
 - **General** — startup toast (on/off), toast duration (3/5/8/12 s), full configuration export/import in JSON (plugins + themes + CSS + options, ideal for changing browsers) and "Reset all" button.
 - **Plugins** — plugin list with *active/inactive* and *source* (Built-in / URL / File) badges, plus adding plugins **by URL** or **by imported `.js` file** (code stored in `BTTStore` and **auto-reloaded on next startup**).
@@ -62,30 +101,17 @@ Unbanded doesn't modify BAND itself: it's a **customization layer** on top of th
 
 All colors are **optional** (missing ones fall back to the default violet); format `#rgb` or `#rrggbb`. The `css` field lets you push the theme further (band.us overlays). Note: URL import depends on band.us's CSP (`connect-src`) — if the remote domain is blocked, use file import instead.
 
-## Add Your Own Plugins
+## Reaction plugin (local bank)
 
-A plugin is a JS file that exposes an object:
+`src/plugins/reactions.js` is a built-in plugin that sends local GIFs via commands like `/hug`, `/cuddle`, `/slap`, `/kiss`, etc. Instead of fetching at runtime from `api.waifu.pics` (network, CORS — the API and even the domain are now dead/repurposed), the assets live in the local bank `src/assets/reactions/`, downloaded **once at build time**:
 
-```js
-window.MyPlugin = {
-  name: 'my-plugin',
-  version: '1.0.0',
-  description: 'My first plugin',
-  onLoad: function (ctx) {
-    ctx.registerCommand('hello', 'Says hello', function (args, info) {
-      return info.api.sendText('Hi!');
-    });
-  }
-};
-```
+- **18 commands** — `hug`, `cuddle`, `slap`, `tickle`, `kiss`, `poke`, `bonk`, `dance`, `wave`, `blush`, `smile`, `smug`, `cry`, `nom`, `yeet`, `wink`, `laugh`, `happy`
+- **10 GIFs per command** — real anime GIFs scraped from [nekos.best](https://nekos.best) by `tools/fetch_reaction_gifs.py` (each folder is cleared first; 10 GIF89a files, `01.gif`…`10.gif`)
+- **Manifest** — `src/assets/reactions/manifest.json` (18 commands × 10 files)
+- **No runtime network** — the plugin only fetches files served alongside the script; the nekos.best scrape happens at build time only. A fallback toast is shown if the bank or an asset is missing.
+- **Fallback** — `tools/build_assets.py` (Pillow) can regenerate tiny 64×64 placeholder GIFs fully offline if you can't reach the API.
 
-Then, on the **Settings → Plugins** page (or the quick panel), paste the URL of this file and click **Add** — or click **Import .js file** to load a plugin from a local file (the code is memorized and reloaded on next startup).
-
-The `ctx` context gives access to:
-- `ctx.api` → BandAdapter (sendText, sendFile, getCurrentUser, getConversationType, getCurrentChannelId, getUserAvatar, getUserByMention, onNewMessage)
-- `ctx.registerCommand(name, desc, handler)`
-- `ctx.sendText(text)`, `ctx.sendFile(blob, fileName)`
-- `ctx.log(...)`
+The `/pat` command remains dedicated to `pet-pet.js` and is untouched.
 
 ## ⚠️ Adapting to BAND selectors
 
@@ -108,6 +134,16 @@ node build.js
 ```
 
 Requires Node.js. The result is `unbanded.user.js`.
+
+The sources are concatenated **in the order defined in `build.js`** (`src/main.js` is always last). Handy dev scripts:
+
+```bash
+python tools/fetch_reaction_gifs.py           # scrape 10 GIFs/command from nekos.best (build time)
+python tools/gen_reaction_bank.py             # regenerate the bank manifest.json
+python tools/build_assets.py                  # fallback: regenerate the GIFs offline (Pillow)
+```
+
+> nekos.best enforces a global rate limit (~200 requests/min): `fetch_reaction_gifs.py` paces itself and fails fast on a long `Retry-After` — just rerun it later for the missing commands (`python tools/fetch_reaction_gifs.py hug cry`).
 
 ## License
 

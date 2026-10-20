@@ -5,3 +5,7 @@ node_modules/
 Thumbs.db
 desktop.ini
 .DS_Store
+__pycache__/
+*.pyc
+.vscode/
+*.bak
