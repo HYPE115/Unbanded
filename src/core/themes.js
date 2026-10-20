@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BTTThemes - Thèmes d'application (variables CSS + CSS optionnel).
  *
  * Thème importable (JSON) :
@@ -21,7 +21,8 @@
   var HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
   var BUILTIN = [
-    { id: 'default', name: 'Default (Violet)', author: 'Unbanded', builtin: true, colors: {} },
+    { id: 'default', name: 'Site default', author: 'Unbanded', builtin: true, colors: {}, site: true },
+    { id: 'violet', name: 'Violet (Unbanded)', author: 'Unbanded', builtin: true, site: true, colors: {} },
     { id: 'midnight', name: 'Midnight', author: 'Unbanded', builtin: true, colors: { accent: '#3b82f6', accentHover: '#2563eb', bg: '#0b1220', surface: '#111a2e', surface2: '#16233c', text: '#e8eef7', muted: '#8ea3bf', border: '#1f2f4a' } },
     { id: 'dracula', name: 'Dracula', author: 'Unbanded', builtin: true, colors: { accent: '#bd93f9', accentHover: '#a77bf3', bg: '#282a36', surface: '#21222c', surface2: '#343746', text: '#f8f8f2', muted: '#9aa4c0', border: '#44475a' } },
     { id: 'nord', name: 'Nord', author: 'Unbanded', builtin: true, colors: { accent: '#88c0d0', accentHover: '#81a1c1', bg: '#2e3440', surface: '#3b4252', surface2: '#434c5e', text: '#eceff4', muted: '#9aa5b8', border: '#4c566a' } },
@@ -104,7 +105,25 @@
 
 
   function apply(id) {
-    var t = get(id) || get('default');
+    var uid = String(id || 'default');
+    if (!get(uid)) uid = 'default';
+    var t = get(uid);
+    // Theme "site default" -> pas de variables CSS, pas de siteCss, laisse le site natif
+    if (t.site) {
+      // Supprime les variables CSS si elles existent
+      var root = document.documentElement;
+      if (root && root.style) {
+        for (var i = 0; i < KEYS.length; i++) {
+          try { root.style.removeProperty('--btt-' + KEYS[i].replace(/[A-Z]/g, function (m) { return '-' + m.toLowerCase(); })); } catch (e) {}
+        }
+      }
+      // Vide les styles de thème
+      ensureStyle('bt-core-css', '');
+      ensureStyle('bt-theme-css', '');
+      ensureStyle('bt-theme-site', '');
+      try { window.BTTStore.set('activeTheme', t.id); } catch (e) {}
+      return t;
+    }
     var c = merge(t.colors);
     for (var i = 0; i < KEYS.length; i++) {
       setVar('--btt-' + KEYS[i].replace(/[A-Z]/g, function (m) { return '-' + m.toLowerCase(); }), c[KEYS[i]]);
@@ -126,6 +145,95 @@
   function siteCss(c) {
     // Recolore band.us avec les couleurs du theme, sur TOUT le site.
     // Le panel Unbanded ([data-bt-root]) est exclu pour garder sa propre DA.
+    // ——— Chat (fenêtre .sChatPop : onglet message) : en-tête, bulles, composer ———
+    // Scoppé sous .sChatPop pour ne toucher que la vue chat (pas le feed).
+          // En-tÃªte
+      '.sChatPop .sChatHeader{background:' + c.surface + ' !important;border-bottom:1px solid ' + c.border + ' !important}' +
+      '.sChatPop .chatTitle{color:' + c.text + ' !important}' +
+      '.sChatPop .chatSubTitle{color:' + c.muted + ' !important}' +
+      '.sChatPop ._bandHomeBtn,.sChatPop ._memberListButton{color:' + c.muted + ' !important}' +
+      '.sChatPop ._bandHomeBtn:hover,.sChatPop ._memberListButton:hover{color:' + c.text + ' !important}' +
+      // Zone de messages
+      '.sChatPop .chatRoom,.sChatPop .cChatList{background:' + c.bg + ' !important}' +
+      '.sChatPop .cChatList::-webkit-scrollbar{width:8px}' +
+      '.sChatPop .cChatList::-webkit-scrollbar-thumb{background:' + c.border + ';border-radius:8px}' +
+      '.sChatPop .cChatList::-webkit-scrollbar-track{background:transparent}' +
+      // Séparateur de date + bandeaux d'information
+      '.sChatPop .logEvent time{color:' + c.muted + ' !important;background:' + c.bg + ' !important;padding:4px 12px;border-radius:999px;font-size:12px}' +
+      '.sChatPop .messageInfo{background:' + c.surface + ' !important;border-bottom:1px solid ' + c.border + '}' +
+      '.sChatPop .messageInfo .pushAlarmBox{color:' + c.text + ' !important}' +
+      '.sChatPop .fileUpLoading{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px;color:' + c.text + ' !important}' +
+      '.sChatPop .fileUpLoading .msg{color:' + c.text + ' !important}' +
+      '.sChatPop .fileUpLoading .progressBar .success{background:' + c.accent + ' !important}' +
+      '.sChatPop .fileUpLoading .btnLyClose{color:' + c.muted + ' !important}' +
+      '.sChatPop .fileUpLoading .btnLyClose:hover{color:' + c.text + ' !important}' +
+      '.sChatPop .chatCallNotice{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px;color:' + c.text + ' !important}' +
+      '.sChatPop .chatCallNotice ._groupCallTextBox{color:' + c.text + ' !important}' +
+      '.sChatPop .chatCallNotice .btnChatCallAttend{background:' + c.accent + ' !important;border-color:' + c.accent + ' !important;color:#fff !important}' +
+      '.sChatPop .chatCallNotice .btnChatCallAttend:hover{background:' + c.accentHover + ' !important;border-color:' + c.accentHover + ' !important}' +
+      '.sChatPop .chatCallNotice .btnChatCallFinish{background:' + c.surface2 + ' !important;color:' + c.text + ' !important;border-color:' + c.border + ' !important}' +
+      '.sChatPop .chatCallNotice .btnChatCallFinish:hover{background:' + c.border + ' !important}' +
+      '.sChatPop .notice{background:' + c.surface + ' !important;border-bottom:1px solid ' + c.border + ';color:' + c.text + ' !important}' +
+      // Bulles de messages (ami = surface avec bordure, moi = accent)
+      '.sChatPop .logWrap.logFriend .msgMain{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:12px 12px 12px 4px}' +
+      '.sChatPop .logWrap.logMy .msgMain{background:' + c.accent + ' !important;border-radius:12px 12px 4px 12px}' +
+      '.sChatPop .logWrap.logMy .txt,.sChatPop .logWrap.logMy ._messageContent{color:' + c.text + ' !important}' +
+      '.sChatPop .logWrap.logFriend .txt,.sChatPop .logWrap.logFriend ._messageContent{color:' + c.text + ' !important}' +
+      // Images dans les messages
+      '.sChatPop .msgPhoto .messageBodyWrap a.imageClip img{background:' + c.surface2 + ' !important;border-radius:8px}' +
+      // Nom de l'expéditeur
+      '.sChatPop .author,.sChatPop .pfName .author{color:' + c.text + ' !important}' +
+      // Heure / lus (aside)
+      '.sChatPop .msgAside .time,.sChatPop .msgAside .read{color:' + c.muted + ' !important}' +
+      // Bouton "more" (trois points)
+      '.sChatPop .btnMore{color:' + c.muted + ' !important}' +
+      '.sChatPop .btnMore:hover{color:' + c.text + ' !important}' +
+      // Citations (message répondu)
+      '.sChatPop .replyMsgBox{background:' + c.bg + ' !important;border:1px solid ' + c.border + ';border-left:3px solid ' + c.accent + ';border-radius:8px;color:' + c.muted + ' !important}' +
+      '.sChatPop .replyMsgBox .profileName{color:' + c.text + ' !important}' +
+      '.sChatPop .replyMsgBox .replyInfoText{color:' + c.text + ' !important}' +
+      '.sChatPop .replyMsgBox .replyInfoOthers img{border-radius:6px}' +
+      '.sChatPop .replyMsgBox .btnText._collapseToggleBtn{color:' + c.muted + ' !important}' +
+      '.sChatPop .replyMsgBox .btnText._collapseToggleBtn:hover{color:' + c.text + ' !important}' +
+      // Réactions sous les messages + option "Save" des photos
+      '.sChatPop .emotionSection .inner{background:' + c.surface2 + ' !important;border:1px solid ' + c.border + ';border-radius:8px}' +
+      '.sChatPop .emotionSection .btnEmotion:hover{background:' + c.accent + ' !important}' +
+      '.sChatPop .fileOption{color:' + c.accent + ' !important}' +
+      // Composer : le chrome visuel est sur .chatWriteArea, la textarea est
+      // transparente (la règle générique lui donne sinon un fond surface2).
+      '.sChatPop .sChatBottom{background:' + c.surface + ' !important;border-top:1px solid ' + c.border + ' !important}' +
+      '.sChatPop .chatWriteArea{background:' + c.surface2 + ' !important;border:1px solid ' + c.border + ';border-radius:8px}' +
+      '.sChatPop .chatWriteArea:focus-within{border-color:' + c.accent + ' !important}' +
+      '.sChatPop .chatWriteAreaBox,.sChatPop .mentions{color:' + c.text + ' !important}' +
+      '.sChatPop .chatWriteAreaBox{background:transparent !important;border-color:transparent !important}' +
+      // Boutons d'ajout (Sticker, Photo, Vidéo, GIF, Fichier, Appel)
+      '.sChatPop .btnFuncWrap{color:' + c.muted + ' !important}' +
+      '.sChatPop .btnFuncWrap:hover{color:' + c.text + ' !important;background:' + c.surface2 + ' !important;border-radius:6px}' +
+      '.sChatPop .btnFuncWrap .uIconCommentSticker,.sChatPop .btnFuncWrap .uIconCommentImage,.sChatPop .btnFuncWrap .uIconWritePlay,.sChatPop .btnFuncWrap .uIconWriteGif,.sChatPop .btnFuncWrap .uIconCommentFile,.sChatPop .btnFuncWrap .uIconGroupCall{color:inherit}' +
+      // Bouton d'envoi (+ état désactivé)
+      '.sChatPop .chatSubmit ._sendMessageButton{background:' + c.accent + ' !important;border-color:' + c.accent + ' !important;color:#fff !important}' +
+      '.sChatPop .chatSubmit ._sendMessageButton:hover{background:' + c.accentHover + ' !important;border-color:' + c.accentHover + ' !important}' +
+      '.sChatPop .chatSubmit ._sendMessageButton[disabled]{background:' + c.surface2 + ' !important;border-color:' + c.border + ' !important;color:' + c.muted + ' !important;opacity:1}';
+    chat +=
+      // Menus et popovers (options, appels, mentions, stickers, aperçu, alerte)
+      '.sChatPop .lyMenu{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3)}' +
+      '.sChatPop .lyMenu a{color:' + c.text + ' !important}' +
+      '.sChatPop .lyMenu a:hover{background:' + c.surface2 + ' !important}' +
+      '.sChatPop .chatInputItemCallBox{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px}' +
+      '.sChatPop .btnChatCall{color:' + c.text + ' !important}' +
+      '.sChatPop .btnChatCall:hover{background:' + c.surface2 + ' !important;color:' + c.accent + ' !important}' +
+      '.sChatPop .btnChatCallAttend{background:' + c.accent + ' !important;border-color:' + c.accent + ' !important;color:#fff !important}' +
+      '.sChatPop .cAutoCompleteList{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3);color:' + c.text + ' !important}' +
+      '.sChatPop .cAutoCompleteList .header{border-bottom:1px solid ' + c.border + ';color:' + c.text + ' !important}' +
+      '.sChatPop .cAutoCompleteList .moreBand{color:' + c.accent + ' !important}' +
+      '.sChatPop .cAutoCompleteList .roundThumbList li{color:' + c.text + ' !important}' +
+      '.sChatPop .cAutoCompleteList .roundThumbList li:hover{background:' + c.surface2 + ' !important}' +
+      '.sChatPop .stickerSelectRegion{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3)}' +
+      '.sChatPop .uploadPreviewWrap{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px}' +
+      '.sChatPop .uploadPreviewWrap .closePreview{color:' + c.muted + ' !important}' +
+      '.sChatPop .uploadPreviewWrap .closePreview:hover{color:' + c.text + ' !important}' +
+      '.sChatPop .newMessageAlertWrap{background:' + c.accent + ' !important;color:#fff !important}' +
+      '.sChatPop .newMessageAlertWrap ._messageAlertContent{color:inherit}';
     return '' +
     'body,body #wrap,body #content,body main' +
     '{background-color:' + c.bg + ' !important;color:' + c.text + ' !important}' +
@@ -146,7 +254,8 @@
     'body textarea:not([data-bt-root])::placeholder' +
     '{color:' + c.muted + ' !important;opacity:1}' +
     'body time:not([data-bt-root])' +
-    '{color:' + c.muted + '}';
+    '{color:' + c.muted + '}' +
+    chat;
   }
 
   function applyActive() {

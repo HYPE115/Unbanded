@@ -21,7 +21,7 @@ BandUI.prototype._injectSettings = function () {
 };
 
 BandUI.prototype._settingsMarkup = function () {
-  var v = window.BTT_VERSION || '1.9.0';
+  var v = window.BTT_VERSION || '1.9.1';
   var _t = function (k, def, params) { try { if (window.BTTI18n && typeof window.BTTI18n.t === 'function') { var s = window.BTTI18n.t(k, params); if (s != null && s !== k) return s; } } catch (e) {} return def; };
   return '' +
   '<div class="bt-set-win" role="dialog" aria-modal="true" aria-label="' + _t('settings.title', 'Unbanded Settings') + '">' +

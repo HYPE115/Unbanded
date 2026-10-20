@@ -13,7 +13,7 @@ Unbanded doesn't modify BAND itself: it's a **customization layer** on top of th
 
 - **🔌 Plugins** — JS plugin loader (from URL or `.js` file), enable/disable, persistence, and auto-reload on startup. Documented API to write your own (see [Add Your Own Plugins](#add-your-own-plugins)).
 - **🎉 Built-in plugins** — 30+ instant commands: reaction GIFs (`/hug`, `/cuddle`, `/slap`, `/kiss`…), local mini-games (`/8ball`, `/roll`, `/coin`, `/choose`), tools (`/remind`, `/shrug`, `/tableflip`, `/lenny`), and `/pat` (authentic pet-pet GIF).
-- **🎨 Themes** — gallery of 10 themes, JSON import/export, instant application (CSS `--btt-*` variables).
+- **🎨 Themes** — gallery of 10 themes, JSON import/export, instant application (CSS `--btt-*` variables), applied across band.us including the chat window (header, message bubbles, composer).
 - **💅 Custom CSS** — built-in editor, applied live across all of band.us.
 - **⌨️ `/slash` commands** — executed via Enter, Discord-style autocomplete (`/` + start → popup, `↑/↓` + `Tab`/`Enter`), `↑/↓` history, aliases (`/h` → `/help`…), detailed help (`/help <cmd>`).
 - **😀 Emoji picker** — 😀 button docked near the chat input: category tabs, **search button/field** (instant EN/FR filter, `Enter` inserts the first hit), recently-used emojis persisted locally — fully offline, no network.

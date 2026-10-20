@@ -1,4 +1,6 @@
+- [X] thèmes adaptés à la fenêtre de chat .sChatPop — bulles, en-tête, composer, menus (v1.9.1 — src/core/themes.js)
 - [X] add emoji picker button + bouton de recehrceh d'emoji (v1.9.0 — src/core/ui-emoji.js)
 - [X] clear les fichier inutiles
 - [X] ajouter une license (LICENSE, MIT) + mention nekos.best — docs.nekos.best/legal/tos.html
 - le theme par defaut doit etre celui du site
+- le fait d'appliquer le css a tout le site ne marche plus
