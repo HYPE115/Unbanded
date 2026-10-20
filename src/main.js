@@ -58,6 +58,9 @@
       try { window.BTTStyles.apply(window.BTTStyles.get()); } catch (e) {}
       try { window.BTTStyles.keepCustomLast(); } catch (e) {}
       try { window.BTTStyles.repair(); } catch (e) {}
+      // Le theme doit avoir le dernier mot apres les styles (le SPA peut avoir
+      // deplace les noeuds <style> entre-temps).
+      try { window.BTTThemes.applyActive(); } catch (e) {}
     }, 2500);
     if (tick && typeof tick.unref === 'function') tick.unref();
   })();

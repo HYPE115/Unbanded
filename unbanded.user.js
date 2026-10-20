@@ -699,6 +699,8 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     var uid = String(id || 'default');
     if (!get(uid)) uid = 'default';
     var t = get(uid);
+    // Sauvegarde le theme actif DES le depart (meme si une operation DOM echoue ensuite)
+    try { window.BTTStore.set('activeTheme', t.id); } catch (e) {}
     // Theme "site default" -> pas de variables CSS, pas de siteCss, laisse le site natif
     if (t.site) {
       // Supprime les variables CSS si elles existent
@@ -708,11 +710,10 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
           try { root.style.removeProperty('--btt-' + KEYS[i].replace(/[A-Z]/g, function (m) { return '-' + m.toLowerCase(); })); } catch (e) {}
         }
       }
-      // Vide les styles de thème
+      // Vide les styles de theme
       ensureStyle('bt-core-css', '');
       ensureStyle('bt-theme-css', '');
       ensureStyle('bt-theme-site', '');
-      try { window.BTTStore.set('activeTheme', t.id); } catch (e) {}
       return t;
     }
     var c = merge(t.colors);
@@ -735,7 +736,6 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
         }
       }
     } catch (e) {}
-    try { window.BTTStore.set('activeTheme', t.id); } catch (e) {}
     return t;
   }
 
@@ -5563,6 +5563,9 @@ var src_default = GIFEncoder;
       try { window.BTTStyles.apply(window.BTTStyles.get()); } catch (e) {}
       try { window.BTTStyles.keepCustomLast(); } catch (e) {}
       try { window.BTTStyles.repair(); } catch (e) {}
+      // Le theme doit avoir le dernier mot apres les styles (le SPA peut avoir
+      // deplace les noeuds <style> entre-temps).
+      try { window.BTTThemes.applyActive(); } catch (e) {}
     }, 2500);
     if (tick && typeof tick.unref === 'function') tick.unref();
   })();
