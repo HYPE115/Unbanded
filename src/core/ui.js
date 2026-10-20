@@ -39,6 +39,7 @@ class BandUI {
     if (!document.body) return;
     self._injectSettings();
     self._injectFab();
+    try { if (self._ensureEmojiUI) self._ensureEmojiUI(); } catch (eE) { self.adapter.log('emoji KO :', eE); }
     if (self.adapter.isDemo()) {
       self._injectDemoBanner();
       self._watchNavigation();
@@ -64,6 +65,7 @@ class BandUI {
       if (!self.settingsEl || !document.body.contains(self.settingsEl)) self._injectSettings();
       if (!self.fab || !document.body.contains(self.fab)) self._injectFab();
       else self._redockFabIfNeeded();
+      if (self._ensureEmojiUI) self._ensureEmojiUI();
       if (self.adapter.isDemo()) {
         if (!self.banner || !document.body.contains(self.banner)) self._injectDemoBanner();
         return;

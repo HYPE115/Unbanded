@@ -188,6 +188,22 @@ var BTTI18n = (function () {
     'demo.open': '⚙ Open Unbanded',
     'demo.input': '/help or /pat then Enter'
   });
+  Object.assign(EN, {
+    'emoji.btn': 'Emoji picker',
+    'emoji.search': 'Search emoji…',
+    'emoji.empty': 'No emoji found',
+    'emoji.recent': 'Recently used',
+    'emoji.noInput': 'No text field found',
+    'emoji.closeHint': 'Esc — close',
+    'emoji.cat.smileys': 'Smileys',
+    'emoji.cat.people': 'People & gestures',
+    'emoji.cat.nature': 'Nature & animals',
+    'emoji.cat.food': 'Food & drink',
+    'emoji.cat.activity': 'Activities & sports',
+    'emoji.cat.travel': 'Travel & places',
+    'emoji.cat.objects': 'Objects',
+    'emoji.cat.symbols': 'Symbols'
+  });
   var FR = {};
   Object.assign(FR, {
     'toast.loaded': '✓ Unbanded v{v} chargé en {ms} ms — /help pour les commandes, /settings pour les paramètres',
@@ -359,6 +375,22 @@ var BTTI18n = (function () {
     'thm.forest': 'Forêt',
     'thm.light': 'Clair',
     'thm.site': 'Appliquer le thème à tout le site band.us',
+  });
+  Object.assign(FR, {
+    'emoji.btn': "Sélecteur d'emojis",
+    'emoji.search': 'Rechercher un emoji…',
+    'emoji.empty': 'Aucun emoji trouvé',
+    'emoji.recent': 'Utilisés récemment',
+    'emoji.noInput': 'Aucun champ de saisie trouvé',
+    'emoji.closeHint': 'Échap — fermer',
+    'emoji.cat.smileys': 'Smileys',
+    'emoji.cat.people': 'Personnes & gestes',
+    'emoji.cat.nature': 'Nature & animaux',
+    'emoji.cat.food': 'Nourriture & boisson',
+    'emoji.cat.activity': 'Activités & sports',
+    'emoji.cat.travel': 'Voyages & lieux',
+    'emoji.cat.objects': 'Objets',
+    'emoji.cat.symbols': 'Symboles'
   });
   var DICT = { en: EN, fr: FR };
 

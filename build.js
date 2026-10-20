@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const root = __dirname;
-const VERSION = '1.8.2';
+const VERSION = '1.9.0';
 const REPO = 'HYPE115/Unbanded';
 const BRANCH = 'main';
 const RAW = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/unbanded.user.js`;
@@ -26,6 +26,7 @@ const order = [
   'src/core/ui-settings.js',
   'src/core/ui-hooks.js',
   'src/core/ui-autocomplete.js',
+  'src/core/ui-emoji.js',
   'src/petpet-hand.js',
   'src/vendor/gifenc.js',
   'src/petpet-gif.js',
@@ -39,7 +40,7 @@ const header = `// ==UserScript==
 // @name         Unbanded
 // @namespace    http://tampermonkey.net/
 // @version      ${VERSION}
-// @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN).
+// @description  Unbanded — chargeur de plugins type Vencord pour BAND (band.us) : page Paramètres (thèmes, CSS personnalisé, import plugin/thème par fichier ou URL), bouton ⚙ dans le header, commandes slash, plugin pet-pet (/pat) avec encodeur GIF embarqué (sans CDN), et sélecteur d'emojis avec recherche (bouton 😀 près du composer, onglets par catégorie, récents persistés, 100 % local).
 // @author       HYPE115${ICON ? `\n// @icon        ${ICON}` : ''}
 // @homepageURL  https://github.com/${REPO}
 // @supportURL   https://github.com/${REPO}/issues

@@ -1,3 +1,4 @@
-- add emoji picker button + bouton de recehrceh d'emoji
-- ✅ clear les fichier inutiles
-- ✅ ajouter une license (LICENSE, MIT) + mention nekos.best — docs.nekos.best/legal/tos.html
+- [X] add emoji picker button + bouton de recehrceh d'emoji (v1.9.0 — src/core/ui-emoji.js)
+- [X] clear les fichier inutiles
+- [X] ajouter une license (LICENSE, MIT) + mention nekos.best — docs.nekos.best/legal/tos.html
+- le theme par defaut doit etre celui du site

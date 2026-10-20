@@ -16,6 +16,7 @@ Unbanded doesn't modify BAND itself: it's a **customization layer** on top of th
 - **🎨 Themes** — gallery of 10 themes, JSON import/export, instant application (CSS `--btt-*` variables).
 - **💅 Custom CSS** — built-in editor, applied live across all of band.us.
 - **⌨️ `/slash` commands** — executed via Enter, Discord-style autocomplete (`/` + start → popup, `↑/↓` + `Tab`/`Enter`), `↑/↓` history, aliases (`/h` → `/help`…), detailed help (`/help <cmd>`).
+- **😀 Emoji picker** — 😀 button docked near the chat input: category tabs, **search button/field** (instant EN/FR filter, `Enter` inserts the first hit), recently-used emojis persisted locally — fully offline, no network.
 - **⚙️ Settings page** — tabs: General, Plugins, Themes, CSS, About. Gear button ⚙ docked in the band.us header, shortcuts `Ctrl+,.` / `Esc`, console API `window.Unbanded`.
 
 ## Project files
@@ -32,6 +33,7 @@ Unbanded doesn't modify BAND itself: it's a **customization layer** on top of th
 | `src/core/commands.js` | Built-in slash commands (`/help`, `/plugins`, `/settings`, `/debug`, `/version`, `/clear` + aliases) |
 | `src/core/ui.js` + `ui-panel.js` + `ui-hooks.js` + `ui-autocomplete.js` | Gear button ⚙ in the BAND header, Settings page, keyboard interception (Enter, Discord-style autocomplete, `↑/↓` history, `Ctrl+,.` / `Esc` shortcuts) |
 | `src/core/ui-settings.js` | Complete Settings page (General, Plugins, Themes, CSS, About) |
+| `src/core/ui-emoji.js` | Emoji picker: 😀 button near the composer, category tabs, EN/FR search, persisted recents (~480 emojis embedded, no network) |
 | `src/petpet-hand.js` | 10 original hand frames (aDu/pet-pet-gif) in base64 — example plugin assets (generated) |
 | `src/vendor/gifenc.js` | **Embedded** GIF encoder (gifenc 1.0.3, MIT) — no CDN or worker, compatible with band.us CSP |
 | `src/petpet-gif.js` | GIF generator: **exact** aDu/pet-pet-gif algorithm (canvas + gifenc) — used by the example plugin |
