@@ -145,7 +145,12 @@ python tools/build_assets.py                  # fallback: regenerate the GIFs of
 
 ## License
 
-MIT. The pet-pet plugin is inspired by [aDu/pet-pet-gif](https://github.com/aDu/pet-pet-gif) (MIT); the embedded GIF encoder is [gifenc](https://github.com/mattdesl/gifenc) (MIT).
+MIT — see [LICENSE](LICENSE).
+
+Third-party credits:
+
+- **Reaction GIFs** bundled in `src/assets/reactions/` come from **[nekos.best](https://nekos.best)** (fetched once at build time via its API). Attribution is *not required but appreciated* per their [FAQ](https://docs.nekos.best/getting-started/faq.html); their [Terms and Conditions](https://docs.nekos.best/legal/tos.html) apply — **non-commercial use only**, and credits/attribution must not be removed or obscured. The MIT license covers the Unbanded code, not those GIF assets (all rights remain with their respective creators).
+- The pet-pet plugin is inspired by [aDu/pet-pet-gif](https://github.com/aDu/pet-pet-gif) (MIT); the embedded GIF encoder is [gifenc](https://github.com/mattdesl/gifenc) (MIT).
 
 ## Translations (AI)
 

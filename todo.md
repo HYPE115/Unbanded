@@ -1,3 +1,3 @@
 - add emoji picker button + bouton de recehrceh d'emoji
-- clear les fichier inutiles
-- ajouter une license + lycense https://docs.nekos.best/fr/
+- ✅ clear les fichier inutiles
+- ✅ ajouter une license (LICENSE, MIT) + mention nekos.best — docs.nekos.best/legal/tos.html
