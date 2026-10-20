@@ -57,6 +57,7 @@
       try { window.BTTThemes.applyActive(); } catch (e) {}
       try { window.BTTStyles.apply(window.BTTStyles.get()); } catch (e) {}
       try { window.BTTStyles.keepCustomLast(); } catch (e) {}
+      try { window.BTTStyles.repair(); } catch (e) {}
     }, 2500);
     if (tick && typeof tick.unref === 'function') tick.unref();
   })();
