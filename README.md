@@ -38,12 +38,12 @@ Unbanded doesn't modify BAND itself: it's a **customization layer** on top of th
 | `src/vendor/gifenc.js` | **Embedded** GIF encoder (gifenc 1.0.3, MIT) — no CDN or worker, compatible with band.us CSP |
 | `src/petpet-gif.js` | GIF generator: **exact** aDu/pet-pet-gif algorithm (canvas + gifenc) — used by the example plugin |
 | `src/plugins/pet-pet.js` | Example built-in plugin: `/pat <@user>` sends an animated pet-pet GIF |
-| `src/plugins/reactions.js` | Built-in plugin: 18 fun reaction GIFs (`/hug`, `/cuddle`, `/slap`…) from local bank (no network) |
+| `src/plugins/reactions.js` | Built-in plugin: 18 fun reaction GIFs (`/hug`, `/cuddle`, `/slap`…) from the reaction bank (CDN with fallback) |
 | `src/plugins/games.js` | Built-in plugin: local mini-games (`/8ball`, `/roll`, `/coin`, `/choose`) |
 | `src/plugins/tools.js` | Built-in plugin: fun utilities (`/remind`, `/shrug`, `/tableflip`, `/lenny`) |
 | `src/main.js` | Entry point — boots the adapter, the UI, the plugins and the slash commands (always loaded last by `build.js`) |
 | `src/core/i18n.js` | UI translations (`window.BTTI18n`) used by the panel, the settings page and the plugins |
-| `src/assets/reactions/` | Local reaction bank — 18 commands × 10 anime GIFs (scraped from nekos.best at build time) + `manifest.json` |
+| `src/assets/reactions/` | Reaction bank — 18 commands × 10 anime GIFs (scraped from nekos.best at build time) + `manifest.json`; loaded at runtime from jsDelivr/Statically (same-origin fallback) |
 | `build.js` | Build script — concatenates the sources (ordered list) + userscript header into `unbanded.user.js` |
 | `manifest.json` | Package metadata (name, version, description, license) |
 | `logo.png` | Project logo — embedded as a data-URI `@icon` in the userscript header |
@@ -63,7 +63,7 @@ band client tamper/
 │   ├── main.js                 # entry point (loaded last)
 │   ├── core/                   # adapter · storage · plugin-manager · themes · styles · commands · UI · i18n
 │   ├── plugins/                # pet-pet · reactions · games · tools
-│   ├── assets/reactions/       # 18 commands × 10 GIFs + manifest.json (local bank)
+│   ├── assets/reactions/       # 18 commands × 10 GIFs + manifest.json (reaction bank)
 │   ├── petpet-gif.js           # GIF generator (aDu/pet-pet-gif algorithm)
 │   ├── petpet-hand.js          # 10 hand frames embedded in base64
 │   └── vendor/gifenc.js        # embedded GIF encoder (gifenc 1.0.3, MIT)
@@ -101,15 +101,15 @@ band client tamper/
 
 All colors are **optional** (missing ones fall back to the default violet); format `#rgb` or `#rrggbb`. The `css` field lets you push the theme further (band.us overlays). Note: URL import depends on band.us's CSP (`connect-src`) — if the remote domain is blocked, use file import instead.
 
-## Reaction plugin (local bank)
+## Reaction plugin (reaction bank)
 
-`src/plugins/reactions.js` is a built-in plugin that sends local GIFs via commands like `/hug`, `/cuddle`, `/slap`, `/kiss`, etc. Instead of fetching at runtime from `api.waifu.pics` (network, CORS — the API and even the domain are now dead/repurposed), the assets live in the local bank `src/assets/reactions/`, downloaded **once at build time**:
+`src/plugins/reactions.js` is a built-in plugin that sends GIFs via commands like `/hug`, `/cuddle`, `/slap`, `/kiss`, etc. Instead of fetching at runtime from `api.waifu.pics` (network, CORS — the API and even the domain are now dead/repurposed), the assets live in the reaction bank `src/assets/reactions/`, downloaded **once at build time**:
 
 - **18 commands** — `hug`, `cuddle`, `slap`, `tickle`, `kiss`, `poke`, `bonk`, `dance`, `wave`, `blush`, `smile`, `smug`, `cry`, `nom`, `yeet`, `wink`, `laugh`, `happy`
 - **10 GIFs per command** — real anime GIFs scraped from [nekos.best](https://nekos.best) by `tools/fetch_reaction_gifs.py` (each folder is cleared first; 10 GIF89a files, `01.gif`…`10.gif`)
 - **Manifest** — `src/assets/reactions/manifest.json` (18 commands × 10 files)
-- **No runtime network** — the plugin only fetches files served alongside the script; the nekos.best scrape happens at build time only. A fallback toast is shown if the bank or an asset is missing.
-- **Fallback** — `tools/build_assets.py` (Pillow) can regenerate tiny 64×64 placeholder GIFs fully offline if you can't reach the API.
+- **Runtime loading** — the bank is fetched from an **absolute CDN URL** (jsDelivr → Statically → same-origin fallback), *not* from a path relative to `band.us`: the client is a SPA and answers unknown paths with its HTML fallback and an HTTP 200, which made `response.json()` throw (`GIF unavailable (Reaction bank not found)`). Manifests are validated (must parse as JSON) and GIFs are validated (must have an image content type) before being used, and the filename is sanitized.
+- **Fallback** — `tools/build_assets.py` (Pillow) can regenerate tiny 64×64 placeholder GIFs fully offline if you can't reach the API. If every source fails, a toast explains why and nothing is sent.
 
 The `/pat` command remains dedicated to `pet-pet.js` and is untouched.
 

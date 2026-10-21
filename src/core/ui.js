@@ -1,4 +1,23 @@
-var _t = function (k, def) { return (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t(k) : def; };
+// Traduction : signature (cle, defaut, params). `params` permet de remplacer
+// les marqueurs "{name}", "{msg}", ... dans les chaines i18n.
+var _t = function (k, def, params) {
+  try {
+    if (window.BTTI18n && typeof window.BTTI18n.t === 'function') {
+      var s = window.BTTI18n.t(k, params);
+      if (s != null && s !== k) return s;
+    }
+  } catch (e) {}
+  if (params) {
+    try {
+      for (var p in params) {
+        if (Object.prototype.hasOwnProperty.call(params, p)) {
+          def = String(def).split('{' + p + '}').join(String(params[p]));
+        }
+      }
+    } catch (e2) {}
+  }
+  return def;
+};
 
 /**
  * BandUI - Bouton "Unbanded" + page Paramètres injectés dans BAND.

@@ -751,7 +751,9 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
     // Le panel Unbanded ([data-bt-root]) est exclu pour garder sa propre DA.
     // ——— Chat (fenêtre .sChatPop : onglet message) : en-tête, bulles, composer ———
     // Scoppé sous .sChatPop pour ne toucher que la vue chat (pas le feed).
-          // En-tÃªte
+    var chat = '';
+    // En-tâte
+    chat +=
       '.sChatPop .sChatHeader{background:' + c.surface + ' !important;border-bottom:1px solid ' + c.border + ' !important}' +
       '.sChatPop .chatTitle{color:' + c.text + ' !important}' +
       '.sChatPop .chatSubTitle{color:' + c.muted + ' !important}' +
@@ -818,8 +820,8 @@ PluginManager.prototype.registerBuiltin = function (spec, url) {
       '.sChatPop .chatSubmit ._sendMessageButton{background:' + c.accent + ' !important;border-color:' + c.accent + ' !important;color:#fff !important}' +
       '.sChatPop .chatSubmit ._sendMessageButton:hover{background:' + c.accentHover + ' !important;border-color:' + c.accentHover + ' !important}' +
       '.sChatPop .chatSubmit ._sendMessageButton[disabled]{background:' + c.surface2 + ' !important;border-color:' + c.border + ' !important;color:' + c.muted + ' !important;opacity:1}';
+    // Menus et popovers (options, appels, mentions, stickers, aperçu, alerte)
     chat +=
-      // Menus et popovers (options, appels, mentions, stickers, aperçu, alerte)
       '.sChatPop .lyMenu{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3)}' +
       '.sChatPop .lyMenu a{color:' + c.text + ' !important}' +
       '.sChatPop .lyMenu a:hover{background:' + c.surface2 + ' !important}' +
@@ -1158,7 +1160,26 @@ function registerBuiltInCommands(pm) {
 window.registerBuiltInCommands = registerBuiltInCommands;
 if (typeof module !== 'undefined' && module.exports) module.exports = { registerBuiltInCommands };
 
-var _t = function (k, def) { return (window.BTTI18n && typeof window.BTTI18n.t === 'function') ? window.BTTI18n.t(k) : def; };
+// Traduction : signature (cle, defaut, params). `params` permet de remplacer
+// les marqueurs "{name}", "{msg}", ... dans les chaines i18n.
+var _t = function (k, def, params) {
+  try {
+    if (window.BTTI18n && typeof window.BTTI18n.t === 'function') {
+      var s = window.BTTI18n.t(k, params);
+      if (s != null && s !== k) return s;
+    }
+  } catch (e) {}
+  if (params) {
+    try {
+      for (var p in params) {
+        if (Object.prototype.hasOwnProperty.call(params, p)) {
+          def = String(def).split('{' + p + '}').join(String(params[p]));
+        }
+      }
+    } catch (e2) {}
+  }
+  return def;
+};
 
 /**
  * BandUI - Bouton "Unbanded" + page Paramètres injectés dans BAND.
@@ -1630,7 +1651,7 @@ var BTTI18n = (function () {
     'plg.added': 'Plugin added: {name}',
     'plg.failed': 'Plugin failed: {msg}',
     'plg.desc.petpet': 'Generates a pet-pet GIF to send in the conversation (aDu/pet-pet-gif)',
-    'plg.desc.reactions': 'Fun commands: hug/cuddle/slap/kiss GIFs from the local bank (no network)',
+    'plg.desc.reactions': 'Fun commands: hug/cuddle/slap/kiss GIFs from the reaction bank (CDN with fallback)',
     'plg.desc.games': 'Local mini-games: magic 8ball, /roll dice, coin flip, random pick',
     'plg.desc.tools': 'Tools: /remind reminders, text emotes (/shrug, /tableflip…)',
     'err.needUrl': 'Paste a URL first',
@@ -1657,10 +1678,16 @@ var BTTI18n = (function () {
     'css.save': 'Apply &amp; save',
     'css.preview': 'Preview (don\'t save)',
     'css.reset': 'Reset',
+    'css.import': 'Import (.css)',
+    'css.export': 'Export (.css)',
     'css.hint': 'The CSS is injected into the page (<code>&lt;style id="bt-custom-css"&gt;</code>) and kept after reload. The preview does not persist.',
     'css.applied': 'CSS applied and saved',
     'css.previewToast': 'Preview applied (not saved)',
     'css.resetToast': 'CSS reset',
+    'css.imported': 'CSS imported: {name}',
+    'css.importFailed': 'CSS import failed: {msg}',
+    'css.exported': 'CSS exported',
+    'css.exportFailed': 'CSS export failed: {msg}',
     'about.plugins': '{n} plugin(s)',
     'about.commands': '{n} command(s)',
     'about.themes': '{n} theme(s)',
@@ -1734,12 +1761,6 @@ var BTTI18n = (function () {
     'tl.when.h': '{n} h',
     'tl.when.m': '{n} min',
     'tl.when.s': '{n} s',
-    'tl.countOut': '📝 {words} word(s) · {chars} characters',
-    'tl.countNeed': 'Give some text: /count hello world',
-    'tl.copyNeed': 'Give text to copy',
-    'tl.copied': '📋 Copied to the clipboard',
-    'tl.copyFail': '✖ Copy failed: {msg}',
-    'tl.timeOut': '🕒 {when}',
     'demo.title': 'Unbanded (demo mode)',
     'demo.desc': 'You are not on band.us. Real actions do not work outside of BAND.',
     'demo.open': '⚙ Open Unbanded',
@@ -1824,7 +1845,7 @@ var BTTI18n = (function () {
     'plg.added': 'Plugin ajouté : {name}',
     'plg.failed': 'Échec plugin : {msg}',
     'plg.desc.petpet': "Génère un GIF pet-pet à envoyer dans la conversation (aDu/pet-pet-gif)",
-    'plg.desc.reactions': 'Commandes fun : GIF hug/cuddle/slap/kiss/… depuis la banque locale (aucun réseau)',
+    'plg.desc.reactions': 'Commandes fun : GIF hug/cuddle/slap/kiss/… depuis la banque de réactions (CDN avec repli)',
     'plg.desc.games': 'Mini-jeux locaux : boule magique 8ball, dés /roll, pile ou face, choix aléatoire',
     'plg.desc.tools': 'Outils : rappels /remind, emotes texte (/shrug, /tableflip…)',
     'err.needUrl': "Colle d'abord une URL",
@@ -1851,10 +1872,16 @@ var BTTI18n = (function () {
     'css.save': 'Appliquer &amp; enregistrer',
     'css.preview': 'Aperçu (sans enregistrer)',
     'css.reset': 'Réinitialiser',
+    'css.import': 'Importer (.css)',
+    'css.export': 'Exporter (.css)',
     'css.hint': "Le CSS est injecté dans la page (élément <code>&lt;style id=\"bt-custom-css\"&gt;</code>) et conservé après rechargement. L'aperçu ne persiste pas.",
     'css.applied': 'CSS appliqué et enregistré',
     'css.previewToast': 'Aperçu appliqué (non enregistré)',
     'css.resetToast': 'CSS réinitialisé',
+    'css.imported': 'CSS importé : {name}',
+    'css.importFailed': 'Échec import CSS : {msg}',
+    'css.exported': 'CSS exporté',
+    'css.exportFailed': 'Échec export CSS : {msg}',
     'about.plugins': '{n} plugin(s)',
     'about.commands': '{n} commande(s)',
     'about.themes': '{n} thème(s)'
@@ -2037,6 +2064,7 @@ var BTTI18n = (function () {
 window.BTTI18n = BTTI18n;
 if (typeof module !== 'undefined' && module.exports) module.exports = BTTI18n;
 
+
 /**
  * ui-settings.js - Page Paramètres complète (Général, Plugins, Thèmes, CSS, À propos).
  * Modale plein écran, ouvrable via /settings, le bouton ⚙ du panneau, ou UnbandedUI.openSettings().
@@ -2138,6 +2166,8 @@ BandUI.prototype._settingsMarkup = function () {
             '<div class="bt-set-row">' +
               '<button type="button" class="bt-btn" data-act="save-css">' + _t('css.save', 'Apply &amp; save') + '</button>' +
               '<button type="button" class="bt-btn bt-btn-ghost" data-act="preview-css">' + _t('css.preview', 'Preview (don\'t save)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-css-file">' + _t('css.import', 'Import (.css)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="export-css-file">' + _t('css.export', 'Export (.css)') + '</button>' +
               '<button type="button" class="bt-btn bt-btn-danger" data-act="clear-css">' + _t('css.reset', 'Reset') + '</button>' +
             '</div>' +
             '<div class="bt-set-hint">' + _t('css.hint', 'The CSS is injected into the page (<code>&lt;style id=\"bt-custom-css\"&gt;</code>) and kept after reload. The preview does not persist.') + '</div>' +
@@ -2444,17 +2474,16 @@ BandUI.prototype._settingsClick = function (e) {
       var input = document.getElementById('bt-set-plugin-url');
       var url = (input && input.value ? input.value : '').trim();
       if (!url) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
-      if (!url) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
       this.pm.loadPlugin(url, { enabled: true, source: 'url' })
-        .then(function () { if (input) input.value = ''; toast(_t('plg.added', 'Plugin added: ') + url, 'ok'); self.renderSettingsPlugins(); })
-        .catch(function (err) { toast(_t('plg.failed', 'Plugin failed : ') + err.message, 'error'); });
+        .then(function () { if (input) input.value = ''; toast(_t('plg.added', 'Plugin added: {name}', { name: url }), 'ok'); self.renderSettingsPlugins(); })
+        .catch(function (err) { toast(_t('plg.failed', 'Plugin failed : {msg}', { msg: err.message }), 'error'); });
       return;
     }
     case 'import-plugin-file':
       this._pickFile('.js,.txt,text/javascript', function (code, name) {
         self.pm.loadPlugin('file:' + name, { enabled: true, source: 'file', code: code })
-          .then(function () { toast(_t('plg.imported', 'Plugin imported : ') + name, 'ok'); self.renderSettingsPlugins(); })
-          .catch(function (err) { toast(_t('plg.importFailed', 'Import failed : ') + err.message, 'error'); });
+          .then(function () { toast(_t('plg.imported', 'Plugin imported: {name}', { name: name }), 'ok'); self.renderSettingsPlugins(); })
+          .catch(function (err) { toast(_t('plg.importFailed', 'Import failed : {msg}', { msg: err.message }), 'error'); });
       });
       return;
     case 'plugin-toggle':
@@ -2470,30 +2499,29 @@ BandUI.prototype._settingsClick = function (e) {
       var tinput = document.getElementById('bt-set-theme-url');
       var turl = (tinput && tinput.value ? tinput.value : '').trim();
       if (!turl) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
-      if (!turl) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
       window.BTTThemes.importFromUrl(turl)
-        .then(function (t) { if (tinput) tinput.value = ''; toast(_t('thm.imported', 'Theme imported : ') + t.name, 'ok'); self.renderSettingsThemes(); })
-        .catch(function (err) { toast(_t('thm.importFailed', 'Theme failed : ') + err.message, 'error'); });
+        .then(function (t) { if (tinput) tinput.value = ''; toast(_t('thm.imported', 'Theme imported: {name}', { name: t.name }), 'ok'); self.renderSettingsThemes(); })
+        .catch(function (err) { toast(_t('thm.importFailed', 'Theme failed : {msg}', { msg: err.message }), 'error'); });
       return;
     }
     case 'import-theme-file':
       this._pickFile('application/json,.json', function (raw) {
         try {
           var t = window.BTTThemes.importJson(JSON.parse(raw));
-          toast(_t('thm.imported', 'Theme imported : ') + t.name, 'ok');
+          toast(_t('thm.imported', 'Theme imported: {name}', { name: t.name }), 'ok');
           self.renderSettingsThemes();
-        } catch (err) { toast(_t('plg.importFailed', 'Import failed : ') + err.message, 'error'); }
+        } catch (err) { toast(_t('plg.importFailed', 'Import failed : {msg}', { msg: err.message }), 'error'); }
       });
       return;
     case 'theme-apply': {
       var applied = window.BTTThemes.apply(id);
-      toast(_t('thm.appliedToast', 'Theme applied : ') + applied.name, 'ok');
+      toast(_t('thm.appliedToast', 'Theme applied: {name}', { name: applied.name }), 'ok');
       this.renderSettingsThemes();
       return;
     }
     case 'theme-export':
       try { window.BTTThemes.exportTheme(id); toast(_t('thm.exported', 'Theme exported (fichier JSON)'), 'ok'); }
-      catch (err) { toast(_t('thm.exportFailed', 'Export failed : ') + err.message, 'error'); }
+      catch (err) { toast(_t('thm.exportFailed', 'Export failed : {msg}', { msg: err.message }), 'error'); }
       return;
     case 'theme-remove':
       window.BTTThemes.remove(id);
@@ -2525,6 +2553,28 @@ BandUI.prototype._settingsClick2 = function (actEl, act) {
       window.BTTStyles.clear();
       this._renderSettingsCss();
       toast(_t('css.resetToast', 'CSS reset'));
+      return true;
+    case 'import-css-file':
+      // Importe un fichier .css dans le textarea + l'applique immediatement
+      // (et le sauvegarde) : c'est le chemin de restauration le plus sur
+      // (pas d'ecriture directe dans le localStorage du navigateur).
+      this._pickFile('text/css,.css', function (raw, name) {
+        try {
+          window.BTTStyles.apply(raw);
+          self._renderSettingsCss();
+          toast(_t('css.imported', 'CSS imported: {name}', { name: name }), 'ok');
+        } catch (err) {
+          toast(_t('css.importFailed', 'CSS import failed: {msg}', { msg: err.message }), 'error');
+        }
+      });
+      return true;
+    case 'export-css-file':
+      try {
+        this._downloadText(window.BTTStyles.get(), 'unbanded-custom.css', 'text/css');
+        toast(_t('css.exported', 'CSS exported'), 'ok');
+      } catch (err) {
+        toast(_t('css.exportFailed', 'CSS export failed: {msg}', { msg: err.message }), 'error');
+      }
       return true;
     case 'export-config':
       this._exportConfig();
@@ -2567,7 +2617,7 @@ BandUI.prototype._settingsChange = function (e) {
   } else if (act === 'opt-lang') {
     var newLang = window.BTTI18n.set(t.value);
     if (newLang) {
-      (window.__BTT_toast || function () {})(_t('cfg.langChanged', 'Language: ' + newLang + ' — reloading…'), 'ok');
+      (window.__BTT_toast || function () {})(_t('cfg.langChanged', 'Language: {lang} — reloading…', { lang: newLang }), 'ok');
       setTimeout(function () { location.reload(); }, 700);
     }
   }
@@ -2587,7 +2637,7 @@ BandUI.prototype._pickFile = function (accept, cb) {
       reader.onload = function () { cb(String(reader.result == null ? '' : reader.result), f.name || 'file'); };
       reader.onerror = function () { if (window.__BTT_toast) window.__BTT_toast(_t('file.readFailed', 'Cannot read the file'), 'error'); };
       reader.readAsText(f);
-    } catch (e2) { if (window.__BTT_toast) window.__BTT_toast(_t('file.noReader', 'FileReader unavailable: ') + e2.message, 'error'); }
+    } catch (e2) { if (window.__BTT_toast) window.__BTT_toast(_t('file.noReader', 'FileReader unavailable: {msg}', { msg: e2.message }), 'error'); }
   };
   document.body.appendChild(input);
   input.click();
@@ -2626,7 +2676,7 @@ BandUI.prototype._exportConfig = function () {
     this._downloadText(JSON.stringify(cfg, null, 2), 'unbanded-config.json', 'application/json');
     (window.__BTT_toast || function () {})(_t('cfg.exported', 'Configuration exported'), 'ok');
   } catch (e) {
-    (window.__BTT_toast || function () {})(_t('cfg.exportFailed', 'Export failed: ') + e.message, 'error');
+    (window.__BTT_toast || function () {})(_t('cfg.exportFailed', 'Export failed: {msg}', { msg: e.message }), 'error');
   }
 };
 
@@ -2651,9 +2701,9 @@ BandUI.prototype._importConfig = function () {
       if (typeof cfg.customCss === 'string') window.BTTStyles.apply(cfg.customCss);
       if (cfg.activeTheme) window.BTTThemes.apply(cfg.activeTheme);
       if (Array.isArray(cfg.plugins)) window.BTTStore.set('plugins', cfg.plugins);
-      toast(_t('cfg.imported', 'Configuration imported ({n} theme(s)) — reload the page for plugins').replace('{n}', importedCount), 'ok');
+      toast(_t('cfg.imported', 'Configuration imported ({n} theme(s)) — reload the page for plugins', { n: importedCount }), 'ok');
       self._renderSettingsTab(self._settingsTab || 'general');
-    } catch (err) { toast(_t('cfg.importFailed', 'Import failed: ') + err.message, 'error'); }
+    } catch (err) { toast(_t('cfg.importFailed', 'Import failed: {msg}', { msg: err.message }), 'error'); }
   });
 };
 
@@ -2676,7 +2726,7 @@ BandUI.prototype._resetAll = function () {
     window.BTTStore.remove('themeSite');
     this._renderSettingsTab(this._settingsTab || 'general');
     toast(_t('cfg.resetDone', 'Reset done'), 'ok');
-  } catch (e) { toast(_t('cfg.resetFailed', 'Reset failed: ') + e.message, 'error'); }
+  } catch (e) { toast(_t('cfg.resetFailed', 'Reset failed: {msg}', { msg: e.message }), 'error'); }
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = BandUI;
@@ -5229,23 +5279,144 @@ var src_default = GIFEncoder;
 
 /**
  * Plugin builtin "reactions" — commandes fun façon Discord.
- * Envoie un GIF aléatoire depuis la banque locale src/assets/reactions/ :
+ * Envoie un GIF aléatoire depuis la banque de réactions (src/assets/reactions/) :
  *   /hug /cuddle /slap /tickle /kiss /poke /bonk /dance /wave /blush
  *   /smile /smug /cry /nom /yeet /wink /laugh /happy
  * /pat reste dédié au plugin pet-pet.
- * Aucun appel réseau externe : fichier statique hébergé avec le script.
- * Repli si la banque est manquante : toast d'erreur (pas de GIF).
+ *
+ * Où sont les GIFs ?
+ *   La banque est publiée avec le dépôt et servie par des CDN absolus
+ *   (jsDelivr, puis Statically en repli). Un chemin relatif au domaine
+ *   courant ne fonctionne PAS : band.us est une SPA, elle renvoie son HTML
+ *   de fallback avec un HTTP 200 — `response.json()` échouait alors et la
+ *   commande affichait « GIF unavailable (Reaction bank not found) ».
+ *   Un dernier repli same-origin est tenté (utile si le script est servi
+ *   avec les assets), mais il est validé (JSON / image) avant d'être utilisé.
+ * Repli si la banque est indisponible : toast d'erreur (rien n'est envoyé).
  */
 (function () {
-  // URL de la banque relative au domaine qui sert le script. Si le script est
-  // sur band.us, c'est "src/assets/reactions/manifest.json" ; sinon modifier ce
-  // préfixe pour pointer sur le bon emplacement.
-  var BANK_URL = 'src/assets/reactions/manifest.json';
+  var REPO = 'HYPE115/Unbanded';
+  var BRANCH = 'main';
+  var ASSET_PATH = 'src/assets/reactions/';
+  // Sources de la banque, par ordre de préférence (URLs absolues).
+  var BANK_SOURCES = [
+    'https://cdn.jsdelivr.net/gh/' + REPO + '@' + BRANCH + '/' + ASSET_PATH,
+    'https://cdn.statically.io/gh/' + REPO + '/' + BRANCH + '/' + ASSET_PATH,
+    ASSET_PATH // même origine (utile pour un miroir auto-hébergé)
+  ];
   var REACTIONS = [
     'hug', 'cuddle', 'slap', 'tickle', 'kiss', 'poke', 'bonk', 'dance',
     'wave', 'blush', 'smile', 'smug', 'cry', 'nom', 'yeet', 'wink',
     'laugh', 'happy'
   ];
+
+  /** Concatène une base et un chemin relatif (sans doublon de slash). */
+  function joinUrl(base, rel) {
+    return String(base).replace(/\/+$/, '') + '/' + String(rel).replace(/^\/+/, '');
+  }
+
+  /** Message d'erreur lisible. */
+  function errMsg(e) {
+    if (!e) return 'unknown error';
+    return e.message ? String(e.message) : String(e);
+  }
+
+  /** Un nom de fichier de la banque ne doit contenir que des caractères sûrs. */
+  function safeName(name) {
+    return /^[A-Za-z0-9._-]+$/.test(String(name || ''));
+  }
+
+  /**
+   * Récupère un JSON en distinguant les erreurs : réseau, HTTP, JSON invalide.
+   * Le fallback SPA (HTML avec HTTP 200) est détecté via le content-type et
+   * le premier caractère de la réponse.
+   */
+  async function fetchJson(url) {
+    var r;
+    try {
+      r = await fetch(url, { credentials: 'omit', cache: 'no-cache' });
+    } catch (e) {
+      throw new Error('network error (' + errMsg(e) + ')');
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var ct = '';
+    try {
+      ct = r.headers && typeof r.headers.get === 'function' ? (r.headers.get('content-type') || '') : '';
+    } catch (e) { /* headers illisibles : on s'en passe */ }
+    var text;
+    try {
+      text = await r.text();
+    } catch (e) {
+      throw new Error('unreadable body (' + errMsg(e) + ')');
+    }
+    if (ct && ct.indexOf('json') === -1 && /^\s*[<]/.test(text)) {
+      throw new Error('not JSON (content-type: ' + ct + ')');
+    }
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error('invalid JSON');
+    }
+  }
+
+  /**
+   * Charge la banque de GIFs. Essaie chaque source jusqu'à obtenir un tableau
+   * exploitable. Renvoie { entries, source }.
+   */
+  async function loadBank(sources) {
+    var list = sources && sources.length ? sources : BANK_SOURCES;
+    var problems = [];
+    for (var i = 0; i < list.length; i++) {
+      var url = joinUrl(list[i], 'manifest.json');
+      try {
+        var j = await fetchJson(url);
+        if (!j || !Array.isArray(j)) throw new Error('invalid bank (not a list)');
+        return { entries: j, source: list[i], url: url };
+      } catch (e) {
+        problems.push(url + ' → ' + errMsg(e));
+      }
+    }
+    throw new Error('Reaction bank not found (' + problems.join(' ; ') + ')');
+  }
+
+  /** Choisit un GIF aléatoire pour la commande "cat" depuis la banque. */
+  function pickGif(bank, cat) {
+    var list = bank && bank.entries ? bank.entries : bank;
+    if (!Array.isArray(list)) return null;
+    var entry = null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].cmd === cat) { entry = list[i]; break; }
+    }
+    if (!entry || !Array.isArray(entry.files) || !entry.files.length) return null;
+    var files = entry.files.filter(safeName);
+    if (!files.length) return null;
+    var idx = Math.floor(Math.random() * files.length);
+    return files[idx];
+  }
+
+  /** Récupère le fichier GIF (binaire) depuis une base de la banque. */
+  async function fetchGif(base, cat, file) {
+    var url = joinUrl(joinUrl(base, cat), file);
+    var r;
+    try {
+      r = await fetch(url, { credentials: 'omit' });
+    } catch (e) {
+      throw new Error('network error (' + errMsg(e) + ')');
+    }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var blob;
+    try {
+      blob = await r.blob();
+    } catch (e) {
+      throw new Error('unreadable body (' + errMsg(e) + ')');
+    }
+    if (!blob || !blob.size) throw new Error('empty response');
+    // Une page d'erreur HTML ne doit jamais être envoyée comme image.
+    if (blob.type && blob.type.indexOf('image/') !== 0) {
+      throw new Error('not an image (content-type: ' + blob.type + ')');
+    }
+    return { blob: blob, url: url };
+  }
 
   /** Résout la cible (même logique que /pat) : groupe = requis, DM = interlocuteur. */
   function resolveTarget(args, info, cat) {
@@ -5266,31 +5437,7 @@ var src_default = GIFEncoder;
     return target;
   }
 
-  /** Charge la banque locale de GIFs. */
-  async function loadBank() {
-    try {
-      var r = await fetch(BANK_URL, { credentials: 'omit', cache: 'no-cache' });
-      if (!r.ok) throw new Error('Bank HTTP ' + r.status);
-      var j = await r.json();
-      if (!j || !Array.isArray(j)) throw new Error('Invalid bank');
-      return j;
-    } catch (e) {
-      // Banque inaccessible : on ne renverra aucun GIF, seul le toast s'affiche.
-      return null;
-    }
-  }
-
-  /** Choisit un GIF aléatoire pour la commande "cat" depuis la banque. */
-  function pickGif(bank, cat) {
-    var entry = null;
-    for (var i = 0; i < bank.length; i++) {
-      if (bank[i].cmd === cat) { entry = bank[i]; break; }
-    }
-    if (!entry || !entry.files || !entry.files.length) return null;
-    var idx = Math.floor(Math.random() * entry.files.length);
-    return entry.files[idx];
-  }
-
+  /** Envoie un GIF de la commande "cat" à la cible résolue. */
   async function run(cat, args, info) {
     var target = resolveTarget(args, info, cat);
     var who = target && target.name ? target.name : '?';
@@ -5298,31 +5445,38 @@ var src_default = GIFEncoder;
     try {
       toast((window.BTTI18n?window.BTTI18n.t('rx.generating',{cat:cat,who:who}):'Generating '+cat+' GIF for '+who));
       var bank = await loadBank();
-      if (!bank) {
-        throw new Error('Reaction bank not found: ' + BANK_URL);
-      }
       var file = pickGif(bank, cat);
       if (!file) {
         throw new Error('No GIF for ' + cat);
       }
-      // Chemin local : src/assets/reactions/{cat}/01.gif (relatif au domaine).
-      var url = 'src/assets/reactions/' + cat + '/' + file;
-      var img = await fetch(url, { credentials: 'omit' });
-      if (!img.ok) throw new Error('Image HTTP ' + img.status);
-      var blob = await img.blob();
+      // Le GIF est cherché dans la source qui a fourni le manifeste ; en cas
+      // d'échec (CDN saturé, fichier absent…), on essaie les autres sources.
+      var sources = [bank.source].concat(BANK_SOURCES.filter(function (s) { return s !== bank.source; }));
+      var got = null;
+      var problems = [];
+      for (var i = 0; i < sources.length; i++) {
+        try {
+          got = await fetchGif(sources[i], cat, file);
+          break;
+        } catch (e) {
+          problems.push(errMsg(e));
+        }
+      }
+      if (!got) throw new Error('GIF download failed (' + problems.join(' ; ') + ')');
+      var blob = got.blob;
       var ext = blob.type === 'image/gif' ? 'gif' : (blob.type.split('/')[1] || 'png');
       await info.sendFile(blob, cat + '-' + String(who).replace(/\s+/g, '_') + '.' + ext);
       toast((window.BTTI18n?window.BTTI18n.t('rx.sent',{cat:cat,who:who}):'GIF sent to '+who), 'ok');
     } catch (e) {
-      // Fallback: pas de GIF réseau, on affiche un toast (la banque est statique).
+      // Fallback: pas de GIF envoyé, on affiche un toast.
       toast((window.BTTI18n?window.BTTI18n.t('rx.fallback',{msg:(e&&e.message?e.message:e)}):'GIF unavailable'), 'warn');
     }
   }
 
   var PLUGIN = {
     name: 'reactions',
-    version: '1.1.0',
-    description: 'Fun commands: hug/cuddle/slap/kiss GIFs from local bank (no network)',
+    version: '1.2.0',
+    description: 'Fun commands: hug/cuddle/slap/kiss GIFs from the reaction bank (CDN with fallback)',
     descriptionKey: 'plg.desc.reactions',
     onLoad: function (ctx) {
       REACTIONS.forEach(function (cat) {
@@ -5331,6 +5485,16 @@ var src_default = GIFEncoder;
         }, '/'+cat+' [user] — required in group chats');
       });
     }
+  };
+  // Interne exposé pour les tests (non utilisé par le plugin en production).
+  PLUGIN._internals = {
+    BANK_SOURCES: BANK_SOURCES,
+    joinUrl: joinUrl,
+    fetchJson: fetchJson,
+    loadBank: loadBank,
+    pickGif: pickGif,
+    fetchGif: fetchGif,
+    run: run
   };
   window.PluginReactions = PLUGIN;
   if (typeof module !== 'undefined' && module.exports) module.exports = PLUGIN;

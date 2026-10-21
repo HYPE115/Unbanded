@@ -9,3 +9,7 @@ __pycache__/
 *.pyc
 .vscode/
 *.bak
+tools/_e2e_*.js
+tools/_tmp_*.txt
+tools/__pycache__/
+

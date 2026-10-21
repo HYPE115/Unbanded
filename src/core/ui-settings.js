@@ -99,6 +99,8 @@ BandUI.prototype._settingsMarkup = function () {
             '<div class="bt-set-row">' +
               '<button type="button" class="bt-btn" data-act="save-css">' + _t('css.save', 'Apply &amp; save') + '</button>' +
               '<button type="button" class="bt-btn bt-btn-ghost" data-act="preview-css">' + _t('css.preview', 'Preview (don\'t save)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="import-css-file">' + _t('css.import', 'Import (.css)') + '</button>' +
+              '<button type="button" class="bt-btn bt-btn-ghost" data-act="export-css-file">' + _t('css.export', 'Export (.css)') + '</button>' +
               '<button type="button" class="bt-btn bt-btn-danger" data-act="clear-css">' + _t('css.reset', 'Reset') + '</button>' +
             '</div>' +
             '<div class="bt-set-hint">' + _t('css.hint', 'The CSS is injected into the page (<code>&lt;style id=\"bt-custom-css\"&gt;</code>) and kept after reload. The preview does not persist.') + '</div>' +
@@ -405,17 +407,16 @@ BandUI.prototype._settingsClick = function (e) {
       var input = document.getElementById('bt-set-plugin-url');
       var url = (input && input.value ? input.value : '').trim();
       if (!url) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
-      if (!url) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
       this.pm.loadPlugin(url, { enabled: true, source: 'url' })
-        .then(function () { if (input) input.value = ''; toast(_t('plg.added', 'Plugin added: ') + url, 'ok'); self.renderSettingsPlugins(); })
-        .catch(function (err) { toast(_t('plg.failed', 'Plugin failed : ') + err.message, 'error'); });
+        .then(function () { if (input) input.value = ''; toast(_t('plg.added', 'Plugin added: {name}', { name: url }), 'ok'); self.renderSettingsPlugins(); })
+        .catch(function (err) { toast(_t('plg.failed', 'Plugin failed : {msg}', { msg: err.message }), 'error'); });
       return;
     }
     case 'import-plugin-file':
       this._pickFile('.js,.txt,text/javascript', function (code, name) {
         self.pm.loadPlugin('file:' + name, { enabled: true, source: 'file', code: code })
-          .then(function () { toast(_t('plg.imported', 'Plugin imported : ') + name, 'ok'); self.renderSettingsPlugins(); })
-          .catch(function (err) { toast(_t('plg.importFailed', 'Import failed : ') + err.message, 'error'); });
+          .then(function () { toast(_t('plg.imported', 'Plugin imported: {name}', { name: name }), 'ok'); self.renderSettingsPlugins(); })
+          .catch(function (err) { toast(_t('plg.importFailed', 'Import failed : {msg}', { msg: err.message }), 'error'); });
       });
       return;
     case 'plugin-toggle':
@@ -431,30 +432,29 @@ BandUI.prototype._settingsClick = function (e) {
       var tinput = document.getElementById('bt-set-theme-url');
       var turl = (tinput && tinput.value ? tinput.value : '').trim();
       if (!turl) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
-      if (!turl) { toast(_t('err.needUrl', 'Paste a URL first'), 'error'); return; }
       window.BTTThemes.importFromUrl(turl)
-        .then(function (t) { if (tinput) tinput.value = ''; toast(_t('thm.imported', 'Theme imported : ') + t.name, 'ok'); self.renderSettingsThemes(); })
-        .catch(function (err) { toast(_t('thm.importFailed', 'Theme failed : ') + err.message, 'error'); });
+        .then(function (t) { if (tinput) tinput.value = ''; toast(_t('thm.imported', 'Theme imported: {name}', { name: t.name }), 'ok'); self.renderSettingsThemes(); })
+        .catch(function (err) { toast(_t('thm.importFailed', 'Theme failed : {msg}', { msg: err.message }), 'error'); });
       return;
     }
     case 'import-theme-file':
       this._pickFile('application/json,.json', function (raw) {
         try {
           var t = window.BTTThemes.importJson(JSON.parse(raw));
-          toast(_t('thm.imported', 'Theme imported : ') + t.name, 'ok');
+          toast(_t('thm.imported', 'Theme imported: {name}', { name: t.name }), 'ok');
           self.renderSettingsThemes();
-        } catch (err) { toast(_t('plg.importFailed', 'Import failed : ') + err.message, 'error'); }
+        } catch (err) { toast(_t('plg.importFailed', 'Import failed : {msg}', { msg: err.message }), 'error'); }
       });
       return;
     case 'theme-apply': {
       var applied = window.BTTThemes.apply(id);
-      toast(_t('thm.appliedToast', 'Theme applied : ') + applied.name, 'ok');
+      toast(_t('thm.appliedToast', 'Theme applied: {name}', { name: applied.name }), 'ok');
       this.renderSettingsThemes();
       return;
     }
     case 'theme-export':
       try { window.BTTThemes.exportTheme(id); toast(_t('thm.exported', 'Theme exported (fichier JSON)'), 'ok'); }
-      catch (err) { toast(_t('thm.exportFailed', 'Export failed : ') + err.message, 'error'); }
+      catch (err) { toast(_t('thm.exportFailed', 'Export failed : {msg}', { msg: err.message }), 'error'); }
       return;
     case 'theme-remove':
       window.BTTThemes.remove(id);
@@ -486,6 +486,28 @@ BandUI.prototype._settingsClick2 = function (actEl, act) {
       window.BTTStyles.clear();
       this._renderSettingsCss();
       toast(_t('css.resetToast', 'CSS reset'));
+      return true;
+    case 'import-css-file':
+      // Importe un fichier .css dans le textarea + l'applique immediatement
+      // (et le sauvegarde) : c'est le chemin de restauration le plus sur
+      // (pas d'ecriture directe dans le localStorage du navigateur).
+      this._pickFile('text/css,.css', function (raw, name) {
+        try {
+          window.BTTStyles.apply(raw);
+          self._renderSettingsCss();
+          toast(_t('css.imported', 'CSS imported: {name}', { name: name }), 'ok');
+        } catch (err) {
+          toast(_t('css.importFailed', 'CSS import failed: {msg}', { msg: err.message }), 'error');
+        }
+      });
+      return true;
+    case 'export-css-file':
+      try {
+        this._downloadText(window.BTTStyles.get(), 'unbanded-custom.css', 'text/css');
+        toast(_t('css.exported', 'CSS exported'), 'ok');
+      } catch (err) {
+        toast(_t('css.exportFailed', 'CSS export failed: {msg}', { msg: err.message }), 'error');
+      }
       return true;
     case 'export-config':
       this._exportConfig();
@@ -528,7 +550,7 @@ BandUI.prototype._settingsChange = function (e) {
   } else if (act === 'opt-lang') {
     var newLang = window.BTTI18n.set(t.value);
     if (newLang) {
-      (window.__BTT_toast || function () {})(_t('cfg.langChanged', 'Language: ' + newLang + ' — reloading…'), 'ok');
+      (window.__BTT_toast || function () {})(_t('cfg.langChanged', 'Language: {lang} — reloading…', { lang: newLang }), 'ok');
       setTimeout(function () { location.reload(); }, 700);
     }
   }
@@ -548,7 +570,7 @@ BandUI.prototype._pickFile = function (accept, cb) {
       reader.onload = function () { cb(String(reader.result == null ? '' : reader.result), f.name || 'file'); };
       reader.onerror = function () { if (window.__BTT_toast) window.__BTT_toast(_t('file.readFailed', 'Cannot read the file'), 'error'); };
       reader.readAsText(f);
-    } catch (e2) { if (window.__BTT_toast) window.__BTT_toast(_t('file.noReader', 'FileReader unavailable: ') + e2.message, 'error'); }
+    } catch (e2) { if (window.__BTT_toast) window.__BTT_toast(_t('file.noReader', 'FileReader unavailable: {msg}', { msg: e2.message }), 'error'); }
   };
   document.body.appendChild(input);
   input.click();
@@ -587,7 +609,7 @@ BandUI.prototype._exportConfig = function () {
     this._downloadText(JSON.stringify(cfg, null, 2), 'unbanded-config.json', 'application/json');
     (window.__BTT_toast || function () {})(_t('cfg.exported', 'Configuration exported'), 'ok');
   } catch (e) {
-    (window.__BTT_toast || function () {})(_t('cfg.exportFailed', 'Export failed: ') + e.message, 'error');
+    (window.__BTT_toast || function () {})(_t('cfg.exportFailed', 'Export failed: {msg}', { msg: e.message }), 'error');
   }
 };
 
@@ -612,9 +634,9 @@ BandUI.prototype._importConfig = function () {
       if (typeof cfg.customCss === 'string') window.BTTStyles.apply(cfg.customCss);
       if (cfg.activeTheme) window.BTTThemes.apply(cfg.activeTheme);
       if (Array.isArray(cfg.plugins)) window.BTTStore.set('plugins', cfg.plugins);
-      toast(_t('cfg.imported', 'Configuration imported ({n} theme(s)) — reload the page for plugins').replace('{n}', importedCount), 'ok');
+      toast(_t('cfg.imported', 'Configuration imported ({n} theme(s)) — reload the page for plugins', { n: importedCount }), 'ok');
       self._renderSettingsTab(self._settingsTab || 'general');
-    } catch (err) { toast(_t('cfg.importFailed', 'Import failed: ') + err.message, 'error'); }
+    } catch (err) { toast(_t('cfg.importFailed', 'Import failed: {msg}', { msg: err.message }), 'error'); }
   });
 };
 
@@ -637,7 +659,7 @@ BandUI.prototype._resetAll = function () {
     window.BTTStore.remove('themeSite');
     this._renderSettingsTab(this._settingsTab || 'general');
     toast(_t('cfg.resetDone', 'Reset done'), 'ok');
-  } catch (e) { toast(_t('cfg.resetFailed', 'Reset failed: ') + e.message, 'error'); }
+  } catch (e) { toast(_t('cfg.resetFailed', 'Reset failed: {msg}', { msg: e.message }), 'error'); }
 };
 
 if (typeof module !== 'undefined' && module.exports) module.exports = BandUI;

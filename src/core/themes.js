@@ -159,7 +159,9 @@
     // Le panel Unbanded ([data-bt-root]) est exclu pour garder sa propre DA.
     // ——— Chat (fenêtre .sChatPop : onglet message) : en-tête, bulles, composer ———
     // Scoppé sous .sChatPop pour ne toucher que la vue chat (pas le feed).
-          // En-tÃªte
+    var chat = '';
+    // En-tâte
+    chat +=
       '.sChatPop .sChatHeader{background:' + c.surface + ' !important;border-bottom:1px solid ' + c.border + ' !important}' +
       '.sChatPop .chatTitle{color:' + c.text + ' !important}' +
       '.sChatPop .chatSubTitle{color:' + c.muted + ' !important}' +
@@ -226,8 +228,8 @@
       '.sChatPop .chatSubmit ._sendMessageButton{background:' + c.accent + ' !important;border-color:' + c.accent + ' !important;color:#fff !important}' +
       '.sChatPop .chatSubmit ._sendMessageButton:hover{background:' + c.accentHover + ' !important;border-color:' + c.accentHover + ' !important}' +
       '.sChatPop .chatSubmit ._sendMessageButton[disabled]{background:' + c.surface2 + ' !important;border-color:' + c.border + ' !important;color:' + c.muted + ' !important;opacity:1}';
+    // Menus et popovers (options, appels, mentions, stickers, aperçu, alerte)
     chat +=
-      // Menus et popovers (options, appels, mentions, stickers, aperçu, alerte)
       '.sChatPop .lyMenu{background:' + c.surface + ' !important;border:1px solid ' + c.border + ';border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3)}' +
       '.sChatPop .lyMenu a{color:' + c.text + ' !important}' +
       '.sChatPop .lyMenu a:hover{background:' + c.surface2 + ' !important}' +

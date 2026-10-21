@@ -1,0 +1,202 @@
+/* =====================================================
+   BAND.us — Custom CSS (compatible Unbanded / Monokai)
+   ===================================================== */
+
+:root {
+  --bd-radius: 12px;
+  --bd-radius-sm: 8px;
+  --bd-transition: 0.2s ease;
+}
+
+/* ---------- Header ---------- */
+.headerWrap {
+  backdrop-filter: blur(10px);
+  background: rgba(31, 32, 26, 0.85) !important;
+  border-bottom: 1px solid var(--btt-border, #49483e);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.bandLogo {
+  filter: drop-shadow(0 0 6px rgba(166, 226, 46, 0.25));
+  transition: filter var(--bd-transition), transform var(--bd-transition);
+}
+.bandLogo:hover {
+  filter: drop-shadow(0 0 14px rgba(166, 226, 46, 0.7));
+  transform: scale(1.05);
+}
+
+/* ---------- Barre de recherche ---------- */
+.inputBandSearch {
+  background: var(--btt-bg, #272822) !important;
+  border: 1px solid var(--btt-border, #49483e) !important;
+  border-radius: var(--bd-radius-sm) !important;
+  color: var(--btt-text, #f8f8f2) !important;
+  transition: border-color var(--bd-transition), box-shadow var(--bd-transition);
+}
+.inputBandSearch:focus {
+  border-color: var(--btt-accent, #a6e22e) !important;
+  box-shadow: 0 0 0 3px rgba(166, 226, 46, 0.15) !important;
+  outline: none !important;
+}
+.btnSearch {
+  transition: background var(--bd-transition), transform var(--bd-transition);
+}
+.btnSearch:hover {
+  background: rgba(166, 226, 46, 0.15) !important;
+  transform: scale(1.05);
+}
+
+/* ---------- Widgets du header ---------- */
+.widgetItem .btnTextStyle,
+.widgetItem .btnIconStyle {
+  transition: color var(--bd-transition), transform var(--bd-transition);
+}
+.widgetItem .btnTextStyle:hover,
+.widgetItem .btnIconStyle:hover {
+  color: var(--btt-accent, #a6e22e) !important;
+  transform: translateY(-1px);
+}
+
+.uProfile.-size30 {
+  transition: transform var(--bd-transition), box-shadow var(--bd-transition);
+}
+.uProfile.-size30:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 2px var(--btt-accent, #a6e22e);
+}
+
+/* ---------- Onglets (My Bands…) ---------- */
+.cGlobalTabs .tab {
+  position: relative;
+  transition: color var(--bd-transition);
+}
+.cGlobalTabs .tab.-active {
+  color: var(--btt-accent, #a6e22e) !important;
+}
+.cGlobalTabs .tab.-active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--btt-accent, #a6e22e);
+  box-shadow: 0 0 8px var(--btt-accent, #a6e22e);
+}
+
+/* ---------- Boutons d'options (Edit list / Guide / Desktop) ---------- */
+.btnOption {
+  border-radius: var(--bd-radius-sm) !important;
+  transition: color var(--bd-transition), background var(--bd-transition),
+              transform var(--bd-transition);
+}
+.btnOption:hover {
+  color: var(--btt-accent, #a6e22e) !important;
+  background: rgba(166, 226, 46, 0.08);
+  transform: translateY(-1px);
+}
+
+/* ---------- Cartes de Bands ---------- */
+.bandCardItem .uCover {
+  border-radius: var(--bd-radius) !important;
+  transition: transform var(--bd-transition), box-shadow var(--bd-transition);
+}
+.bandCardItem .uCover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45),
+              0 0 0 1px rgba(166, 226, 46, 0.35);
+}
+
+.bandCardItem .uCoverImage {
+  border-radius: var(--bd-radius) !important;
+  overflow: hidden;
+}
+.bandCardItem .coverImg {
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+.bandCardItem .uCover:hover .coverImg {
+  transform: scale(1.06);
+  filter: brightness(1.12);
+}
+
+.bandCardItem .bandName .uriText {
+  transition: color var(--bd-transition);
+}
+.bandCardItem .uCover:hover .uriText {
+  color: var(--btt-accent, #a6e22e);
+}
+
+/* ---------- Boutons "Create a Band" / "Join a Band" ---------- */
+.bandCreate .iconBg {
+  transition: transform var(--bd-transition), filter var(--bd-transition);
+}
+.bandCardItem:hover .bandCreate .iconBg {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 10px rgba(166, 226, 46, 0.55));
+}
+
+/* ---------- Menus déroulants / modales ---------- */
+.menuModalLayer {
+  border-radius: var(--bd-radius) !important;
+  border: 1px solid var(--btt-border, #49483e) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55) !important;
+  overflow: hidden;
+}
+.menuModalLink {
+  transition: background var(--bd-transition), color var(--bd-transition);
+}
+.menuModalLink:hover {
+  background: rgba(166, 226, 46, 0.1) !important;
+  color: var(--btt-accent, #a6e22e) !important;
+}
+
+/* ---------- Footer ---------- */
+#footer {
+  border-top: 1px solid var(--btt-border, #49483e);
+}
+.copyMenuLink {
+  transition: color var(--bd-transition);
+}
+.copyMenuLink:hover {
+  color: var(--btt-accent, #a6e22e) !important;
+}
+
+/* ---------- Boutons flottants ---------- */
+.buttonGotoTop,
+.buttonDarkLightToggle {
+  transition: transform var(--bd-transition), box-shadow var(--bd-transition);
+}
+.buttonGotoTop:hover,
+.buttonDarkLightToggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(166, 226, 46, 0.3);
+}
+
+/* ---------- Scrollbar personnalisée ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--btt-bg, #272822);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--btt-border, #49483e);
+  border-radius: 6px;
+  border: 2px solid var(--btt-bg, #272822);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--btt-accent, #a6e22e);
+}
+
+/* ---------- Sélection de texte ---------- */
+::selection {
+  background: rgba(166, 226, 46, 0.3);
+  color: var(--btt-text, #f8f8f2);
+}
+
+/* ---------- Transition douce globale sur les liens ---------- */
+a {
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
